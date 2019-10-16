@@ -3,7 +3,7 @@ package com.github.akarazhev.metaconfig;
 import java.util.Collection;
 import java.util.Map;
 
-public final class ConfigItem {
+public final class Property {
 
     public static enum Type {
         BOOLEAN,
@@ -20,5 +20,5 @@ public final class ConfigItem {
     private String value;
     private Type type = Type.STRING;
     private Map<String, String> attributes;
-    private Collection<ConfigItem> children;
+    private Collection<Property> children;
 }

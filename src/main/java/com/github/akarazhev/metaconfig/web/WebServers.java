@@ -1,7 +1,7 @@
 package com.github.akarazhev.metaconfig.web;
 
-import com.github.akarazhev.metaconfig.MetaConfig;
-import com.github.akarazhev.metaconfig.web.jetty.JettyServer;
+import com.github.akarazhev.metaconfig.Config;
+import com.github.akarazhev.metaconfig.web.internal.InternalServer;
 
 public final class WebServers {
 
@@ -9,10 +9,10 @@ public final class WebServers {
     }
 
     public static WebServer newDefaultWebServer() {
-        return new JettyServer();
+        return new InternalServer();
     }
 
-    public static WebServer newWebServer(final MetaConfig metaConfig) {
-        return new JettyServer(metaConfig);
+    public static WebServer newWebServer(final Config config) {
+        return new InternalServer(config);
     }
 }

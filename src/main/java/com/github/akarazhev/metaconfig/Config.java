@@ -6,15 +6,15 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
-public final class MetaConfig {
+public final class Config {
     private final String name;
     private final String description;
     private final long created;
     private final long updated;
     private final Map<String, String> attributes;
-    private final Collection<ConfigItem> properties;
+    private final Collection<Property> properties;
 
-    private MetaConfig(final Builder builder) {
+    private Config(final Builder builder) {
         this.name = builder.name;
         this.description = builder.description;
         this.created = builder.created;
@@ -43,7 +43,7 @@ public final class MetaConfig {
         return attributes;
     }
 
-    public Collection<ConfigItem> getProperties() {
+    public Collection<Property> getProperties() {
         return properties;
     }
 
@@ -53,9 +53,9 @@ public final class MetaConfig {
         private final long created;
         private final long updated;
         private Map<String, String> attributes;
-        private final Collection<ConfigItem> properties;
+        private final Collection<Property> properties;
 
-        public Builder(final String name, final Collection<ConfigItem> properties) {
+        public Builder(final String name, final Collection<Property> properties) {
             this.name = Objects.requireNonNull(name);
             this.created = Clock.systemDefaultZone().millis();
             this.updated = created;
@@ -72,14 +72,14 @@ public final class MetaConfig {
             return this;
         }
 
-        public MetaConfig build() {
-            return new MetaConfig(this);
+        public Config build() {
+            return new Config(this);
         }
     }
 
     @Override
     public String toString() {
-        return "MetaConfig{" +
+        return "Config{" +
                 "name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", created=" + created +

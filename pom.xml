@@ -17,11 +17,11 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.surefire.plugin>2.22.2</maven.surefire.plugin>
         <maven.assembly.plugin>3.1.1</maven.assembly.plugin>
-        <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
-        <junit.jupiter>5.5.2</junit.jupiter>
+        <junit.version>5.5.2</junit.version>
         <httpclient.version>4.5.3</httpclient.version>
-        <com.h2database>1.4.200</com.h2database>
-        <org.eclipse.jetty>9.4.21.v20190926</org.eclipse.jetty>
+        <fastjson.version>1.2.62</fastjson.version>
+        <h2db.version>1.4.200</h2db.version>
+        <jetty.version>9.4.21.v20190926</jetty.version>
     </properties>
 
     <dependencies>
@@ -29,7 +29,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>${junit.jupiter}</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -38,22 +38,17 @@
             <version>${httpclient.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- Json dependency -->
+        <!--<dependency>-->
+            <!--<groupId>com.alibaba</groupId>-->
+            <!--<artifactId>fastjson</artifactId>-->
+            <!--<version>${fastjson.version}</version>-->
+        <!--</dependency>-->
         <!-- Database dependency -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>${com.h2database}</version>
-        </dependency>
-        <!-- Web server dependency-->
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-server</artifactId>
-            <version>${org.eclipse.jetty}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlet</artifactId>
-            <version>${org.eclipse.jetty}</version>
+            <version>${h2db.version}</version>
         </dependency>
     </dependencies>
 
