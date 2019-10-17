@@ -5,10 +5,10 @@ import java.util.LinkedList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public final class ConfigServiceBean implements ConfigService {
+public final class MetaConfigService implements ConfigService {
     private final ConfigRepository configRepository;
 
-    public ConfigServiceBean(final ConfigRepository configRepository) {
+    public MetaConfigService(final ConfigRepository configRepository) {
         this.configRepository = configRepository;
     }
 

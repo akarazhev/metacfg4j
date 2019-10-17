@@ -4,27 +4,31 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-final class ConfigRepositoryImpl implements ConfigRepository {
+final class InMemConfigRepository implements ConfigRepository {
 
-    private static final Map<String, Config> STORE = new ConcurrentHashMap<>();
+    private final Map<String, Config> inMemStore;
+
+    public InMemConfigRepository() {
+        this.inMemStore = new ConcurrentHashMap<>();
+    }
 
     @Override
     public Stream<Config> findByName(final String name) {
-        return Stream.of(STORE.get(name));
+        return Stream.of(inMemStore.get(name));
     }
 
     @Override
     public Stream<String> findNames() {
-        return STORE.keySet().stream();
+        return inMemStore.keySet().stream();
     }
 
     @Override
     public Config saveAndFlush(final Config config) {
-        return STORE.put(config.getName(), config);
+        return inMemStore.put(config.getName(), config);
     }
 
     @Override
     public void delete(final String name) {
-        STORE.remove(name);
+        inMemStore.remove(name);
     }
 }
