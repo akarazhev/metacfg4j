@@ -17,7 +17,7 @@ public final class H2dbServer implements DbServer {
     }
 
     public H2dbServer(final Config config) throws SQLException {
-        throw new RuntimeException("H2dbServer with the configuration is not implemented");
+        throw new RuntimeException("constructor with the configuration is not implemented");
     }
 
     @Override
