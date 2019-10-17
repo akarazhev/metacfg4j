@@ -1,4 +1,4 @@
-package com.github.akarazhev.metaconfig.store;
+package com.github.akarazhev.metaconfig.engine.db;
 
 import java.sql.SQLException;
 

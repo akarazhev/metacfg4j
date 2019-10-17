@@ -1,4 +1,4 @@
-package com.github.akarazhev.metaconfig.store;
+package com.github.akarazhev.metaconfig.engine.db;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -14,7 +14,7 @@ class DbServerTest {
 
     @BeforeAll
     static void beforeAll() throws Exception {
-        dbServer = DbServers.newDefaultDbServer();
+        dbServer = DbServers.newServer();
         dbServer.start();
     }
 

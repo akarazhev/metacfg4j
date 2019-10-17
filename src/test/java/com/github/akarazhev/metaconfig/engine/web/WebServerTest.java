@@ -1,4 +1,4 @@
-package com.github.akarazhev.metaconfig.web;
+package com.github.akarazhev.metaconfig.engine.web;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -15,7 +15,7 @@ class WebServerTest {
 
     @BeforeAll
     static void beforeAll() throws Exception {
-        webServer = WebServers.newDefaultWebServer();
+        webServer = WebServers.newServer();
         webServer.start();
     }
 

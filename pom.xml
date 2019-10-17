@@ -21,7 +21,7 @@
         <httpclient.version>4.5.3</httpclient.version>
         <fastjson.version>1.2.62</fastjson.version>
         <h2db.version>1.4.200</h2db.version>
-        <jetty.version>9.4.21.v20190926</jetty.version>
+        <json.simple.version>3.1.0</json.simple.version>
     </properties>
 
     <dependencies>
@@ -39,11 +39,11 @@
             <scope>test</scope>
         </dependency>
         <!-- Json dependency -->
-        <!--<dependency>-->
-            <!--<groupId>com.alibaba</groupId>-->
-            <!--<artifactId>fastjson</artifactId>-->
-            <!--<version>${fastjson.version}</version>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>com.github.cliftonlabs</groupId>
+            <artifactId>json-simple</artifactId>
+            <version>${json.simple.version}</version>
+        </dependency>
         <!-- Database dependency -->
         <dependency>
             <groupId>com.h2database</groupId>

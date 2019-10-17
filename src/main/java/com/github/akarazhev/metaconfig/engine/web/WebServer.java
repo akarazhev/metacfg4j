@@ -1,4 +1,4 @@
-package com.github.akarazhev.metaconfig.web;
+package com.github.akarazhev.metaconfig.engine.web;
 
 public interface WebServer {
 

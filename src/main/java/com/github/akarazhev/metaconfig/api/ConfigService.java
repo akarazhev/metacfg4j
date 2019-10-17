@@ -1,4 +1,4 @@
-package com.github.akarazhev.metaconfig;
+package com.github.akarazhev.metaconfig.api;
 
 import java.util.Collection;
 

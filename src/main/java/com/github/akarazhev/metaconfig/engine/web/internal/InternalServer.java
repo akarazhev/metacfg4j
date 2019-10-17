@@ -1,7 +1,8 @@
-package com.github.akarazhev.metaconfig.web.internal;
+package com.github.akarazhev.metaconfig.engine.web.internal;
 
-import com.github.akarazhev.metaconfig.Config;
-import com.github.akarazhev.metaconfig.web.WebServer;
+import com.github.akarazhev.metaconfig.api.Config;
+import com.github.akarazhev.metaconfig.engine.web.WebServer;
+import com.github.cliftonlabs.json_simple.JsonObject;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
@@ -21,7 +22,10 @@ public class InternalServer implements WebServer {
             server = HttpServer.create(new InetSocketAddress(serverPort), 0);
             server.createContext("/api/status", httpExchange -> {
                 if ("GET".equals(httpExchange.getRequestMethod())) {
-                    String response = "{ \"status\": \"ok\"}";
+                    JsonObject json = new JsonObject();
+                    json.put("status", "ok");
+                    String response = json.toJson();
+
                     httpExchange.sendResponseHeaders(200, response.getBytes().length);
                     httpExchange.getRequestHeaders().put("Content-Type", Collections.singletonList("application/json"));
                     OutputStream outputStream = httpExchange.getResponseBody();
@@ -34,7 +38,7 @@ public class InternalServer implements WebServer {
                 httpExchange.close();
             });
             server.setExecutor(null);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
             server = null;
         }

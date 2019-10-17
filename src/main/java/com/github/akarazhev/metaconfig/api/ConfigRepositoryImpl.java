@@ -1,4 +1,4 @@
-package com.github.akarazhev.metaconfig;
+package com.github.akarazhev.metaconfig.api;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

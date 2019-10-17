@@ -1,7 +1,7 @@
-package com.github.akarazhev.metaconfig.store.h2db;
+package com.github.akarazhev.metaconfig.engine.db.h2db;
 
-import com.github.akarazhev.metaconfig.Config;
-import com.github.akarazhev.metaconfig.store.DbServer;
+import com.github.akarazhev.metaconfig.api.Config;
+import com.github.akarazhev.metaconfig.engine.db.DbServer;
 import org.h2.tools.Server;
 
 import java.sql.SQLException;
