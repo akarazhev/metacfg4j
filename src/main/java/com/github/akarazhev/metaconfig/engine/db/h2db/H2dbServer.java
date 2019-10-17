@@ -9,7 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class H2dbServer implements DbServer {
-    private final static Logger logger = Logger.getLogger("H2dbServer");
+    private final static Logger logger = Logger.getLogger(H2dbServer.class.getSimpleName());
     private final Server server;
 
     public H2dbServer() throws SQLException {

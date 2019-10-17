@@ -13,7 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class InternalServer implements WebServer {
-    private final static Logger logger = Logger.getLogger("InternalServer");
+    private final static Logger logger = Logger.getLogger(InternalServer.class.getSimpleName());
     private HttpServer server;
 
     public InternalServer() {
