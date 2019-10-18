@@ -10,16 +10,16 @@ import java.net.InetSocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class InternalServer implements WebServer {
-    private final static Logger logger = Logger.getLogger(InternalServer.class.getSimpleName());
+public class ConfigServer implements WebServer {
+    private final static Logger logger = Logger.getLogger(ConfigServer.class.getSimpleName());
     private HttpServer server;
 
-    public InternalServer(final ConfigService configService) {
+    public ConfigServer(final ConfigService configService) {
         int serverPort = 8000;
         try {
             server = HttpServer.create(new InetSocketAddress(serverPort), 0);
-            final ConfigRestController controller = new ConfigRestController(configService);
-            server.createContext(ConfigRestController.API_STATUS, controller::status);
+            final ConfigController controller = new ConfigController(configService);
+            server.createContext(ConfigController.API_STATUS, controller::status);
             server.setExecutor(null);
         } catch (final IOException e) {
             e.printStackTrace();
@@ -27,7 +27,7 @@ public class InternalServer implements WebServer {
         }
     }
 
-    public InternalServer(final Config config, final ConfigService configService) {
+    public ConfigServer(final Config config, final ConfigService configService) {
         throw new RuntimeException("constructor with the configuration is not implemented");
     }
 

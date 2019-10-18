@@ -8,12 +8,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 
-final class ConfigRestController {
+final class ConfigController {
     static final String API_STATUS = "/api/status";
 
     private final ConfigService configService;
 
-    ConfigRestController(ConfigService configService) {
+    ConfigController(ConfigService configService) {
         this.configService = configService;
     }
 

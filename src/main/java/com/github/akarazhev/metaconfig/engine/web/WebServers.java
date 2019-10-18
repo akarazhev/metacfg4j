@@ -2,7 +2,7 @@ package com.github.akarazhev.metaconfig.engine.web;
 
 import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.ConfigService;
-import com.github.akarazhev.metaconfig.engine.web.internal.InternalServer;
+import com.github.akarazhev.metaconfig.engine.web.internal.ConfigServer;
 
 public final class WebServers {
 
@@ -11,10 +11,10 @@ public final class WebServers {
     }
 
     public static WebServer newServer(final ConfigService configService) {
-        return new InternalServer(configService);
+        return new ConfigServer(configService);
     }
 
     public static WebServer newServer(final Config config, final ConfigService configService) {
-        return new InternalServer(config, configService);
+        return new ConfigServer(config, configService);
     }
 }
