@@ -4,7 +4,7 @@ import java.sql.SQLException;
 
 public interface DbServer {
 
-    void start() throws SQLException;
+    DbServer start() throws SQLException;
 
     void stop();
 }

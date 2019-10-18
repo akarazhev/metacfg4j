@@ -1,5 +1,7 @@
 package com.github.akarazhev.metaconfig.engine.web;
 
+import com.github.akarazhev.metaconfig.api.Config;
+import com.github.akarazhev.metaconfig.api.ConfigService;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -8,6 +10,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class WebServerTest {
@@ -15,8 +19,28 @@ class WebServerTest {
 
     @BeforeAll
     static void beforeAll() throws Exception {
-        webServer = WebServers.newServer();
-        webServer.start();
+        webServer = WebServers.newServer(new ConfigService() {
+
+            @Override
+            public Config update(Config config, boolean override) {
+                return null;
+            }
+
+            @Override
+            public Collection<String> getNames() {
+                return null;
+            }
+
+            @Override
+            public Collection<Config> get() {
+                return null;
+            }
+
+            @Override
+            public void remove(String name) {
+
+            }
+        }).start();
     }
 
     @AfterAll

@@ -21,9 +21,10 @@ public final class H2dbServer implements DbServer {
     }
 
     @Override
-    public void start() throws SQLException {
+    public DbServer start() throws SQLException {
         server.start();
         logger.log(Level.INFO, "Server started");
+        return this;
     }
 
     @Override

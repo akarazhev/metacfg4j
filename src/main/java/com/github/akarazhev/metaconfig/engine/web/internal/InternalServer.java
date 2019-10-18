@@ -1,14 +1,12 @@
 package com.github.akarazhev.metaconfig.engine.web.internal;
 
 import com.github.akarazhev.metaconfig.api.Config;
+import com.github.akarazhev.metaconfig.api.ConfigService;
 import com.github.akarazhev.metaconfig.engine.web.WebServer;
-import com.github.cliftonlabs.json_simple.JsonObject;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,27 +14,12 @@ public class InternalServer implements WebServer {
     private final static Logger logger = Logger.getLogger(InternalServer.class.getSimpleName());
     private HttpServer server;
 
-    public InternalServer() {
+    public InternalServer(final ConfigService configService) {
         int serverPort = 8000;
         try {
             server = HttpServer.create(new InetSocketAddress(serverPort), 0);
-            server.createContext("/api/status", httpExchange -> {
-                if ("GET".equals(httpExchange.getRequestMethod())) {
-                    JsonObject json = new JsonObject();
-                    json.put("status", "ok");
-                    String response = json.toJson();
-
-                    httpExchange.sendResponseHeaders(200, response.getBytes().length);
-                    httpExchange.getRequestHeaders().put("Content-Type", Collections.singletonList("application/json"));
-                    OutputStream outputStream = httpExchange.getResponseBody();
-                    outputStream.write(response.getBytes());
-                    outputStream.flush();
-                } else {
-                    httpExchange.sendResponseHeaders(405, -1);
-                }
-
-                httpExchange.close();
-            });
+            final ConfigRestController controller = new ConfigRestController(configService);
+            server.createContext(ConfigRestController.API_STATUS, controller::status);
             server.setExecutor(null);
         } catch (final IOException e) {
             e.printStackTrace();
@@ -44,24 +27,25 @@ public class InternalServer implements WebServer {
         }
     }
 
-    public InternalServer(final Config config) {
-        server = null;
+    public InternalServer(final Config config, final ConfigService configService) {
+        throw new RuntimeException("constructor with the configuration is not implemented");
     }
 
     @Override
-    public void start() throws Exception {
+    public WebServer start() throws IOException {
         if (server == null) {
-            throw new Exception("Server was not created");
+            throw new IOException("Server was not created");
         }
 
         server.start();
         logger.log(Level.INFO, "Server started");
+        return this;
     }
 
     @Override
-    public void stop() throws Exception {
+    public void stop() throws IOException {
         if (server == null) {
-            throw new Exception("Server was not created");
+            throw new IOException("Server was not created");
         }
 
         server.stop(0);

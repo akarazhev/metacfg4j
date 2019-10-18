@@ -3,11 +3,11 @@ package com.github.akarazhev.metaconfig.api;
 import javax.sql.DataSource;
 import java.util.stream.Stream;
 
-final class DdConfigRepository implements ConfigRepository {
+final class ConfigRepositoryImpl implements ConfigRepository {
 
     private final DataSource dataSource;
 
-    public DdConfigRepository(final DataSource dataSource) {
+    ConfigRepositoryImpl(final DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
