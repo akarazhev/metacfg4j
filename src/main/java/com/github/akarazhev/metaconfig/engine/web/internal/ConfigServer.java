@@ -10,7 +10,7 @@ import java.net.InetSocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class ConfigServer implements WebServer {
+public final class ConfigServer implements WebServer {
     private final static Logger logger = Logger.getLogger(ConfigServer.class.getSimpleName());
     private HttpServer server;
 
