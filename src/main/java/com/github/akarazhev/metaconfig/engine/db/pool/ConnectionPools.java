@@ -1,17 +1,18 @@
-package com.github.akarazhev.metaconfig.api;
+package com.github.akarazhev.metaconfig.engine.db.pool;
 
+import com.github.akarazhev.metaconfig.api.Config;
 import org.h2.jdbcx.JdbcConnectionPool;
 
 import javax.sql.DataSource;
 import java.io.IOException;
 
-final class ConnectionPools {
+public final class ConnectionPools {
 
     private ConnectionPools() {
         // Factory class
     }
 
-    static ConnectionPool newConnectionPool() {
+    public static ConnectionPool newPool() {
         return new ConnectionPool() {
             private final JdbcConnectionPool cp =
                     JdbcConnectionPool.create("jdbc:h2:~/test", "sa", "sa");
@@ -28,7 +29,7 @@ final class ConnectionPools {
         };
     }
 
-    static ConnectionPool newConnectionPool(final Config config) {
-        throw new RuntimeException("newServer is not implemented");
+    static ConnectionPool newPool(final Config config) {
+        throw new RuntimeException("newPool is not implemented");
     }
 }

@@ -2,6 +2,8 @@ package com.github.akarazhev.metaconfig.api;
 
 import com.github.akarazhev.metaconfig.engine.db.DbServer;
 import com.github.akarazhev.metaconfig.engine.db.DbServers;
+import com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPool;
+import com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPools;
 import com.github.akarazhev.metaconfig.engine.web.WebServer;
 import com.github.akarazhev.metaconfig.engine.web.WebServers;
 
@@ -20,7 +22,7 @@ public final class MetaConfig implements ConfigService, Closeable {
             // DB Server
             dbServer = DbServers.newServer().start();
             // Connection pool
-            connectionPool = ConnectionPools.newConnectionPool();
+            connectionPool = ConnectionPools.newPool();
         } catch (Exception e) {
             throw new RuntimeException("The H2DB instance can't be started");
         }
