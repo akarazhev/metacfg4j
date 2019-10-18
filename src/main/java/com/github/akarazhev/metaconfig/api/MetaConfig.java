@@ -31,7 +31,7 @@ public final class MetaConfig implements ConfigService, Closeable {
         try {
             webServer = WebServers.newServer(configService).start();
         } catch (IOException e) {
-            throw new RuntimeException("The internal web server instance can't be started");
+            throw new RuntimeException("The config server instance can't be started");
         }
     }
 
