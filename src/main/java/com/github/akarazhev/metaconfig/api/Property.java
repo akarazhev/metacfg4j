@@ -82,7 +82,7 @@ public final class Property implements Configurable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Property property = (Property) o;
+        final Property property = (Property) o;
         return name.equals(property.name) &&
                 Objects.equals(caption, property.caption) &&
                 Objects.equals(description, property.description) &&

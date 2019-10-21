@@ -67,7 +67,7 @@ public final class Config implements Configurable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Config config = (Config) o;
+        final Config config = (Config) o;
         return created == config.created &&
                 updated == config.updated &&
                 name.equals(config.name) &&
@@ -101,7 +101,7 @@ public final class Config implements Configurable {
 
         public Builder(final String name, final Collection<Property> properties) {
             this.name = Objects.requireNonNull(name);
-            long millis = Clock.systemDefaultZone().millis();
+            final long millis = Clock.systemDefaultZone().millis();
             this.created = millis;
             this.updated = millis;
             this.properties = Collections.unmodifiableCollection(Objects.requireNonNull(properties));
