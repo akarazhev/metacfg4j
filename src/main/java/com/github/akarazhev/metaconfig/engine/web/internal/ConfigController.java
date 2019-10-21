@@ -9,7 +9,6 @@ import java.io.OutputStream;
 import java.util.Collections;
 
 final class ConfigController {
-    static final String API_STATUS = "/api/status";
 
     private final ConfigService configService;
 
@@ -33,5 +32,9 @@ final class ConfigController {
         }
 
         httpExchange.close();
+    }
+
+    final static class API {
+        static final String STATUS = "/api/config/status";
     }
 }

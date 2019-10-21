@@ -61,7 +61,7 @@ class WebServerTest {
 
     @Test
     void getStatusMethod() throws Exception {
-        String url = "http://localhost:8000/api/status";
+        String url = "http://localhost:8000/api/config/status";
         HttpClient client = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(url);
         HttpResponse response = client.execute(request);

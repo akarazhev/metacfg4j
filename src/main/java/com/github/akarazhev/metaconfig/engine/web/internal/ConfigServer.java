@@ -18,7 +18,7 @@ public final class ConfigServer implements WebServer {
         if (server == null) {
             final ConfigController controller = new ConfigController(configService);
             server = HttpServer.create(new InetSocketAddress(8000), 0);
-            server.createContext(ConfigController.API_STATUS, controller::status);
+            server.createContext(ConfigController.API.STATUS, controller::status);
             server.setExecutor(null);
         } else {
             throw new RuntimeException("Server has been already created");
