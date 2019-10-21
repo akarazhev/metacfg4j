@@ -1,10 +1,8 @@
 package com.github.akarazhev.metaconfig.api;
 
 import com.github.cliftonlabs.json_simple.JsonObject;
-import com.github.cliftonlabs.json_simple.Jsonable;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.time.Clock;
 import java.util.Collection;
@@ -12,7 +10,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
-public final class Config implements Jsonable {
+public final class Config implements Configurable {
     private final String name;
     private final String description;
     private final long created;
@@ -54,27 +52,33 @@ public final class Config implements Jsonable {
     }
 
     @Override
-    public String toJson() {
-        final StringWriter writable = new StringWriter();
-        try {
-            toJson(writable);
-        } catch (final IOException e) {
-            e.printStackTrace();
-        }
-
-        return writable.toString();
+    public void toJson(Writer writer) throws IOException {
+        final JsonObject json = new JsonObject();
+        json.put("name", name);
+        json.put("description", description);
+        json.put("created", created);
+        json.put("updated", updated);
+        json.put("attributes", attributes);
+        json.put("properties", properties);
+        json.toJson(writer);
     }
 
     @Override
-    public void toJson(Writer writer) throws IOException {
-        final JsonObject json = new JsonObject();
-        json.put("name", getName());
-        json.put("description", getDescription());
-        json.put("created", getCreated());
-        json.put("updated", getUpdated());
-        json.put("attributes", getAttributes());
-        json.put("properties", getProperties());
-        json.toJson(writer);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Config config = (Config) o;
+        return created == config.created &&
+                updated == config.updated &&
+                name.equals(config.name) &&
+                Objects.equals(description, config.description) &&
+                Objects.equals(attributes, config.attributes) &&
+                properties.equals(config.properties);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, description, created, updated, attributes, properties);
     }
 
     @Override
@@ -96,15 +100,15 @@ public final class Config implements Jsonable {
         private final Collection<Property> properties;
 
         public Builder(final String name, final Collection<Property> properties) {
-            long millis = Clock.systemDefaultZone().millis();
             this.name = Objects.requireNonNull(name);
+            long millis = Clock.systemDefaultZone().millis();
             this.created = millis;
             this.updated = millis;
             this.properties = Collections.unmodifiableCollection(Objects.requireNonNull(properties));
         }
 
         public Builder description(final String description) {
-            this.description = description;
+            this.description = Objects.requireNonNull(description);
             return this;
         }
 
