@@ -1,6 +1,5 @@
 package com.github.akarazhev.metaconfig.api;
 
-import com.github.akarazhev.metaconfig.api.Config;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

@@ -1,10 +1,8 @@
 package com.github.akarazhev.metaconfig.engine.web;
 
-import java.io.IOException;
-
 public interface WebServer {
 
-    WebServer start() throws IOException;
+    WebServer start();
 
-    void stop() throws IOException;
+    void stop();
 }

@@ -2,11 +2,13 @@ package com.github.akarazhev.metaconfig.api;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 final class ConfigServiceImpl implements ConfigService {
     private final ConfigRepository configRepository;
+    private Consumer<Config> consumer;
 
     ConfigServiceImpl(final ConfigRepository configRepository) {
         this.configRepository = configRepository;
@@ -36,5 +38,17 @@ final class ConfigServiceImpl implements ConfigService {
     @Override
     public void remove(final String name) {
         configRepository.delete(name);
+    }
+
+    @Override
+    public void accept(final Config config) {
+        if (consumer != null) {
+            consumer.accept(config);
+        }
+    }
+
+    @Override
+    public void addConsumer(final Consumer<Config> consumer) {
+        this.consumer = consumer;
     }
 }

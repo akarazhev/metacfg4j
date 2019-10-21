@@ -29,7 +29,7 @@ public final class ConnectionPools {
         };
     }
 
-    static ConnectionPool newPool(final Config config) {
+    public static ConnectionPool newPool(final Config config) {
         throw new RuntimeException("newPool is not implemented");
     }
 }

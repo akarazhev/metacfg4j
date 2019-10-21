@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -38,6 +39,16 @@ class WebServerTest {
 
             @Override
             public void remove(String name) {
+
+            }
+
+            @Override
+            public void accept(Config config) {
+
+            }
+
+            @Override
+            public void addConsumer(Consumer<Config> consumer) {
 
             }
         }).start();

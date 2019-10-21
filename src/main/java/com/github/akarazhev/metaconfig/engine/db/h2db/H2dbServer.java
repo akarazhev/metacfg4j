@@ -10,10 +10,14 @@ import java.util.logging.Logger;
 
 public final class H2dbServer implements DbServer {
     private final static Logger logger = Logger.getLogger(H2dbServer.class.getSimpleName());
-    private final Server server;
+    private static Server server = null;
 
     public H2dbServer() throws SQLException {
-        server = Server.createTcpServer("-tcp", "-tcpPort", "8043");
+        if (server == null) {
+            server = Server.createTcpServer("-tcp", "-tcpPort", "8043");
+        } else {
+            throw new RuntimeException("Server has been already created");
+        }
     }
 
     public H2dbServer(final Config config) throws SQLException {
@@ -22,14 +26,19 @@ public final class H2dbServer implements DbServer {
 
     @Override
     public DbServer start() throws SQLException {
-        server.start();
-        logger.log(Level.INFO, "Server started");
+        if (!server.isRunning(true)) {
+            server.start();
+            logger.log(Level.INFO, "Server started");
+        }
+
         return this;
     }
 
     @Override
     public void stop() {
-        server.stop();
-        logger.log(Level.INFO, "Server stopped");
+        if (server.isRunning(true)) {
+            server.stop();
+            logger.log(Level.INFO, "Server stopped");
+        }
     }
 }
