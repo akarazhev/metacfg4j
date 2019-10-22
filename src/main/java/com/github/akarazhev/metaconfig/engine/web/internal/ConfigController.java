@@ -4,19 +4,19 @@ import com.github.akarazhev.metaconfig.api.ConfigService;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import com.sun.net.httpserver.HttpExchange;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 
-final class ConfigController {
+final class ConfigController extends AbstractController {
 
     private final ConfigService configService;
 
-    ConfigController(ConfigService configService) {
+    ConfigController(final ConfigService configService) {
         this.configService = configService;
     }
 
-    void status(HttpExchange httpExchange) throws IOException {
+    @Override
+    void execute(final HttpExchange httpExchange) throws Exception {
         if ("GET".equals(httpExchange.getRequestMethod())) {
             JsonObject json = new JsonObject();
             json.put("status", "ok");
@@ -32,9 +32,5 @@ final class ConfigController {
         }
 
         httpExchange.close();
-    }
-
-    final static class API {
-        static final String STATUS = "/api/config/status";
     }
 }
