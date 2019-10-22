@@ -4,10 +4,13 @@ import com.github.cliftonlabs.json_simple.JsonObject;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public final class Property implements Configurable {
 
@@ -57,12 +60,14 @@ public final class Property implements Configurable {
         return value;
     }
 
+    @Override
     public Map<String, String> getAttributes() {
-        return attributes;
+        return Collections.unmodifiableMap(attributes);
     }
 
-    public Collection<Property> getProperties() {
-        return properties;
+    @Override
+    public Stream<Property> getProperties() {
+        return properties.stream();
     }
 
     @Override
@@ -134,12 +139,12 @@ public final class Property implements Configurable {
         }
 
         public Builder attributes(final Map<String, String> attributes) {
-            this.attributes = Collections.unmodifiableMap(Objects.requireNonNull(attributes));
+            this.attributes = new HashMap<>(Objects.requireNonNull(attributes));
             return this;
         }
 
         public Builder properties(final Collection<Property> properties) {
-            this.properties = Collections.unmodifiableCollection(Objects.requireNonNull(properties));
+            this.properties = new ArrayList<>(Objects.requireNonNull(properties));
             return this;
         }
 

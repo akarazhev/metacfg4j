@@ -5,10 +5,13 @@ import com.github.cliftonlabs.json_simple.JsonObject;
 import java.io.IOException;
 import java.io.Writer;
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public final class Config implements Configurable {
     private final String name;
@@ -43,12 +46,14 @@ public final class Config implements Configurable {
         return updated;
     }
 
+    @Override
     public Map<String, String> getAttributes() {
-        return attributes;
+        return Collections.unmodifiableMap(attributes);
     }
 
-    public Collection<Property> getProperties() {
-        return properties;
+    @Override
+    public Stream<Property> getProperties() {
+        return properties.stream();
     }
 
     @Override
@@ -104,7 +109,7 @@ public final class Config implements Configurable {
             final long millis = Clock.systemDefaultZone().millis();
             this.created = millis;
             this.updated = millis;
-            this.properties = Collections.unmodifiableCollection(Objects.requireNonNull(properties));
+            this.properties = new ArrayList<>(Objects.requireNonNull(properties));
         }
 
         public Builder description(final String description) {
@@ -113,7 +118,7 @@ public final class Config implements Configurable {
         }
 
         public Builder attributes(final Map<String, String> attributes) {
-            this.attributes = Collections.unmodifiableMap(Objects.requireNonNull(attributes));
+            this.attributes = new HashMap<>(Objects.requireNonNull(attributes));
             return this;
         }
 

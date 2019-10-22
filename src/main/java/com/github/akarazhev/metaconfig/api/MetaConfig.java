@@ -9,8 +9,9 @@ import com.github.akarazhev.metaconfig.engine.web.WebServers;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public final class MetaConfig implements ConfigService, Closeable {
     private final DbServer dbServer;
@@ -32,13 +33,18 @@ public final class MetaConfig implements ConfigService, Closeable {
     }
 
     @Override
-    public Collection<String> getNames() {
+    public Stream<String> getNames() {
         return configService.getNames();
     }
 
     @Override
-    public Collection<Config> get() {
+    public Stream<Config> get() {
         return configService.get();
+    }
+
+    @Override
+    public Optional<Config> get(final String name) {
+        return configService.get(name);
     }
 
     @Override

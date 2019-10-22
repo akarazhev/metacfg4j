@@ -2,6 +2,7 @@ package com.github.akarazhev.metaconfig.api;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,18 +22,21 @@ final class ConfigServiceImpl implements ConfigService {
     }
 
     @Override
-    public Collection<String> getNames() {
-        try (Stream<String> stream = configRepository.findNames()) {
-            return stream.collect(Collectors.toList());
-        }
+    public Stream<String> getNames() {
+        return configRepository.findNames();
     }
 
     @Override
-    public Collection<Config> get() {
+    public Stream<Config> get() {
         Collection<Config> configs = new LinkedList<>();
         configRepository.findNames().forEach(name ->
                 configs.addAll(configRepository.findByName(name).collect(Collectors.toList())));
-        return configs;
+        return configs.stream();
+    }
+
+    @Override
+    public Optional<Config> get(final String name) {
+        return configRepository.findByName(name).findFirst();
     }
 
     @Override

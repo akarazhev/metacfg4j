@@ -10,8 +10,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collection;
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -28,13 +29,18 @@ class WebServerTest {
             }
 
             @Override
-            public Collection<String> getNames() {
-                return null;
+            public Stream<String> getNames() {
+                return Stream.empty();
             }
 
             @Override
-            public Collection<Config> get() {
-                return null;
+            public Stream<Config> get() {
+                return Stream.empty();
+            }
+
+            @Override
+            public Optional<Config> get(String name) {
+                return Optional.empty();
             }
 
             @Override

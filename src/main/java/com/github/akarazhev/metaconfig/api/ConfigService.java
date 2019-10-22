@@ -1,15 +1,18 @@
 package com.github.akarazhev.metaconfig.api;
 
-import java.util.Collection;
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public interface ConfigService {
 
     Config update(final Config config, final boolean override);
 
-    Collection<String> getNames();
+    Stream<String> getNames();
 
-    Collection<Config> get();
+    Stream<Config> get();
+
+    Optional<Config> get(final String name);
 
     void remove(final String name);
 
