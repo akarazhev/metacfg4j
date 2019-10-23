@@ -16,7 +16,7 @@ public interface ConfigService {
 
     void remove(final String name);
 
-    void accept(final Config config);
+    void accept(final String name);
 
     void addConsumer(final Consumer<Config> consumer);
 }

@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
 import java.util.Collections;
 
 import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.APPLICATION_JSON;
@@ -32,6 +33,15 @@ abstract class AbstractController {
 
     abstract void execute(final HttpExchange httpExchange) throws Exception;
 
+    String getPathParam(final URI uri, final String api) {
+        final String name = uri.getPath().substring(api.length());
+        if (name.length() == 0) {
+            throw new InvalidRequestException(BAD_REQUEST.getCode(), "Param is empty");
+        }
+
+        return name;
+    }
+
     void writeResponse(final HttpExchange httpExchange, final OperationResponse response) {
         try {
             httpExchange.getResponseHeaders().put(CONTENT_TYPE, Collections.singletonList(APPLICATION_JSON));
@@ -56,20 +66,20 @@ abstract class AbstractController {
         }
     }
 
-    private OperationResponse getErrorResponse(Throwable throwable, HttpExchange httpExchange) throws IOException {
+    private OperationResponse getErrorResponse(final Throwable throwable, final HttpExchange httpExchange) throws IOException {
         final OperationResponse response =
                 new OperationResponse.Builder<>().error(false, throwable.getMessage()).build();
         if (throwable instanceof InvalidRequestException) {
-            InvalidRequestException exception = (InvalidRequestException) throwable;
+            final InvalidRequestException exception = (InvalidRequestException) throwable;
             httpExchange.sendResponseHeaders(exception.getCode(), 0);
         } else if (throwable instanceof ResourceNotFoundException) {
-            ResourceNotFoundException exception = (ResourceNotFoundException) throwable;
+            final ResourceNotFoundException exception = (ResourceNotFoundException) throwable;
             httpExchange.sendResponseHeaders(exception.getCode(), 0);
         } else if (throwable instanceof MethodNotAllowedException) {
-            MethodNotAllowedException exception = (MethodNotAllowedException) throwable;
+            final MethodNotAllowedException exception = (MethodNotAllowedException) throwable;
             httpExchange.sendResponseHeaders(exception.getCode(), 0);
         } else {
-            InternalServerErrorException exception = (InternalServerErrorException) throwable;
+            final InternalServerErrorException exception = (InternalServerErrorException) throwable;
             httpExchange.sendResponseHeaders(exception.getCode(), 0);
         }
 

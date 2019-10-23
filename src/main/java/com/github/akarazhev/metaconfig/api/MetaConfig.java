@@ -53,8 +53,8 @@ public final class MetaConfig implements ConfigService, Closeable {
     }
 
     @Override
-    public void accept(final Config config) {
-        configService.accept(config);
+    public void accept(final String name) {
+        configService.accept(name);
     }
 
     @Override

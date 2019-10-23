@@ -10,6 +10,7 @@ import java.net.InetSocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.API.CONFIG_ACCEPT;
 import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.API.CONFIG_NAMES;
 import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.API.CONFIG_SECTION;
 
@@ -20,7 +21,9 @@ public final class ConfigServer implements WebServer {
     public ConfigServer(final ConfigService configService) throws IOException {
         if (server == null) {
             server = HttpServer.create(new InetSocketAddress(8000), 0);
-            AbstractController controller = new ConfigNamesController(configService);
+            AbstractController controller = new ConfigAcceptController(configService);
+            server.createContext(CONFIG_ACCEPT, controller::handle);
+            controller = new ConfigNamesController(configService);
             server.createContext(CONFIG_NAMES, controller::handle);
             controller = new ConfigSectionController(configService);
             server.createContext(CONFIG_SECTION, controller::handle);

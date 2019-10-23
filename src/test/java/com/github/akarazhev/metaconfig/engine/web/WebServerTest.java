@@ -8,6 +8,7 @@ import com.github.cliftonlabs.json_simple.Jsoner;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -29,7 +30,7 @@ class WebServerTest {
         webServer = WebServers.newServer(new ConfigService() {
 
             @Override
-            public Config update(Config config, boolean override) {
+            public Config update(final Config config, final boolean override) {
                 return null;
             }
 
@@ -44,22 +45,22 @@ class WebServerTest {
             }
 
             @Override
-            public Optional<Config> get(String name) {
+            public Optional<Config> get(final String name) {
                 return Optional.empty();
             }
 
             @Override
-            public void remove(String name) {
+            public void remove(final String name) {
 
             }
 
             @Override
-            public void accept(Config config) {
+            public void accept(final String name) {
 
             }
 
             @Override
-            public void addConsumer(Consumer<Config> consumer) {
+            public void addConsumer(final Consumer<Config> consumer) {
 
             }
         }).start();
@@ -71,11 +72,19 @@ class WebServerTest {
     }
 
     @Test
-    void getConfigNames() throws Exception {
-        String url = "http://localhost:8000/api/config/names";
+    void getConfigAccept() throws Exception {
         HttpClient client = HttpClientBuilder.create().build();
-        HttpGet request = new HttpGet(url);
-        HttpResponse response = client.execute(request);
+        HttpResponse response = client.execute(new HttpPost("http://localhost:8000/api/config/accept/name"));
+        // Test status code
+        assertEquals(200, response.getStatusLine().getStatusCode());
+        // Get the response
+        assertEquals(true, getJsonObject(response.getEntity().getContent()).get("success"));
+    }
+
+    @Test
+    void getConfigNames() throws Exception {
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpResponse response = client.execute(new HttpGet("http://localhost:8000/api/config/names"));
         // Test status code
         assertEquals(200, response.getStatusLine().getStatusCode());
         // Get the response
@@ -84,10 +93,8 @@ class WebServerTest {
 
     @Test
     void getConfigSection() throws Exception {
-        String url = "http://localhost:8000/api/config/section/name";
         HttpClient client = HttpClientBuilder.create().build();
-        HttpGet request = new HttpGet(url);
-        HttpResponse response = client.execute(request);
+        HttpResponse response = client.execute(new HttpGet("http://localhost:8000/api/config/section/name"));
         // Test status code
         assertEquals(200, response.getStatusLine().getStatusCode());
         // Get the response
@@ -96,9 +103,9 @@ class WebServerTest {
         assertEquals("Section not found", jsonObject.get("error"));
     }
 
-    private JsonObject getJsonObject(InputStream inputStream) throws JsonException {
-        Scanner scanner = new Scanner(inputStream);
-        StringBuilder json = new StringBuilder();
+    private JsonObject getJsonObject(final InputStream inputStream) throws JsonException {
+        final Scanner scanner = new Scanner(inputStream);
+        final StringBuilder json = new StringBuilder();
         while(scanner.hasNext()){
             json.append(scanner.nextLine());
         }

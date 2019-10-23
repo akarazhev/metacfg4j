@@ -45,9 +45,9 @@ final class ConfigServiceImpl implements ConfigService {
     }
 
     @Override
-    public void accept(final Config config) {
+    public void accept(final String name) {
         if (consumer != null) {
-            consumer.accept(config);
+            get(name).ifPresent(config -> consumer.accept(config));
         }
     }
 
