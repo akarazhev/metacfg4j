@@ -31,7 +31,7 @@ abstract class AbstractController {
         }
     }
 
-    abstract void execute(final HttpExchange httpExchange) throws Exception;
+    abstract void execute(final HttpExchange httpExchange);
 
     String getPathParam(final URI uri, final String api) {
         final String name = uri.getPath().substring(api.length());

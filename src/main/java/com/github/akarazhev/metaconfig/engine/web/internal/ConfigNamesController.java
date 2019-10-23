@@ -15,13 +15,13 @@ final class ConfigNamesController extends AbstractController {
     }
 
     @Override
-    void execute(final HttpExchange httpExchange) throws Exception {
+    void execute(final HttpExchange httpExchange) {
         if (GET.equals(httpExchange.getRequestMethod())) {
             final OperationResponse response =
                     new OperationResponse.Builder<>().result(configService.getNames().collect(Collectors.toList())).build();
             writeResponse(httpExchange, response);
         } else {
-            httpExchange.sendResponseHeaders(METHOD_NOT_ALLOWED.getCode(), -1);
+            throw new MethodNotAllowedException(METHOD_NOT_ALLOWED.getCode(), "Method not allowed");
         }
     }
 }

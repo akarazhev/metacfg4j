@@ -14,14 +14,14 @@ final class ConfigSectionController extends AbstractController {
     }
 
     @Override
-    void execute(final HttpExchange httpExchange) throws Exception {
+    void execute(final HttpExchange httpExchange) {
         if (GET.equals(httpExchange.getRequestMethod())) {
             final OperationResponse response = configService.get(getPathParam(httpExchange.getRequestURI(), CONFIG_SECTION)).
                     map(config -> new OperationResponse.Builder<>().result(config).build()).
                     orElseGet(() -> new OperationResponse.Builder<>().error(false, "Section not found").build());
             writeResponse(httpExchange, response);
         } else {
-            httpExchange.sendResponseHeaders(METHOD_NOT_ALLOWED.getCode(), -1);
+            throw new MethodNotAllowedException(METHOD_NOT_ALLOWED.getCode(), "Method not allowed");
         }
     }
 }

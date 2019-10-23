@@ -14,13 +14,13 @@ final class ConfigAcceptController extends AbstractController {
     }
 
     @Override
-    void execute(final HttpExchange httpExchange) throws Exception {
+    void execute(final HttpExchange httpExchange) {
         if (POST.equals(httpExchange.getRequestMethod())) {
             final String name = getPathParam(httpExchange.getRequestURI(), CONFIG_ACCEPT);
             configService.accept(name);
             writeResponse(httpExchange, new OperationResponse.Builder<>().result("Accepted '" + name + "' config").build());
         } else {
-            httpExchange.sendResponseHeaders(METHOD_NOT_ALLOWED.getCode(), -1);
+            throw new MethodNotAllowedException(METHOD_NOT_ALLOWED.getCode(), "Method not allowed");
         }
     }
 }
