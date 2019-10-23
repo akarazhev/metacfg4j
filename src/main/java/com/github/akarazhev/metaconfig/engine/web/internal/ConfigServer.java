@@ -10,7 +10,7 @@ import java.net.InetSocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.github.akarazhev.metaconfig.engine.web.internal.constant.Constants.API.PING;
+import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.API.PING;
 
 public final class ConfigServer implements WebServer {
     private final static Logger logger = Logger.getLogger(ConfigServer.class.getSimpleName());

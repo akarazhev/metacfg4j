@@ -1,4 +1,4 @@
-package com.github.akarazhev.metaconfig.engine.web.internal.util;
+package com.github.akarazhev.metaconfig.engine.web.internal;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 import static java.util.stream.Collectors.toList;
 
-public class RequestUtils {
+final class RequestUtils {
 
     private RequestUtils() {
         // Util class

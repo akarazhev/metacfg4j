@@ -1,4 +1,4 @@
-package com.github.akarazhev.metaconfig.engine.web.internal.exception;
+package com.github.akarazhev.metaconfig.engine.web.internal;
 
 class ConfigException extends RuntimeException {
     private final int code;

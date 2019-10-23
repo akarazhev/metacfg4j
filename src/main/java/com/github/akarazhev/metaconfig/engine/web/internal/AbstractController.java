@@ -1,17 +1,16 @@
 package com.github.akarazhev.metaconfig.engine.web.internal;
 
 import com.github.akarazhev.metaconfig.api.ConfigService;
-import com.github.akarazhev.metaconfig.engine.web.internal.exception.InternalServerErrorException;
-import com.github.akarazhev.metaconfig.engine.web.internal.exception.InvalidRequestException;
-import com.github.akarazhev.metaconfig.engine.web.internal.exception.MethodNotAllowedException;
-import com.github.akarazhev.metaconfig.engine.web.internal.exception.ResourceNotFoundException;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collections;
 
-import static com.github.akarazhev.metaconfig.engine.web.internal.constant.Constants.APPLICATION_JSON;
-import static com.github.akarazhev.metaconfig.engine.web.internal.constant.Constants.CONTENT_TYPE;
+import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.APPLICATION_JSON;
+import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.CONTENT_TYPE;
+import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.BAD_REQUEST;
+import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.OK;
 
 abstract class AbstractController {
 
@@ -21,17 +20,28 @@ abstract class AbstractController {
         this.configService = configService;
     }
 
-    void handle(HttpExchange exchange) {
+    void handle(HttpExchange httpExchange) {
         try {
-            execute(exchange);
+            execute(httpExchange);
         } catch (Exception exception) {
-            handle(exception, exchange);
-        } finally {
-            exchange.getResponseHeaders().set(CONTENT_TYPE, APPLICATION_JSON);
+            handle(exception, httpExchange);
         }
     }
 
     abstract void execute(final HttpExchange httpExchange) throws Exception;
+
+    <T> void writeResponse(final HttpExchange httpExchange, final OperationResponse<T> response) {
+        try {
+            httpExchange.getResponseHeaders().put(CONTENT_TYPE, Collections.singletonList(APPLICATION_JSON));
+            final byte[] jsonBytes = response.toJson().getBytes();
+            httpExchange.sendResponseHeaders(OK.getCode(), jsonBytes.length);
+            OutputStream outputStream = httpExchange.getResponseBody();
+            outputStream.write(jsonBytes);
+            outputStream.flush();
+        } catch (Exception e) {
+            throw new InvalidRequestException(BAD_REQUEST.getCode(), e.getMessage());
+        }
+    }
 
     private void handle(final Throwable throwable, final HttpExchange httpExchange) {
         try {

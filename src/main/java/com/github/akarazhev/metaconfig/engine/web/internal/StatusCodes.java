@@ -1,6 +1,6 @@
-package com.github.akarazhev.metaconfig.engine.web.internal.constant;
+package com.github.akarazhev.metaconfig.engine.web.internal;
 
-public enum StatusCodes {
+enum StatusCodes {
     OK(200),
     CREATED(201),
     ACCEPTED(202),

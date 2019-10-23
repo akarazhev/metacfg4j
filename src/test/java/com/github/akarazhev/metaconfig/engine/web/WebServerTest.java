@@ -19,7 +19,6 @@ import java.util.Scanner;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static com.github.akarazhev.metaconfig.engine.web.internal.constant.Constants.API.PING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class WebServerTest {
@@ -73,14 +72,14 @@ class WebServerTest {
 
     @Test
     void getStatusMethod() throws Exception {
-        String url = "http://localhost:8000" + PING;
+        String url = "http://localhost:8000/api/config/ping";
         HttpClient client = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(url);
         HttpResponse response = client.execute(request);
         // Test status code
         assertEquals(200, response.getStatusLine().getStatusCode());
         // Get the response
-        assertEquals("ok", getJsonObject(response.getEntity().getContent()).get("status"));
+        assertEquals(true, getJsonObject(response.getEntity().getContent()).get("success"));
     }
 
     private JsonObject getJsonObject(InputStream inputStream) throws JsonException {

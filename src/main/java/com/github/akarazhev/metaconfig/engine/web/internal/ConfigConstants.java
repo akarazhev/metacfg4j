@@ -1,9 +1,9 @@
-package com.github.akarazhev.metaconfig.engine.web.internal.constant;
+package com.github.akarazhev.metaconfig.engine.web.internal;
 
-public final class Constants {
+final class ConfigConstants {
 
-    private Constants() {
-        // Constants class
+    private ConfigConstants() {
+        // ConfigConstants class
     }
 
     public static final String CONTENT_TYPE = "Content-Type";
@@ -12,7 +12,7 @@ public final class Constants {
     public final static class Method {
 
         private Method() {
-            // Constants class
+            // ConfigConstants class
         }
 
         public static final String POST = "POST";
@@ -22,7 +22,7 @@ public final class Constants {
 
     public final static class API {
         private API() {
-            // Constants class
+            // ConfigConstants class
         }
 
         public static final String PING = "/api/config/ping";
