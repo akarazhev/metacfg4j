@@ -2,6 +2,7 @@ package com.github.akarazhev.metaconfig.engine.web;
 
 import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.ConfigService;
+import com.github.akarazhev.metaconfig.api.Property;
 import com.github.cliftonlabs.json_simple.JsonException;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
@@ -18,8 +19,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Consumer;
@@ -122,7 +125,10 @@ class WebServerTest {
 
     @Test
     void updateConfigSection() throws Exception {
-        final Config config = new Config.Builder("Meta Config", Collections.emptyList()).build();
+        final List<Property> properties = new ArrayList<>(2);
+        properties.add(new Property.Builder("Property_1", Property.Type.STRING, "Value_1").build());
+        properties.add(new Property.Builder("Property_2", Property.Type.STRING, "Value_2").build());
+        final Config config = new Config.Builder("Meta Config", properties).build();
         HttpPut httpPut = new HttpPut("http://localhost:8000/api/config/section");
         httpPut.setEntity(new StringEntity(config.toJson()));
 

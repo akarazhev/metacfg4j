@@ -76,7 +76,7 @@ public final class Property implements Configurable {
         json.put("name", name);
         json.put("caption", caption);
         json.put("description", description);
-        json.put("type", type);
+        json.put("type", type.name());
         json.put("value", value);
         json.put("attributes", attributes);
         json.put("properties", properties);

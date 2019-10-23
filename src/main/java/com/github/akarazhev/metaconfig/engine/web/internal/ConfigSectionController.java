@@ -1,12 +1,13 @@
 package com.github.akarazhev.metaconfig.engine.web.internal;
 
+import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.ConfigService;
-import com.github.cliftonlabs.json_simple.JsonException;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.API.CONFIG_SECTION;
@@ -31,13 +32,24 @@ final class ConfigSectionController extends AbstractController {
             writeResponse(httpExchange, response);
         } else if (PUT.equals(method)) {
             // todo
+            BufferedReader bufferedReader = null;
             try {
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody()));
-                JsonObject jsonObject = (JsonObject) Jsoner.deserialize(bufferedReader);
-            } catch (JsonException e) {
+                bufferedReader = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody()));
+                final Config config = new Config.Builder((JsonObject) Jsoner.deserialize(bufferedReader)).build();
+                writeResponse(httpExchange,
+                        new OperationResponse.Builder<>().result(configService.update(config, true)).build());
+            } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                if (bufferedReader != null) {
+                    try {
+                        bufferedReader.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
-            //
+            // todo
         } else if (DELETE.equals(method)) {
             configService.remove(getPathParam(httpExchange.getRequestURI(), CONFIG_SECTION));
             writeResponse(httpExchange, new OperationResponse.Builder<>().result(Boolean.TRUE).build());

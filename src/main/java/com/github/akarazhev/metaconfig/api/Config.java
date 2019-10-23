@@ -4,6 +4,7 @@ import com.github.cliftonlabs.json_simple.JsonObject;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -103,6 +104,15 @@ public final class Config implements Configurable {
         private final long updated;
         private Map<String, String> attributes;
         private final Collection<Property> properties;
+
+        public Builder(final JsonObject jsonObject) {
+            this.name = Objects.requireNonNull((String) jsonObject.get("name"));
+            this.description = (String) jsonObject.get("description");
+            this.created = Objects.requireNonNull((BigDecimal) jsonObject.get("created")).longValue();
+            this.updated = Objects.requireNonNull((BigDecimal) jsonObject.get("updated")).longValue();
+            this.attributes = null; // todo
+            this.properties = null;
+        }
 
         public Builder(final String name, final Collection<Property> properties) {
             this.name = Objects.requireNonNull(name);
