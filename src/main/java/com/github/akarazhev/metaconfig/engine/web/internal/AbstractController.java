@@ -25,12 +25,14 @@ abstract class AbstractController {
             execute(httpExchange);
         } catch (Exception exception) {
             handle(exception, httpExchange);
+        } finally {
+            httpExchange.close();
         }
     }
 
     abstract void execute(final HttpExchange httpExchange) throws Exception;
 
-    <T> void writeResponse(final HttpExchange httpExchange, final OperationResponse<T> response) {
+    void writeResponse(final HttpExchange httpExchange, final OperationResponse response) {
         try {
             httpExchange.getResponseHeaders().put(CONTENT_TYPE, Collections.singletonList(APPLICATION_JSON));
             final byte[] jsonBytes = response.toJson().getBytes();
@@ -55,22 +57,19 @@ abstract class AbstractController {
     }
 
     private OperationResponse getErrorResponse(Throwable throwable, HttpExchange httpExchange) throws IOException {
-        OperationResponse response;
+        final OperationResponse response =
+                new OperationResponse.Builder<>().error(false, throwable.getMessage()).build();
         if (throwable instanceof InvalidRequestException) {
             InvalidRequestException exception = (InvalidRequestException) throwable;
-            response = new OperationResponse(false, exception.getMessage());
             httpExchange.sendResponseHeaders(exception.getCode(), 0);
         } else if (throwable instanceof ResourceNotFoundException) {
             ResourceNotFoundException exception = (ResourceNotFoundException) throwable;
-            response = new OperationResponse(false, exception.getMessage());
             httpExchange.sendResponseHeaders(exception.getCode(), 0);
         } else if (throwable instanceof MethodNotAllowedException) {
             MethodNotAllowedException exception = (MethodNotAllowedException) throwable;
-            response = new OperationResponse(false, exception.getMessage());
             httpExchange.sendResponseHeaders(exception.getCode(), 0);
         } else {
             InternalServerErrorException exception = (InternalServerErrorException) throwable;
-            response = new OperationResponse(false, exception.getMessage());
             httpExchange.sendResponseHeaders(exception.getCode(), 0);
         }
 

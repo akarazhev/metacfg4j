@@ -71,8 +71,8 @@ class WebServerTest {
     }
 
     @Test
-    void getStatusMethod() throws Exception {
-        String url = "http://localhost:8000/api/config/ping";
+    void getConfigNames() throws Exception {
+        String url = "http://localhost:8000/api/config/names";
         HttpClient client = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(url);
         HttpResponse response = client.execute(request);
@@ -80,6 +80,20 @@ class WebServerTest {
         assertEquals(200, response.getStatusLine().getStatusCode());
         // Get the response
         assertEquals(true, getJsonObject(response.getEntity().getContent()).get("success"));
+    }
+
+    @Test
+    void getConfigSection() throws Exception {
+        String url = "http://localhost:8000/api/config/section/name";
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpGet request = new HttpGet(url);
+        HttpResponse response = client.execute(request);
+        // Test status code
+        assertEquals(200, response.getStatusLine().getStatusCode());
+        // Get the response
+        JsonObject jsonObject = getJsonObject(response.getEntity().getContent());
+        assertEquals(false, jsonObject.get("success"));
+        assertEquals("Section not found", jsonObject.get("error"));
     }
 
     private JsonObject getJsonObject(InputStream inputStream) throws JsonException {

@@ -25,6 +25,9 @@ final class ConfigConstants {
             // ConfigConstants class
         }
 
-        public static final String PING = "/api/config/ping";
+        public static final String CONFIG_ACCEPT = "/api/config/accept";
+        public static final String CONFIG_NAMES = "/api/config/names";
+        public static final String CONFIG_SECTIONS = "/api/config/sections";
+        public static final String CONFIG_SECTION = "/api/config/section";
     }
 }

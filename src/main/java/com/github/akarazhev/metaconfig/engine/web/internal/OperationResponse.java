@@ -13,16 +13,10 @@ final class OperationResponse<T> implements Jsonable {
     private final String error;
     private final T result;
 
-    OperationResponse(final T result) {
-        this.success = true;
-        this.error = null;
-        this.result = Objects.requireNonNull(result);
-    }
-
-    OperationResponse(final boolean success, final String error) {
-        this.success = success;
-        this.error = Objects.requireNonNull(error);
-        this.result = null;
+    private OperationResponse(final Builder<T> builder) {
+        this.success = builder.success;
+        this.error = builder.error;
+        this.result = builder.result;
     }
 
     public boolean isSuccess() {
@@ -56,5 +50,30 @@ final class OperationResponse<T> implements Jsonable {
         json.put("error", error);
         json.put("result", result instanceof Jsonable ? ((Jsonable) result).toJson() : result);
         json.toJson(writer);
+    }
+
+    public final static class Builder<T> {
+        private boolean success;
+        private String error;
+        private T result;
+
+        public Builder() {
+        }
+
+        public Builder result(final T result) {
+            this.success = true;
+            this.result = Objects.requireNonNull(result);
+            return this;
+        }
+
+        public Builder error(final boolean success, final String error) {
+            this.success = success;
+            this.error = Objects.requireNonNull(error);
+            return this;
+        }
+
+        public OperationResponse<T> build() {
+            return new OperationResponse<>(this);
+        }
     }
 }
