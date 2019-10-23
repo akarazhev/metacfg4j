@@ -1,5 +1,6 @@
 package com.github.akarazhev.metaconfig.engine.web.internal;
 
+import com.github.akarazhev.metaconfig.api.ConfigService;
 import com.github.akarazhev.metaconfig.engine.web.internal.exception.InternalServerErrorException;
 import com.github.akarazhev.metaconfig.engine.web.internal.exception.InvalidRequestException;
 import com.github.akarazhev.metaconfig.engine.web.internal.exception.MethodNotAllowedException;
@@ -13,8 +14,11 @@ import static com.github.akarazhev.metaconfig.engine.web.internal.constant.Const
 import static com.github.akarazhev.metaconfig.engine.web.internal.constant.Constants.CONTENT_TYPE;
 
 abstract class AbstractController {
-    final static class API {
-        static final String STATUS = "/api/config/status";
+
+    protected final ConfigService configService;
+
+    AbstractController(final ConfigService configService) {
+        this.configService = configService;
     }
 
     void handle(HttpExchange exchange) {

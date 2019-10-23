@@ -10,6 +10,8 @@ import java.net.InetSocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.github.akarazhev.metaconfig.engine.web.internal.constant.Constants.API.PING;
+
 public final class ConfigServer implements WebServer {
     private final static Logger logger = Logger.getLogger(ConfigServer.class.getSimpleName());
     private static HttpServer server = null;
@@ -17,8 +19,8 @@ public final class ConfigServer implements WebServer {
     public ConfigServer(final ConfigService configService) throws IOException {
         if (server == null) {
             server = HttpServer.create(new InetSocketAddress(8000), 0);
-            AbstractController controller = new ConfigController(configService);
-            server.createContext(AbstractController.API.STATUS, controller::handle);
+            AbstractController controller = new PingController(configService);
+            server.createContext(PING, controller::handle);
             server.setExecutor(null);
         } else {
             throw new RuntimeException("Server has been already created");
