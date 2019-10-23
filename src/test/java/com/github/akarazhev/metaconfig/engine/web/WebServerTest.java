@@ -7,8 +7,11 @@ import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -16,6 +19,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Consumer;
@@ -114,6 +118,34 @@ class WebServerTest {
         JsonObject jsonObject = getJsonObject(response.getEntity().getContent());
         assertEquals(false, jsonObject.get("success"));
         assertEquals("Section not found", jsonObject.get("error"));
+    }
+
+    @Test
+    void updateConfigSection() throws Exception {
+        final Config config = new Config.Builder("Meta Config", Collections.emptyList()).build();
+        HttpPut httpPut = new HttpPut("http://localhost:8000/api/config/section");
+        httpPut.setEntity(new StringEntity(config.toJson()));
+
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpResponse response = client.execute(httpPut);
+        // Test status code
+        assertEquals(200, response.getStatusLine().getStatusCode());
+        // Get the response
+        JsonObject jsonObject = getJsonObject(response.getEntity().getContent());
+        assertEquals(false, jsonObject.get("success"));
+//        assertEquals("Section not found", jsonObject.get("error"));
+    }
+
+    @Test
+    void deleteConfigSection() throws Exception {
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpResponse response = client.execute(new HttpDelete("http://localhost:8000/api/config/section/name"));
+        // Test status code
+        assertEquals(200, response.getStatusLine().getStatusCode());
+        // Get the response
+        JsonObject jsonObject = getJsonObject(response.getEntity().getContent());
+        assertEquals(true, jsonObject.get("success"));
+        assertEquals(true, jsonObject.get("result"));
     }
 
     private JsonObject getJsonObject(final InputStream inputStream) throws JsonException {

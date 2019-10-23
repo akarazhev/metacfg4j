@@ -1,7 +1,13 @@
 package com.github.akarazhev.metaconfig.engine.web.internal;
 
 import com.github.akarazhev.metaconfig.api.ConfigService;
+import com.github.cliftonlabs.json_simple.JsonException;
+import com.github.cliftonlabs.json_simple.JsonObject;
+import com.github.cliftonlabs.json_simple.Jsoner;
 import com.sun.net.httpserver.HttpExchange;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.API.CONFIG_SECTION;
 import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.Method.DELETE;
@@ -24,10 +30,17 @@ final class ConfigSectionController extends AbstractController {
                     orElseGet(() -> new OperationResponse.Builder<>().error(false, "Section not found").build());
             writeResponse(httpExchange, response);
         } else if (PUT.equals(method)) {
-            // todo put
+            // todo
+            try {
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody()));
+                JsonObject jsonObject = (JsonObject) Jsoner.deserialize(bufferedReader);
+            } catch (JsonException e) {
+                e.printStackTrace();
+            }
+            //
         } else if (DELETE.equals(method)) {
             configService.remove(getPathParam(httpExchange.getRequestURI(), CONFIG_SECTION));
-            writeResponse(httpExchange, new OperationResponse.Builder<>().build());
+            writeResponse(httpExchange, new OperationResponse.Builder<>().result(Boolean.TRUE).build());
         } else {
             throw new MethodNotAllowedException(METHOD_NOT_ALLOWED.getCode(), "Method not allowed");
         }
