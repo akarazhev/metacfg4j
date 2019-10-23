@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
+import java.util.Base64;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Consumer;
@@ -72,7 +73,7 @@ class WebServerTest {
     }
 
     @Test
-    void getConfigAccept() throws Exception {
+    void acceptConfig() throws Exception {
         HttpClient client = HttpClientBuilder.create().build();
         HttpResponse response = client.execute(new HttpPost("http://localhost:8000/api/config/accept/name"));
         // Test status code
@@ -89,6 +90,18 @@ class WebServerTest {
         assertEquals(200, response.getStatusLine().getStatusCode());
         // Get the response
         assertEquals(true, getJsonObject(response.getEntity().getContent()).get("success"));
+    }
+
+    @Test
+    void getConfigSections() throws Exception {
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpResponse response = client.execute(new HttpGet("http://localhost:8000/api/config/sections?names=" +
+                new String(Base64.getEncoder().encode("[\"name_1\", \"name_2\", \"name_3\"]".getBytes()))));
+        // Test status code
+        assertEquals(200, response.getStatusLine().getStatusCode());
+        // Get the response
+        JsonObject jsonObject = getJsonObject(response.getEntity().getContent());
+        assertEquals(true, jsonObject.get("success"));
     }
 
     @Test

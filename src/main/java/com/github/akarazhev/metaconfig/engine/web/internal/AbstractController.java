@@ -34,12 +34,21 @@ abstract class AbstractController {
     abstract void execute(final HttpExchange httpExchange);
 
     String getPathParam(final URI uri, final String api) {
+        // todo it is very simple implementation
         final String name = uri.getPath().substring(api.length());
         if (name.length() == 0) {
             throw new InvalidRequestException(BAD_REQUEST.getCode(), "Param is empty");
         }
 
         return name;
+    }
+
+    String getRequestParam(final String query, final String param) {
+        if (!query.contains(param)) {
+            throw new InvalidRequestException(BAD_REQUEST.getCode(), "Param is blank");
+        }
+        // todo it is very simple implementation
+        return query.substring(param.length() + 1);
     }
 
     void writeResponse(final HttpExchange httpExchange, final OperationResponse response) {

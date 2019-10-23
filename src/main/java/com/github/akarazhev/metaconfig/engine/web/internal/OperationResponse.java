@@ -53,7 +53,7 @@ final class OperationResponse<T> implements Jsonable {
     }
 
     public final static class Builder<T> {
-        private boolean success;
+        private boolean success = true;
         private String error;
         private T result;
 
@@ -61,7 +61,6 @@ final class OperationResponse<T> implements Jsonable {
         }
 
         public Builder result(final T result) {
-            this.success = true;
             this.result = Objects.requireNonNull(result);
             return this;
         }

@@ -16,6 +16,7 @@ final class ConfigConstants {
         }
 
         public static final String POST = "POST";
+        public static final String DELETE = "DELETE";
         public static final String GET = "GET";
         public static final String PUT = "PUT";
     }
@@ -25,7 +26,7 @@ final class ConfigConstants {
             // ConfigConstants class
         }
 
-        public static final String CONFIG_ACCEPT = "/api/config/accept";
+        public static final String ACCEPT_CONFIG = "/api/config/accept";
         public static final String CONFIG_NAMES = "/api/config/names";
         public static final String CONFIG_SECTIONS = "/api/config/sections";
         public static final String CONFIG_SECTION = "/api/config/section";
