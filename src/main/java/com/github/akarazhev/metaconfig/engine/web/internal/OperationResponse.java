@@ -28,7 +28,7 @@ final class OperationResponse<T> implements ExtJsonable {
     }
 
     public T getResult() {
-        return result; // todo is it immutable? make a clone
+        return result;
     }
 
     @Override

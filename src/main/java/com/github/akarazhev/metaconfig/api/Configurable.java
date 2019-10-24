@@ -18,7 +18,6 @@ interface Configurable extends ExtJsonable {
     class ConfigBuilder {
 
         Optional<Map<String, String>> getAttributes(final Object object) {
-            // todo re-implement it
             if (object != null) {
                 final JsonObject jsonObject = (JsonObject) object;
                 final Map<String, String> attributes = new HashMap<>();
