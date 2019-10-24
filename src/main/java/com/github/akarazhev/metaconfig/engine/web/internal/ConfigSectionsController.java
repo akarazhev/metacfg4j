@@ -13,7 +13,6 @@ import java.util.Base64;
 import java.util.List;
 
 import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.Method.GET;
-import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.BAD_REQUEST;
 import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.METHOD_NOT_ALLOWED;
 
 final class ConfigSectionsController extends AbstractController {
@@ -25,19 +24,23 @@ final class ConfigSectionsController extends AbstractController {
     @Override
     void execute(final HttpExchange httpExchange) throws IOException {
         if (GET.equals(httpExchange.getRequestMethod())) {
-            try {
-                final String param = getRequestParam(httpExchange.getRequestURI().getQuery(), "names");
-                final String array = new String(Base64.getDecoder().decode(param), StandardCharsets.UTF_8);
-                final JsonArray jsonArray = (JsonArray) Jsoner.deserialize(array);
-                final List<Config> sections = new ArrayList<>(jsonArray.size());
-                for (int i = 0; i < jsonArray.size(); i++) {
-                    configService.get(jsonArray.getString(i)).ifPresent(sections::add);
-                }
+            final OperationResponse response = getRequestParam(httpExchange.getRequestURI().getQuery(), "names").
+                    map(param -> {
+                        try {
+                            final String array = new String(Base64.getDecoder().decode(param), StandardCharsets.UTF_8);
+                            final JsonArray jsonArray = (JsonArray) Jsoner.deserialize(array);
+                            final List<Config> sections = new ArrayList<>(jsonArray.size());
+                            for (int i = 0; i < jsonArray.size(); i++) {
+                                configService.get(jsonArray.getString(i)).ifPresent(sections::add);
+                            }
 
-                writeResponse(httpExchange, new OperationResponse.Builder<>().result(sections).build());
-            } catch (Exception e) {
-                throw new InvalidRequestException(BAD_REQUEST.getCode(), "Bad request");
-            }
+                            return new OperationResponse.Builder<>().result(sections).build();
+                        } catch (Exception e) {
+                            return new OperationResponse.Builder<>().error("Request param can not be parsed").build();
+                        }
+                    }).
+                    orElseGet(() -> new OperationResponse.Builder<>().error("Request param is not present").build());
+            writeResponse(httpExchange, response);
         } else {
             throw new MethodNotAllowedException(METHOD_NOT_ALLOWED.getCode(), "Method not allowed");
         }

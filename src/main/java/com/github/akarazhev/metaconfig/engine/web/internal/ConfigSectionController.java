@@ -41,13 +41,14 @@ final class ConfigSectionController extends AbstractController {
                     orElseGet(paramIsNotPresent);
             writeResponse(httpExchange, response);
         } else if (PUT.equals(method)) {
+            // it can be re-implemented
             try (final BufferedReader bufferedReader =
                          new BufferedReader(new InputStreamReader(httpExchange.getRequestBody(), StandardCharsets.UTF_8))) {
                 final Config config = new Config.Builder((JsonObject) Jsoner.deserialize(bufferedReader)).build();
                 writeResponse(httpExchange,
                         new OperationResponse.Builder<>().result(configService.update(config, true)).build());
             } catch (JsonException e) {
-                throw new InvalidRequestException(BAD_REQUEST.getCode(), "Param is blank");
+                throw new InvalidRequestException(BAD_REQUEST.getCode(), "Config can not be parsed");
             }
         } else if (DELETE.equals(method)) {
             final OperationResponse response = getPathParams(httpExchange.getRequestURI(), CONFIG_SECTION).findAny().

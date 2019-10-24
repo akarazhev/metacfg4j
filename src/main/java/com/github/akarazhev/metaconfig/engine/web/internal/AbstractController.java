@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.APPLICATION_JSON;
@@ -40,12 +41,11 @@ abstract class AbstractController {
         return path.contains(api) ? Arrays.stream(path.substring(api.length()).split("/")) : Stream.empty();
     }
 
-    String getRequestParam(final String query, final String param) throws IOException {
-        // todo re-implement it
-        if (!query.contains(param)) {
-            throw new InvalidRequestException(BAD_REQUEST.getCode(), "Param is blank");
-        }
-        return query.substring(param.length() + 1);
+    Optional<String> getRequestParam(final String query, final String param) {
+        return Arrays.stream(query.split("&")).
+                filter(q -> q.contains(param)).
+                map(p -> p.split("=")[1]).
+                findFirst();
     }
 
     void writeResponse(final HttpExchange httpExchange, final OperationResponse response) throws IOException {
