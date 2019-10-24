@@ -34,8 +34,7 @@ interface Configurable extends ExtJsonable {
 
         Stream<Property> getProperties(final Object object) {
             return object != null ?
-                    ((JsonArray) object).stream().
-                            map(jsonObject -> new Property.Builder((JsonObject) jsonObject).build()) :
+                    ((JsonArray) object).stream().map(jsonObject -> new Property.Builder((JsonObject) jsonObject).build()) :
                     Stream.empty();
         }
     }
