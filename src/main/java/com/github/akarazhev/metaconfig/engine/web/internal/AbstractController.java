@@ -21,7 +21,7 @@ abstract class AbstractController {
         this.configService = abstractBuilder.configService;
     }
 
-    void handle(HttpExchange httpExchange) throws IOException {
+    void handle(HttpExchange httpExchange) {
         try {
             execute(httpExchange);
         } catch (Exception exception) {
@@ -31,9 +31,9 @@ abstract class AbstractController {
         }
     }
 
-    abstract void execute(final HttpExchange httpExchange);
+    abstract void execute(final HttpExchange httpExchange) throws IOException;
 
-    String getPathParam(final URI uri, final String api) {
+    String getPathParam(final URI uri, final String api) throws IOException {
         // todo it is very simple implementation
         final String name = uri.getPath().substring(api.length());
         if (name.length() == 0) {
@@ -43,7 +43,7 @@ abstract class AbstractController {
         return name;
     }
 
-    String getRequestParam(final String query, final String param) {
+    String getRequestParam(final String query, final String param) throws IOException {
         if (!query.contains(param)) {
             throw new InvalidRequestException(BAD_REQUEST.getCode(), "Param is blank");
         }
@@ -51,7 +51,7 @@ abstract class AbstractController {
         return query.substring(param.length() + 1);
     }
 
-    void writeResponse(final HttpExchange httpExchange, final OperationResponse response) {
+    void writeResponse(final HttpExchange httpExchange, final OperationResponse response) throws IOException {
         try {
             httpExchange.getResponseHeaders().put(CONTENT_TYPE, Collections.singletonList(APPLICATION_JSON));
             final byte[] jsonBytes = response.toJson().getBytes();

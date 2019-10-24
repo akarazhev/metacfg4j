@@ -3,6 +3,7 @@ package com.github.akarazhev.metaconfig.engine.web.internal;
 import com.github.akarazhev.metaconfig.api.ConfigService;
 import com.sun.net.httpserver.HttpExchange;
 
+import java.io.IOException;
 import java.util.stream.Collectors;
 
 import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.Method.GET;
@@ -15,7 +16,7 @@ final class ConfigNamesController extends AbstractController {
     }
 
     @Override
-    void execute(final HttpExchange httpExchange) {
+    void execute(final HttpExchange httpExchange) throws IOException {
         if (GET.equals(httpExchange.getRequestMethod())) {
             final OperationResponse response =
                     new OperationResponse.Builder<>().result(configService.getNames().collect(Collectors.toList())).build();

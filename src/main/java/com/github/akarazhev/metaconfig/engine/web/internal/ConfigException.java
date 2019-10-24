@@ -1,6 +1,8 @@
 package com.github.akarazhev.metaconfig.engine.web.internal;
 
-class ConfigException extends RuntimeException {
+import java.io.IOException;
+
+class ConfigException extends IOException {
     private final int code;
 
     ConfigException(int code, String message) {
@@ -8,7 +10,7 @@ class ConfigException extends RuntimeException {
         this.code = code;
     }
 
-    public int getCode() {
+    int getCode() {
         return code;
     }
 }

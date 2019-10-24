@@ -6,6 +6,7 @@ import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.Jsoner;
 import com.sun.net.httpserver.HttpExchange;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -21,7 +22,7 @@ final class ConfigSectionsController extends AbstractController {
     }
 
     @Override
-    void execute(final HttpExchange httpExchange) {
+    void execute(final HttpExchange httpExchange) throws IOException {
         if (GET.equals(httpExchange.getRequestMethod())) {
             try {
                 final String param = getRequestParam(httpExchange.getRequestURI().getQuery(), "names");
