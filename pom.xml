@@ -24,6 +24,14 @@
         <json.simple.version>3.1.0</json.simple.version>
     </properties>
 
+    <licenses>
+        <license>
+            <!-- Defines the license the project warrants. -->
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
     <dependencies>
         <!-- Test dependency -->
         <dependency>
