@@ -6,7 +6,9 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.APPLICATION_JSON;
 import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.CONTENT_TYPE;
@@ -33,17 +35,9 @@ abstract class AbstractController {
 
     abstract void execute(final HttpExchange httpExchange) throws IOException;
 
-    String[] getPathParams(final URI uri, final String api) throws IOException {
-        // todo re-implement it
+    Stream<String> getPathParams(final URI uri, final String api) {
         final String path = uri.getPath();
-        if (path.contains(api)) {
-            final String param = path.substring(api.length());
-            if (param.length() > 0) {
-                return param.split("/");
-            }
-        }
-
-        throw new InvalidRequestException(BAD_REQUEST.getCode(), "Params are not found");
+        return path.contains(api) ? Arrays.stream(path.substring(api.length()).split("/")) : Stream.empty();
     }
 
     String getRequestParam(final String query, final String param) throws IOException {

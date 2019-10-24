@@ -6,29 +6,29 @@ final class ConfigConstants {
         // ConfigConstants class
     }
 
-    public static final String CONTENT_TYPE = "Content-Type";
-    public static final String APPLICATION_JSON = "application/json";
+    static final String CONTENT_TYPE = "Content-Type";
+    static final String APPLICATION_JSON = "application/json";
 
-    public final static class Method {
+    final static class Method {
 
         private Method() {
             // ConfigConstants class
         }
 
-        public static final String POST = "POST";
-        public static final String DELETE = "DELETE";
-        public static final String GET = "GET";
-        public static final String PUT = "PUT";
+        static final String POST = "POST";
+        static final String DELETE = "DELETE";
+        static final String GET = "GET";
+        static final String PUT = "PUT";
     }
 
-    public final static class API {
+    final static class API {
         private API() {
             // ConfigConstants class
         }
 
-        public static final String ACCEPT_CONFIG = "/api/config/accept";
-        public static final String CONFIG_NAMES = "/api/config/names";
-        public static final String CONFIG_SECTIONS = "/api/config/sections";
-        public static final String CONFIG_SECTION = "/api/config/section";
+        static final String ACCEPT_CONFIG = "/api/config/accept";
+        static final String CONFIG_NAMES = "/api/config/names";
+        static final String CONFIG_SECTIONS = "/api/config/sections";
+        static final String CONFIG_SECTION = "/api/config/section";
     }
 }

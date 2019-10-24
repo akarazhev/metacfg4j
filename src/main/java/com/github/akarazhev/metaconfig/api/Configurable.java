@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public interface Configurable extends ExtJsonable {
+interface Configurable extends ExtJsonable {
 
     Map<String, String> getAttributes();
 
