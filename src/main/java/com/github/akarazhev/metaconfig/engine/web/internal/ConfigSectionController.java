@@ -29,7 +29,7 @@ final class ConfigSectionController extends AbstractController {
     void execute(final HttpExchange httpExchange) throws IOException {
         final String method = httpExchange.getRequestMethod();
         if (GET.equals(method)) {
-            final OperationResponse response = configService.get(getPathParam(httpExchange.getRequestURI(), CONFIG_SECTION)).
+            final OperationResponse response = configService.get(getPathParams(httpExchange.getRequestURI(), CONFIG_SECTION)[0]).
                     map(config -> new OperationResponse.Builder<>().result(config).build()).
                     orElseGet(() -> new OperationResponse.Builder<>().error("Section not found").build());
             writeResponse(httpExchange, response);
@@ -43,7 +43,7 @@ final class ConfigSectionController extends AbstractController {
                 throw new InvalidRequestException(BAD_REQUEST.getCode(), "Param is blank");
             }
         } else if (DELETE.equals(method)) {
-            configService.remove(getPathParam(httpExchange.getRequestURI(), CONFIG_SECTION));
+            configService.remove(getPathParams(httpExchange.getRequestURI(), CONFIG_SECTION)[0]);
             writeResponse(httpExchange, new OperationResponse.Builder<>().result(Boolean.TRUE).build());
         } else {
             throw new MethodNotAllowedException(METHOD_NOT_ALLOWED.getCode(), "Method not allowed");

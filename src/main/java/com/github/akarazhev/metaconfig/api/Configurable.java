@@ -20,7 +20,7 @@ public interface Configurable extends ExtJsonable {
     class ConfigBuilder {
 
         Optional<Map<String, String>> getAttributes(final Object object) {
-            // todo stream
+            // todo re-implement it
             if (object != null) {
                 final JsonObject jsonObject = (JsonObject) object;
                 final Map<String, String> attributes = new HashMap<>();
@@ -35,7 +35,7 @@ public interface Configurable extends ExtJsonable {
         }
 
         Optional<Collection<Property>> getProperties(final Object object) {
-            // todo stream
+            // todo re-implement it
             if (object != null) {
                 final JsonArray jsonArray = (JsonArray) object;
                 final Collection<Property> properties = new ArrayList<>(jsonArray.size());

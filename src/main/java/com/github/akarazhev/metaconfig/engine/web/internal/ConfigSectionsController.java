@@ -7,6 +7,7 @@ import com.github.cliftonlabs.json_simple.Jsoner;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -26,7 +27,8 @@ final class ConfigSectionsController extends AbstractController {
         if (GET.equals(httpExchange.getRequestMethod())) {
             try {
                 final String param = getRequestParam(httpExchange.getRequestURI().getQuery(), "names");
-                final JsonArray jsonArray = (JsonArray) Jsoner.deserialize(new String(Base64.getDecoder().decode(param)));
+                final String array = new String(Base64.getDecoder().decode(param), StandardCharsets.UTF_8);
+                final JsonArray jsonArray = (JsonArray) Jsoner.deserialize(array);
                 final List<Config> sections = new ArrayList<>(jsonArray.size());
                 for (int i = 0; i < jsonArray.size(); i++) {
                     configService.get(jsonArray.getString(i)).ifPresent(sections::add);

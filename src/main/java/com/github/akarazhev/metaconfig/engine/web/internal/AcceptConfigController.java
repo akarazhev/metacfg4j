@@ -18,7 +18,7 @@ final class AcceptConfigController extends AbstractController {
     @Override
     void execute(final HttpExchange httpExchange) throws IOException {
         if (POST.equals(httpExchange.getRequestMethod())) {
-            final String name = getPathParam(httpExchange.getRequestURI(), ACCEPT_CONFIG);
+            final String name = getPathParams(httpExchange.getRequestURI(), ACCEPT_CONFIG)[0];
             configService.accept(name);
             writeResponse(httpExchange, new OperationResponse.Builder<>().result("Accepted '" + name + "' config").build());
         } else {
