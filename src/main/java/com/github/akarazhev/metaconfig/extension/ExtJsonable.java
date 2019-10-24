@@ -1,4 +1,4 @@
-package com.github.akarazhev.metaconfig.json_simple;
+package com.github.akarazhev.metaconfig.extension;
 
 import com.github.cliftonlabs.json_simple.Jsonable;
 

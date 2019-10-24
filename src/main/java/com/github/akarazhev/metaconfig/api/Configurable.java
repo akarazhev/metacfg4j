@@ -1,6 +1,6 @@
 package com.github.akarazhev.metaconfig.api;
 
-import com.github.akarazhev.metaconfig.json_simple.ExtJsonable;
+import com.github.akarazhev.metaconfig.extension.ExtJsonable;
 import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
 
