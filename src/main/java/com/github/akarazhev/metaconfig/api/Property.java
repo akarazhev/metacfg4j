@@ -1,6 +1,5 @@
 package com.github.akarazhev.metaconfig.api;
 
-import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
 
 import java.io.IOException;
@@ -114,7 +113,7 @@ public final class Property implements Configurable {
                 '}';
     }
 
-    public final static class Builder {
+    public final static class Builder extends ConfigBuilder {
         private final String name;
         private String caption;
         private String description;
@@ -129,24 +128,8 @@ public final class Property implements Configurable {
             this.description = (String) jsonObject.get("description");
             this.type = Type.valueOf((String) jsonObject.get("type"));
             this.value = (String) jsonObject.get("value");
-            // todo
-            // Set attributes
-            final Object attributesValue = jsonObject.get("attributes");
-            if (attributesValue != null) {
-                this.attributes = new HashMap<>((Map<String, String>)attributesValue);
-            }
-            // Set properties
-            final Object propertiesValue = jsonObject.get("properties");
-            if (propertiesValue != null) {
-                JsonArray jsonArray = (JsonArray) propertiesValue;
-                final Collection<Property> properties = new ArrayList<>(jsonArray.size());
-                for (Object jsonProperty : jsonArray) {
-                    properties.add(new Property.Builder((JsonObject) jsonProperty).build());
-                }
-
-                this.properties = properties;
-            }
-            // todo
+            getAttributes(jsonObject.get("attributes")).ifPresent(attributes -> this.attributes = attributes);
+            getProperties(jsonObject.get("properties")).ifPresent(properties -> this.properties = properties);
         }
 
         public Builder(final String name, final Type type, final String value) {

@@ -27,7 +27,8 @@ final class ConfigRepositoryImpl implements ConfigRepository {
 
     @Override
     public Config saveAndFlush(final Config config) {
-        return inMemDataSource.put(config.getName(), config);
+        inMemDataSource.put(config.getName(), config);
+        return inMemDataSource.get(config.getName());
     }
 
     @Override

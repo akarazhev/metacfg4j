@@ -1,6 +1,5 @@
 package com.github.akarazhev.metaconfig.api;
 
-import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
 
 import java.io.IOException;
@@ -11,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -99,37 +97,21 @@ public final class Config implements Configurable {
                 '}';
     }
 
-    public final static class Builder {
+    public final static class Builder extends ConfigBuilder {
         private final String name;
         private String description;
         private final long created;
         private final long updated;
         private Map<String, String> attributes;
-        private final Collection<Property> properties;
+        private Collection<Property> properties;
 
         public Builder(final JsonObject jsonObject) {
             this.name = Objects.requireNonNull((String) jsonObject.get("name"));
             this.description = (String) jsonObject.get("description");
             this.created = Objects.requireNonNull((BigDecimal) jsonObject.get("created")).longValue();
             this.updated = Objects.requireNonNull((BigDecimal) jsonObject.get("updated")).longValue();
-            // todo
-            // Set attributes
-            final Object attributesValue = jsonObject.get("attributes");
-            if (attributesValue != null) {
-                this.attributes = new HashMap<>((Map<String, String>)attributesValue);
-            }
-            // Set properties
-            final Collection<Property> properties = new LinkedList<>();
-            final Object propertiesValue = jsonObject.get("properties");
-            if (propertiesValue != null) {
-                JsonArray jsonArray = (JsonArray) propertiesValue;
-                for (Object jsonProperty : jsonArray) {
-                    properties.add(new Property.Builder((JsonObject) jsonProperty).build());
-                }
-            }
-
-            this.properties = properties;
-            // todo
+            getAttributes(jsonObject.get("attributes")).ifPresent(attributes -> this.attributes = attributes);
+            getProperties(jsonObject.get("properties")).ifPresent(properties -> this.properties = properties);
         }
 
         public Builder(final String name, final Collection<Property> properties) {
