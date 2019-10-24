@@ -4,8 +4,6 @@ import com.github.akarazhev.metaconfig.json_simple.ExtJsonable;
 import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -34,19 +32,11 @@ interface Configurable extends ExtJsonable {
             return Optional.empty();
         }
 
-        Optional<Collection<Property>> getProperties(final Object object) {
-            // todo re-implement it
-            if (object != null) {
-                final JsonArray jsonArray = (JsonArray) object;
-                final Collection<Property> properties = new ArrayList<>(jsonArray.size());
-                for (Object jsonProperty : jsonArray) {
-                    properties.add(new Property.Builder((JsonObject) jsonProperty).build());
-                }
-
-                return Optional.of(properties);
-            }
-
-            return Optional.empty();
+        Stream<Property> getProperties(final Object object) {
+            return object != null ?
+                    ((JsonArray) object).stream().
+                            map(jsonObject -> new Property.Builder((JsonObject) jsonObject).build()) :
+                    Stream.empty();
         }
     }
 }

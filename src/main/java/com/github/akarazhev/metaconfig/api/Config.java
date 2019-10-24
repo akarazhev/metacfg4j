@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class Config implements Configurable {
@@ -111,7 +112,7 @@ public final class Config implements Configurable {
             this.created = Objects.requireNonNull((BigDecimal) jsonObject.get("created")).longValue();
             this.updated = Objects.requireNonNull((BigDecimal) jsonObject.get("updated")).longValue();
             getAttributes(jsonObject.get("attributes")).ifPresent(attributes -> this.attributes = attributes);
-            getProperties(jsonObject.get("properties")).ifPresent(properties -> this.properties = properties);
+            this.properties = getProperties(jsonObject.get("properties")).collect(Collectors.toList());
         }
 
         public Builder(final String name, final Collection<Property> properties) {

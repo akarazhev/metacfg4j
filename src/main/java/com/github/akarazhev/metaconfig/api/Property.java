@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class Property implements Configurable {
@@ -129,7 +130,7 @@ public final class Property implements Configurable {
             this.type = Type.valueOf((String) jsonObject.get("type"));
             this.value = (String) jsonObject.get("value");
             getAttributes(jsonObject.get("attributes")).ifPresent(attributes -> this.attributes = attributes);
-            getProperties(jsonObject.get("properties")).ifPresent(properties -> this.properties = properties);
+            this.properties = getProperties(jsonObject.get("properties")).collect(Collectors.toList());
         }
 
         public Builder(final String name, final Type type, final String value) {
