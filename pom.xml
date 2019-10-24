@@ -19,7 +19,6 @@
         <maven.assembly.plugin>3.1.1</maven.assembly.plugin>
         <junit.version>5.5.2</junit.version>
         <httpclient.version>4.5.3</httpclient.version>
-        <fastjson.version>1.2.62</fastjson.version>
         <h2db.version>1.4.200</h2db.version>
         <json.simple.version>3.1.0</json.simple.version>
     </properties>
@@ -33,7 +32,7 @@
     </licenses>
 
     <dependencies>
-        <!-- Test dependency -->
+        <!-- Test dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
