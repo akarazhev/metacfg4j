@@ -18,8 +18,8 @@ import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.ME
 
 final class ConfigSectionController extends AbstractController {
 
-    ConfigSectionController(final ConfigService configService) {
-        super(configService);
+    private ConfigSectionController(final Builder builder) {
+        super(builder);
     }
 
     @Override
@@ -28,7 +28,7 @@ final class ConfigSectionController extends AbstractController {
         if (GET.equals(method)) {
             final OperationResponse response = configService.get(getPathParam(httpExchange.getRequestURI(), CONFIG_SECTION)).
                     map(config -> new OperationResponse.Builder<>().result(config).build()).
-                    orElseGet(() -> new OperationResponse.Builder<>().error(false, "Section not found").build());
+                    orElseGet(() -> new OperationResponse.Builder<>().error("Section not found").build());
             writeResponse(httpExchange, response);
         } else if (PUT.equals(method)) {
             // todo
@@ -55,6 +55,17 @@ final class ConfigSectionController extends AbstractController {
             writeResponse(httpExchange, new OperationResponse.Builder<>().result(Boolean.TRUE).build());
         } else {
             throw new MethodNotAllowedException(METHOD_NOT_ALLOWED.getCode(), "Method not allowed");
+        }
+    }
+
+    static class Builder extends AbstractBuilder {
+
+        Builder(final ConfigService configService) {
+            super(configService);
+        }
+
+        ConfigSectionController build() {
+            return new ConfigSectionController(this);
         }
     }
 }

@@ -9,8 +9,8 @@ import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.ME
 
 final class AcceptConfigController extends AbstractController {
 
-    AcceptConfigController(final ConfigService configService) {
-        super(configService);
+    private AcceptConfigController(final Builder builder) {
+        super(builder);
     }
 
     @Override
@@ -21,6 +21,17 @@ final class AcceptConfigController extends AbstractController {
             writeResponse(httpExchange, new OperationResponse.Builder<>().result("Accepted '" + name + "' config").build());
         } else {
             throw new MethodNotAllowedException(METHOD_NOT_ALLOWED.getCode(), "Method not allowed");
+        }
+    }
+
+    static class Builder extends AbstractBuilder {
+
+        Builder(final ConfigService configService) {
+            super(configService);
+        }
+
+        AcceptConfigController build() {
+            return new AcceptConfigController(this);
         }
     }
 }

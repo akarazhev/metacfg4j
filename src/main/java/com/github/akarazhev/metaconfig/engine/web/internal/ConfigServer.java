@@ -22,14 +22,10 @@ public final class ConfigServer implements WebServer {
     public ConfigServer(final ConfigService configService) throws IOException {
         if (server == null) {
             server = HttpServer.create(new InetSocketAddress(8000), 0);
-            AbstractController controller = new AcceptConfigController(configService);
-            server.createContext(ACCEPT_CONFIG, controller::handle);
-            controller = new ConfigNamesController(configService);
-            server.createContext(CONFIG_NAMES, controller::handle);
-            controller = new ConfigSectionsController(configService);
-            server.createContext(CONFIG_SECTIONS, controller::handle);
-            controller = new ConfigSectionController(configService);
-            server.createContext(CONFIG_SECTION, controller::handle);
+            server.createContext(ACCEPT_CONFIG, new AcceptConfigController.Builder(configService).build()::handle);
+            server.createContext(CONFIG_NAMES, new ConfigNamesController.Builder(configService).build()::handle);
+            server.createContext(CONFIG_SECTIONS, new ConfigSectionsController.Builder(configService).build()::handle);
+            server.createContext(CONFIG_SECTION, new ConfigSectionController.Builder(configService).build()::handle);
             server.setExecutor(null);
         } else {
             throw new RuntimeException("Server has been already created");

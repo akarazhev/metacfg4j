@@ -15,13 +15,13 @@ import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.OK
 
 abstract class AbstractController {
 
-    protected final ConfigService configService;
+    final ConfigService configService;
 
-    AbstractController(final ConfigService configService) {
-        this.configService = configService;
+    AbstractController(final AbstractBuilder abstractBuilder) {
+        this.configService = abstractBuilder.configService;
     }
 
-    void handle(HttpExchange httpExchange) {
+    void handle(HttpExchange httpExchange) throws IOException {
         try {
             execute(httpExchange);
         } catch (Exception exception) {
@@ -76,8 +76,7 @@ abstract class AbstractController {
     }
 
     private OperationResponse getErrorResponse(final Throwable throwable, final HttpExchange httpExchange) throws IOException {
-        final OperationResponse response =
-                new OperationResponse.Builder<>().error(false, throwable.getMessage()).build();
+        final OperationResponse response = new OperationResponse.Builder<>().error(throwable.getMessage()).build();
         if (throwable instanceof InvalidRequestException) {
             final InvalidRequestException exception = (InvalidRequestException) throwable;
             httpExchange.sendResponseHeaders(exception.getCode(), 0);
@@ -93,5 +92,15 @@ abstract class AbstractController {
         }
 
         return response;
+    }
+
+    static abstract class AbstractBuilder {
+        private final ConfigService configService;
+
+        AbstractBuilder(final ConfigService configService) {
+            this.configService = configService;
+        }
+
+        abstract AbstractController build();
     }
 }

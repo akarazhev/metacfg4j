@@ -1,14 +1,14 @@
 package com.github.akarazhev.metaconfig.engine.web.internal;
 
+import com.github.akarazhev.metaconfig.json_simple.ExtJsonable;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsonable;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Objects;
 
-final class OperationResponse<T> implements Jsonable {
+final class OperationResponse<T> implements ExtJsonable {
     private final boolean success;
     private final String error;
     private final T result;
@@ -32,18 +32,6 @@ final class OperationResponse<T> implements Jsonable {
     }
 
     @Override
-    public String toJson() {
-        final StringWriter writable = new StringWriter();
-        try {
-            toJson(writable);
-        } catch (final IOException e) {
-            e.printStackTrace();
-        }
-
-        return writable.toString();
-    }
-
-    @Override
     public void toJson(Writer writer) throws IOException {
         final JsonObject json = new JsonObject();
         json.put("success", success);
@@ -52,26 +40,27 @@ final class OperationResponse<T> implements Jsonable {
         json.toJson(writer);
     }
 
-    public final static class Builder<T> {
-        private boolean success = true;
+    final static class Builder<T> {
+        private boolean success;
         private String error;
         private T result;
 
-        public Builder() {
+        Builder() {
         }
 
-        public Builder result(final T result) {
+        Builder result(final T result) {
+            this.success = true;
             this.result = Objects.requireNonNull(result);
             return this;
         }
 
-        public Builder error(final boolean success, final String error) {
-            this.success = success;
+        Builder error(final String error) {
+            this.success = false;
             this.error = Objects.requireNonNull(error);
             return this;
         }
 
-        public OperationResponse<T> build() {
+        OperationResponse<T> build() {
             return new OperationResponse<>(this);
         }
     }

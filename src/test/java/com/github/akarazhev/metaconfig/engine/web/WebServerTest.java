@@ -22,7 +22,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Consumer;
@@ -36,10 +38,12 @@ class WebServerTest {
     @BeforeAll
     static void beforeAll() throws Exception {
         webServer = WebServers.newServer(new ConfigService() {
+            private Map<String, Config> map = new HashMap<>();
 
             @Override
             public Config update(final Config config, final boolean override) {
-                return null;
+                map.put(config.getName(), config);
+                return config;
             }
 
             @Override
@@ -128,7 +132,7 @@ class WebServerTest {
         final List<Property> properties = new ArrayList<>(2);
         properties.add(new Property.Builder("Property_1", Property.Type.STRING, "Value_1").build());
         properties.add(new Property.Builder("Property_2", Property.Type.STRING, "Value_2").build());
-        final Config config = new Config.Builder("Meta Config", properties).build();
+        final Config config = new Config.Builder("Meta Config", properties).attributes(Collections.singletonMap("key", "value")).build();
         HttpPut httpPut = new HttpPut("http://localhost:8000/api/config/section");
         httpPut.setEntity(new StringEntity(config.toJson()));
 
@@ -138,7 +142,7 @@ class WebServerTest {
         assertEquals(200, response.getStatusLine().getStatusCode());
         // Get the response
         JsonObject jsonObject = getJsonObject(response.getEntity().getContent());
-        assertEquals(false, jsonObject.get("success"));
+        assertEquals(true, jsonObject.get("success"));
 //        assertEquals("Section not found", jsonObject.get("error"));
     }
 

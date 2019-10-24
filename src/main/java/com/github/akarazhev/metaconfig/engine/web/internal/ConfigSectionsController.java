@@ -16,8 +16,8 @@ import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.ME
 
 final class ConfigSectionsController extends AbstractController {
 
-    ConfigSectionsController(final ConfigService configService) {
-        super(configService);
+    private ConfigSectionsController(final Builder builder) {
+        super(builder);
     }
 
     @Override
@@ -37,6 +37,17 @@ final class ConfigSectionsController extends AbstractController {
             }
         } else {
             throw new MethodNotAllowedException(METHOD_NOT_ALLOWED.getCode(), "Method not allowed");
+        }
+    }
+
+    static class Builder extends AbstractBuilder {
+
+        Builder(final ConfigService configService) {
+            super(configService);
+        }
+
+        ConfigSectionsController build() {
+            return new ConfigSectionsController(this);
         }
     }
 }
