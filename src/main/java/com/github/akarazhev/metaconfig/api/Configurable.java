@@ -9,14 +9,32 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+/**
+ *
+ */
 interface Configurable extends ExtJsonable {
-
+    /**
+     *
+     * @return
+     */
     Map<String, String> getAttributes();
 
+    /**
+     *
+     * @return
+     */
     Stream<Property> getProperties();
 
+    /**
+     *
+     */
     class ConfigBuilder {
 
+        /**
+         *
+         * @param object
+         * @return
+         */
         Optional<Map<String, String>> getAttributes(final Object object) {
             if (object != null) {
                 final JsonObject jsonObject = (JsonObject) object;
@@ -31,6 +49,11 @@ interface Configurable extends ExtJsonable {
             return Optional.empty();
         }
 
+        /**
+         *
+         * @param object
+         * @return
+         */
         Stream<Property> getProperties(final Object object) {
             return object != null ?
                     ((JsonArray) object).stream().map(jsonObject -> new Property.Builder((JsonObject) jsonObject).build()) :
