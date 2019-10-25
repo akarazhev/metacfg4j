@@ -107,7 +107,9 @@ public final class Property implements Configurable {
      */
     @Override
     public Optional<Map<String, String>> getAttributes() {
-        return attributes != null ? Optional.of(Collections.unmodifiableMap(attributes)) : Optional.empty();
+        return attributes != null ?
+                Optional.of(Collections.unmodifiableMap(attributes)) :
+                Optional.empty();
     }
 
     /**

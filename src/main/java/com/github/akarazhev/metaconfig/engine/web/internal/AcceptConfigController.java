@@ -19,16 +19,22 @@ import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstant
 import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.Method.POST;
 import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.METHOD_NOT_ALLOWED;
 
+/**
+ * Provides a handler functionality for the POST accept method.
+ */
 final class AcceptConfigController extends AbstractController {
 
     private AcceptConfigController(final Builder builder) {
         super(builder);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     void execute(final HttpExchange httpExchange) throws IOException {
         if (POST.equals(httpExchange.getRequestMethod())) {
-            final OperationResponse response = getPathParams(httpExchange.getRequestURI(), ACCEPT_CONFIG).findAny().
+            final OperationResponse response = getPathParams(httpExchange.getRequestURI().getPath(), ACCEPT_CONFIG).findAny().
                     map(param -> {
                         configService.accept(param);
                         return new OperationResponse.Builder<>().result("Accepted '" + param + "' config").build();
@@ -40,12 +46,23 @@ final class AcceptConfigController extends AbstractController {
         }
     }
 
+    /**
+     * Wraps and builds the instance of the accept controller.
+     */
     static class Builder extends AbstractBuilder {
-
+        /**
+         * Constructs a controller with the configuration service param.
+         *
+         * @param configService a configuration service.
+         */
         Builder(final ConfigService configService) {
             super(configService);
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         AcceptConfigController build() {
             return new AcceptConfigController(this);
         }

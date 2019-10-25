@@ -19,12 +19,18 @@ import java.util.stream.Collectors;
 import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.Method.GET;
 import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.METHOD_NOT_ALLOWED;
 
+/**
+ * Provides a handler functionality for the GET config names method.
+ */
 final class ConfigNamesController extends AbstractController {
 
     private ConfigNamesController(final Builder builder) {
         super(builder);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     void execute(final HttpExchange httpExchange) throws IOException {
         if (GET.equals(httpExchange.getRequestMethod())) {
@@ -36,12 +42,23 @@ final class ConfigNamesController extends AbstractController {
         }
     }
 
+    /**
+     * Wraps and builds the instance of the config names controller.
+     */
     static class Builder extends AbstractBuilder {
-
+        /**
+         * Constructs a controller with the configuration service param.
+         *
+         * @param configService a configuration service.
+         */
         Builder(final ConfigService configService) {
             super(configService);
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         ConfigNamesController build() {
             return new ConfigNamesController(this);
         }

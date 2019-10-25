@@ -25,12 +25,18 @@ import java.util.List;
 import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.Method.GET;
 import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.METHOD_NOT_ALLOWED;
 
+/**
+ * Provides a handler functionality for the GET config sections method.
+ */
 final class ConfigSectionsController extends AbstractController {
 
     private ConfigSectionsController(final Builder builder) {
         super(builder);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     void execute(final HttpExchange httpExchange) throws IOException {
         if (GET.equals(httpExchange.getRequestMethod())) {
@@ -56,12 +62,23 @@ final class ConfigSectionsController extends AbstractController {
         }
     }
 
+    /**
+     * Wraps and builds the instance of the config sections controller.
+     */
     static class Builder extends AbstractBuilder {
-
+        /**
+         * Constructs a controller with the configuration service param.
+         *
+         * @param configService a configuration service.
+         */
         Builder(final ConfigService configService) {
             super(configService);
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         ConfigSectionsController build() {
             return new ConfigSectionsController(this);
         }

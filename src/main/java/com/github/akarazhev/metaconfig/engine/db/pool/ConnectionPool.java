@@ -21,7 +21,7 @@ public interface ConnectionPool extends Closeable {
      * Returns a datasource.
      *
      * @return a datasource.
-     * @see DataSource for the more information.
+     * @see DataSource for more information.
      */
     DataSource getDataSource();
 }

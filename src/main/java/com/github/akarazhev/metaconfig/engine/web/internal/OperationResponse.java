@@ -18,6 +18,9 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Objects;
 
+/**
+ * The operation response model that contains a result, an error message and a flag of success.
+ */
 final class OperationResponse<T> implements ExtJsonable {
     private final boolean success;
     private final String error;
@@ -29,18 +32,36 @@ final class OperationResponse<T> implements ExtJsonable {
         this.result = builder.result;
     }
 
+    /**
+     * Returns a success flag.
+     *
+     * @return an operation response success.
+     */
     public boolean isSuccess() {
         return success;
     }
 
+    /**
+     * Returns an error message.
+     *
+     * @return an operation response error.
+     */
     public String getError() {
         return error;
     }
 
+    /**
+     * Returns a result of the request.
+     *
+     * @return an operation response result.
+     */
     public T getResult() {
         return result;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void toJson(Writer writer) throws IOException {
         final JsonObject json = new JsonObject();
@@ -50,26 +71,43 @@ final class OperationResponse<T> implements ExtJsonable {
         json.toJson(writer);
     }
 
+    /**
+     * Wraps and builds the instance of the operation response model.
+     */
     final static class Builder<T> {
         private boolean success;
         private String error;
         private T result;
 
-        Builder() {
-        }
-
+        /**
+         * Constructs a operation response model with the result parameter.
+         *
+         * @param result an operation response result.
+         * @return a builder of the operation response model.
+         */
         Builder result(final T result) {
             this.success = true;
             this.result = Objects.requireNonNull(result);
             return this;
         }
 
+        /**
+         * Constructs a operation response model with the error parameter.
+         *
+         * @param error an operation response error.
+         * @return a builder of the operation response model.
+         */
         Builder error(final String error) {
             this.success = false;
             this.error = Objects.requireNonNull(error);
             return this;
         }
 
+        /**
+         * Builds a operation response model with required parameters.
+         *
+         * @return a builder of the operation response model.
+         */
         OperationResponse<T> build() {
             return new OperationResponse<>(this);
         }

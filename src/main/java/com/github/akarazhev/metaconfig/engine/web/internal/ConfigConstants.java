@@ -10,6 +10,9 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.engine.web.internal;
 
+/**
+ * Constants of the config server.
+ */
 final class ConfigConstants {
 
     private ConfigConstants() {
@@ -19,6 +22,9 @@ final class ConfigConstants {
     static final String CONTENT_TYPE = "Content-Type";
     static final String APPLICATION_JSON = "application/json";
 
+    /**
+     * Method constants for the config server.
+     */
     final static class Method {
 
         private Method() {
@@ -31,7 +37,11 @@ final class ConfigConstants {
         static final String PUT = "PUT";
     }
 
+    /**
+     * API constants for controllers.
+     */
     final static class API {
+
         private API() {
             // ConfigConstants class
         }

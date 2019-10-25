@@ -30,19 +30,25 @@ import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstant
 import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.BAD_REQUEST;
 import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.METHOD_NOT_ALLOWED;
 
+/**
+ * Provides a handler functionality for the GET, PUT, DELETE config section methods.
+ */
 final class ConfigSectionController extends AbstractController {
 
     private ConfigSectionController(final Builder builder) {
         super(builder);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     void execute(final HttpExchange httpExchange) throws IOException {
         final String method = httpExchange.getRequestMethod();
         final Supplier<OperationResponse> paramIsNotPresent =
                 () -> new OperationResponse.Builder<>().error("Path param is not present").build();
         if (GET.equals(method)) {
-            final OperationResponse response = getPathParams(httpExchange.getRequestURI(), CONFIG_SECTION).findAny().
+            final OperationResponse response = getPathParams(httpExchange.getRequestURI().getPath(), CONFIG_SECTION).findAny().
                     map(param -> configService.get(param).
                             map(config -> new OperationResponse.Builder<>().result(config).build()).
                             orElseGet(() -> new OperationResponse.Builder<>().error("Section not found").build())
@@ -60,7 +66,7 @@ final class ConfigSectionController extends AbstractController {
                 throw new InvalidRequestException(BAD_REQUEST.getCode(), "Config can not be parsed");
             }
         } else if (DELETE.equals(method)) {
-            final OperationResponse response = getPathParams(httpExchange.getRequestURI(), CONFIG_SECTION).findAny().
+            final OperationResponse response = getPathParams(httpExchange.getRequestURI().getPath(), CONFIG_SECTION).findAny().
                     map(param -> {
                         configService.remove(param);
                         return new OperationResponse.Builder<>().result(true).build();
@@ -72,12 +78,23 @@ final class ConfigSectionController extends AbstractController {
         }
     }
 
+    /**
+     * Wraps and builds the instance of the config section controller.
+     */
     static class Builder extends AbstractBuilder {
-
+        /**
+         * Constructs a controller with the configuration service param.
+         *
+         * @param configService a configuration service.
+         */
         Builder(final ConfigService configService) {
             super(configService);
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         ConfigSectionController build() {
             return new ConfigSectionController(this);
         }

@@ -25,7 +25,7 @@ public interface ExtJsonable extends Jsonable {
     /**
      * The default implementation of the toJson method.
      *
-     * @see Jsonable for the more information.
+     * @see Jsonable for more information.
      */
     @Override
     default String toJson() {
@@ -34,6 +34,7 @@ public interface ExtJsonable extends Jsonable {
             toJson(writable);
         } catch (final IOException e) {
             e.printStackTrace();
+            throw new RuntimeException("String can not be parsed to JSON", e);
         }
 
         return writable.toString();

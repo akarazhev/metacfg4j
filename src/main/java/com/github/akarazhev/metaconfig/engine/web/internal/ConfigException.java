@@ -12,14 +12,28 @@ package com.github.akarazhev.metaconfig.engine.web.internal;
 
 import java.io.IOException;
 
+/**
+ * Extends a standard <code>IOException</code> to be used as a business internal exception.
+ */
 class ConfigException extends IOException {
     private final int code;
 
+    /**
+     * Constructs an exception with a code and a message.
+     *
+     * @param code a code.
+     * @param message a message.
+     */
     ConfigException(int code, String message) {
         super(message);
         this.code = code;
     }
 
+    /**
+     * Returns a code of the exception.
+     *
+     * @return a value of the code.
+     */
     int getCode() {
         return code;
     }

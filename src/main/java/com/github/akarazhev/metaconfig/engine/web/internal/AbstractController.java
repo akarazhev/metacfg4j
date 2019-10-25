@@ -15,10 +15,11 @@ import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.APPLICATION_JSON;
@@ -26,31 +27,62 @@ import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstant
 import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.BAD_REQUEST;
 import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.OK;
 
+/**
+ * Provides a basic functionality for all controllers.
+ */
 abstract class AbstractController {
-
+    private final static Logger logger = Logger.getLogger(ConfigServer.class.getSimpleName());
     final ConfigService configService;
 
     AbstractController(final AbstractBuilder abstractBuilder) {
         this.configService = abstractBuilder.configService;
     }
 
+    /**
+     * Handles a referred context.
+     *
+     * @param httpExchange a http exchange.
+     * @see HttpExchange for more information.
+     */
     void handle(HttpExchange httpExchange) {
         try {
             execute(httpExchange);
-        } catch (Exception exception) {
-            handle(exception, httpExchange);
+        } catch (Exception e) {
+            handle(httpExchange, e);
         } finally {
             httpExchange.close();
         }
     }
 
+    /**
+     * The main method that handles a context.
+     *
+     * @param httpExchange a http exchange.
+     * @throws IOException when a controller encounters a problem.
+     * @see HttpExchange for more information.
+     */
     abstract void execute(final HttpExchange httpExchange) throws IOException;
 
-    Stream<String> getPathParams(final URI uri, final String api) {
-        final String path = uri.getPath();
-        return path.contains(api) ? Arrays.stream(path.substring(api.length()).split("/")) : Stream.empty();
+    /**
+     * Returns path params.
+     *
+     * @param path an URI path.
+     * @param api  a based API.
+     * @return a stream of path params.
+     */
+    Stream<String> getPathParams(final String path, final String api) {
+        return path.contains(api) ?
+                Arrays.stream(path.substring(api.length()).split("/")) :
+                Stream.empty();
     }
 
+    /**
+     * Returns a param that is a part of a request.
+     *
+     * @param query an URI query.
+     * @param param a param to get a value of.
+     * @return a value of a param.
+     */
     Optional<String> getRequestParam(final String query, final String param) {
         return Arrays.stream(query.split("&")).
                 filter(q -> q.contains(param)).
@@ -58,6 +90,14 @@ abstract class AbstractController {
                 findFirst();
     }
 
+    /**
+     * Writes an operation response.
+     *
+     * @param httpExchange a http exchange.
+     * @param response     an operation response.
+     * @throws IOException when a controller encounters a problem.
+     * @see HttpExchange for more information.
+     */
     void writeResponse(final HttpExchange httpExchange, final OperationResponse response) throws IOException {
         try {
             httpExchange.getResponseHeaders().put(CONTENT_TYPE, Collections.singletonList(APPLICATION_JSON));
@@ -71,13 +111,16 @@ abstract class AbstractController {
         }
     }
 
-    private void handle(final Throwable throwable, final HttpExchange httpExchange) {
+    private void handle(final HttpExchange httpExchange, final Throwable throwable) {
         try {
+            logger.log(Level.WARNING, throwable.getMessage());
+            throwable.printStackTrace();
+
             final OutputStream responseBody = httpExchange.getResponseBody();
             responseBody.write(getErrorResponse(throwable, httpExchange).toJson().getBytes());
             responseBody.close();
-            throwable.printStackTrace();
         } catch (Exception e) {
+            logger.log(Level.SEVERE, throwable.getMessage());
             e.printStackTrace();
         }
     }
@@ -101,13 +144,26 @@ abstract class AbstractController {
         return response;
     }
 
+    /**
+     * Wraps and builds instances of controllers.
+     */
     static abstract class AbstractBuilder {
         private final ConfigService configService;
 
+        /**
+         * Constructs a controller with the configuration service param.
+         *
+         * @param configService a configuration service.
+         */
         AbstractBuilder(final ConfigService configService) {
             this.configService = configService;
         }
 
+        /**
+         * Builds a controller with the required parameter.
+         *
+         * @return a builder of the controller.
+         */
         abstract AbstractController build();
     }
 }

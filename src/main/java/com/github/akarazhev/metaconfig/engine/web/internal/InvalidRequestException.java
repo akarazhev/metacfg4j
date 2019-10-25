@@ -10,8 +10,16 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.engine.web.internal;
 
+/**
+ * Extends the basic exception to be used as an invalid request exception.
+ */
 final class InvalidRequestException extends ConfigException {
-
+    /**
+     * Constructs an exception with a code and a message.
+     *
+     * @param code a code.
+     * @param message a message.
+     */
     InvalidRequestException(int code, String message) {
         super(code, message);
     }
