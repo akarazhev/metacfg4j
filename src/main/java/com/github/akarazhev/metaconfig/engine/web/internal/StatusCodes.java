@@ -10,6 +10,9 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.engine.web.internal;
 
+/**
+ * Enum that insulates status codes for the config server.
+ */
 enum StatusCodes {
     OK(200),
     CREATED(201),
@@ -22,10 +25,20 @@ enum StatusCodes {
 
     private final int code;
 
+    /**
+     * Constructs a status code enum.
+     *
+     * @param code a code
+     */
     StatusCodes(final int code) {
         this.code = code;
     }
 
+    /**
+     * Returns a code value.
+     *
+     * @return a code
+     */
     public int getCode() {
         return code;
     }
