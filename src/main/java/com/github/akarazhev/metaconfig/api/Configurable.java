@@ -1,3 +1,13 @@
+/* Copyright 2019 Andrey Karazhev
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
 import com.github.akarazhev.metaconfig.extension.ExtJsonable;
@@ -10,30 +20,35 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
+ * Extends the basic interface of <code>ExtJsonable<code/>
+ * and provides functionality for getting attributes and properties.
  *
+ * @see ExtJsonable for more information.
  */
 interface Configurable extends ExtJsonable {
     /**
+     * Returns attributes which belong to configurations.
      *
-     * @return
+     * @return attributes as a map.
      */
-    Map<String, String> getAttributes();
+    Optional<Map<String, String>> getAttributes();
 
     /**
+     * Returns properties which belong to configurations.
      *
-     * @return
+     * @return properties as a stream.
      */
     Stream<Property> getProperties();
 
     /**
-     *
+     * Provides methods for getting attributes and properties from json objects.
      */
     class ConfigBuilder {
-
         /**
+         * Returns attributes which belong to configurations.
          *
-         * @param object
-         * @return
+         * @param object a json object with attributes.
+         * @return attributes as a map.
          */
         Optional<Map<String, String>> getAttributes(final Object object) {
             if (object != null) {
@@ -50,13 +65,15 @@ interface Configurable extends ExtJsonable {
         }
 
         /**
+         * Returns properties which belong to configurations.
          *
-         * @param object
-         * @return
+         * @param object a json object with properties.
+         * @return properties as a stream.
          */
         Stream<Property> getProperties(final Object object) {
             return object != null ?
-                    ((JsonArray) object).stream().map(jsonObject -> new Property.Builder((JsonObject) jsonObject).build()) :
+                    ((JsonArray) object).stream().
+                            map(jsonObject -> new Property.Builder((JsonObject) jsonObject).build()) :
                     Stream.empty();
         }
     }

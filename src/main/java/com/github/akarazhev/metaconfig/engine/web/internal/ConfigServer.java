@@ -1,3 +1,13 @@
+/* Copyright 2019 Andrey Karazhev
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. */
 package com.github.akarazhev.metaconfig.engine.web.internal;
 
 import com.github.akarazhev.metaconfig.api.Config;
@@ -15,10 +25,19 @@ import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstant
 import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.API.CONFIG_SECTION;
 import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.API.CONFIG_SECTIONS;
 
+/**
+ * The internal implementation of the web server.
+ */
 public final class ConfigServer implements WebServer {
     private final static Logger logger = Logger.getLogger(ConfigServer.class.getSimpleName());
     private static HttpServer server = null;
 
+    /**
+     * Constructs a default web server.
+     *
+     * @param configService a configuration service.
+     * @throws IOException when a web server encounters a problem.
+     */
     public ConfigServer(final ConfigService configService) throws IOException {
         if (server == null) {
             server = HttpServer.create(new InetSocketAddress(8000), 0);
@@ -32,10 +51,20 @@ public final class ConfigServer implements WebServer {
         }
     }
 
+    /**
+     * Constructs a web server based on the configuration.
+     *
+     * @param config config a configuration of a web server.
+     * @param configService a configuration service.
+     * @throws IOException when a web server encounters a problem.
+     */
     public ConfigServer(final Config config, final ConfigService configService) throws IOException {
         throw new RuntimeException("constructor with the configuration is not implemented");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public WebServer start() {
         server.start();
@@ -43,6 +72,9 @@ public final class ConfigServer implements WebServer {
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void stop() {
         server.stop(0);

@@ -1,3 +1,13 @@
+/* Copyright 2019 Andrey Karazhev
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
 import com.github.cliftonlabs.json_simple.JsonObject;
@@ -10,19 +20,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * The property model that contains parameters, attributes and properties.
+ */
 public final class Property implements Configurable {
-
-    public static enum Type {
-        BOOLEAN,
-        DOUBLE,
-        LONG,
-        STRING,
-        STRING_ARRAY
-    }
-
     private final String name;
     private final String caption;
     private final String description;
@@ -30,6 +35,17 @@ public final class Property implements Configurable {
     private final String value;
     private final Map<String, String> attributes;
     private final Collection<Property> properties;
+
+    /**
+     * Types of a stored property value.
+     */
+    public static enum Type {
+        BOOLEAN,
+        DOUBLE,
+        LONG,
+        STRING,
+        STRING_ARRAY
+    }
 
     private Property(final Builder builder) {
         this.name = builder.name;
@@ -41,36 +57,70 @@ public final class Property implements Configurable {
         this.properties = builder.properties;
     }
 
+    /**
+     * Returns a name of the property.
+     *
+     * @return a property name.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Returns a caption of the property (optional).
+     *
+     * @return a property caption.
+     */
     public String getCaption() {
         return caption;
     }
 
+    /**
+     * Returns a description of the property (optional).
+     *
+     * @return a property description.
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Returns a type of the property.
+     *
+     * @return a property type.
+     */
     public Type getType() {
         return type;
     }
 
+    /**
+     * Returns a value of the property.
+     *
+     * @return a property value.
+     */
     public String getValue() {
         return value;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public Map<String, String> getAttributes() {
-        return Collections.unmodifiableMap(attributes);
+    public Optional<Map<String, String>> getAttributes() {
+        return attributes != null ? Optional.of(Collections.unmodifiableMap(attributes)) : Optional.empty();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Stream<Property> getProperties() {
         return properties.stream();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void toJson(Writer writer) throws IOException {
         final JsonObject json = new JsonObject();
@@ -84,6 +134,9 @@ public final class Property implements Configurable {
         json.toJson(writer);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -98,11 +151,17 @@ public final class Property implements Configurable {
                 Objects.equals(properties, property.properties);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         return Objects.hash(name, caption, description, type, value, attributes, properties);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return "Property{" +
@@ -114,6 +173,9 @@ public final class Property implements Configurable {
                 '}';
     }
 
+    /**
+     * Wraps and builds the instance of the property model.
+     */
     public final static class Builder extends ConfigBuilder {
         private final String name;
         private String caption;
@@ -123,6 +185,11 @@ public final class Property implements Configurable {
         private Map<String, String> attributes;
         private Collection<Property> properties;
 
+        /**
+         * Constructs a property model based on the json object.
+         *
+         * @param jsonObject a json object with the property model.
+         */
         public Builder(final JsonObject jsonObject) {
             this.name = Objects.requireNonNull((String) jsonObject.get("name"));
             this.caption = (String) jsonObject.get("caption");
@@ -133,32 +200,68 @@ public final class Property implements Configurable {
             this.properties = getProperties(jsonObject.get("properties")).collect(Collectors.toList());
         }
 
+        /**
+         * Constructs a property model with required parameters.
+         *
+         * @param name  a property name.
+         * @param type  a property type.
+         * @param value a property value.
+         */
         public Builder(final String name, final Type type, final String value) {
             this.name = Objects.requireNonNull(name);
             this.type = Objects.requireNonNull(type);
             this.value = Objects.requireNonNull(value);
         }
 
+        /**
+         * Constructs a property model with the caption parameter.
+         *
+         * @param caption a property caption.
+         * @return a builder of the property model.
+         */
         public Builder caption(final String caption) {
             this.caption = Objects.requireNonNull(caption);
             return this;
         }
 
+        /**
+         * Constructs a property model with the description parameter.
+         *
+         * @param description a property description.
+         * @return a builder of the property model.
+         */
         public Builder description(final String description) {
             this.description = Objects.requireNonNull(description);
             return this;
         }
 
+        /**
+         * Constructs a property model with attributes.
+         *
+         * @param attributes property attributes.
+         * @return a builder of the property model.
+         */
         public Builder attributes(final Map<String, String> attributes) {
             this.attributes = new HashMap<>(Objects.requireNonNull(attributes));
             return this;
         }
 
+        /**
+         * Constructs a property model with properties.
+         *
+         * @param properties property properties.
+         * @return a builder of the property model.
+         */
         public Builder properties(final Collection<Property> properties) {
             this.properties = new ArrayList<>(Objects.requireNonNull(properties));
             return this;
         }
 
+        /**
+         * Builds a property model with required parameters.
+         *
+         * @return a builder of the property model.
+         */
         public Property build() {
             return new Property(this);
         }
