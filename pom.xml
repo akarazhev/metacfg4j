@@ -41,6 +41,20 @@
         </license>
     </licenses>
 
+    <developers>
+        <developer>
+            <name>Andrey Karazhev</name>
+        </developer>
+    </developers>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Meta Configuration For Java Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/akarazhev/metacfg4j</url>
+        </repository>
+    </distributionManagement>
+
     <dependencies>
         <!-- Test dependencies -->
         <dependency>
