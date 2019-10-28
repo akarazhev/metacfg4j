@@ -38,9 +38,9 @@ import java.util.Optional;
  */
 public final class WebClient {
     /**
-     * Constants for the web client.
+     * Settings constants for the web client.
      */
-    final static class Constants {
+    final static class Settings {
         // The configuration name
         static final String CONFIG_NAME = "web-client";
         // The URL key
@@ -63,22 +63,22 @@ public final class WebClient {
     private WebClient(final Builder builder) {
         final Config config = builder.config;
         try {
-            Optional<Property> property = config.getProperty(Constants.URL);
+            Optional<Property> property = config.getProperty(Settings.URL);
             if (property.isPresent()) {
                 // Open a connection
                 final HttpURLConnection connection = (HttpURLConnection) new URL(property.get().getValue()).openConnection();
-                property = config.getProperty(Constants.METHOD);
+                property = config.getProperty(Settings.METHOD);
                 if (property.isPresent()) {
                     // Set a method
                     connection.setRequestMethod(property.get().getValue());
                 }
                 // Set the accept header
-                config.getProperty(Constants.ACCEPT).ifPresent(acceptProp ->
+                config.getProperty(Settings.ACCEPT).ifPresent(acceptProp ->
                         connection.setRequestProperty(WebConstants.ACCEPT, acceptProp.getValue()));
                 // Set the content type
-                config.getProperty(Constants.CONTENT_TYPE).ifPresent(contentTypeProp ->
+                config.getProperty(Settings.CONTENT_TYPE).ifPresent(contentTypeProp ->
                         connection.setRequestProperty(WebConstants.CONTENT_TYPE, contentTypeProp.getValue()));
-                property = config.getProperty(Constants.CONTENT);
+                property = config.getProperty(Settings.CONTENT);
                 if (property.isPresent()) {
                     // Enable the output stream
                     connection.setDoOutput(true);
@@ -161,7 +161,7 @@ public final class WebClient {
          */
         public Builder(final Config config) {
             this.config = Objects.requireNonNull(config);
-            if (!Constants.CONFIG_NAME.equals(this.config.getName())) {
+            if (!Settings.CONFIG_NAME.equals(this.config.getName())) {
                 throw new RuntimeException("Configuration name is wrong");
             }
         }

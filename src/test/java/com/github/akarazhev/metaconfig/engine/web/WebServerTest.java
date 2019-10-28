@@ -29,11 +29,11 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.api.Property.Type.STRING;
-import static com.github.akarazhev.metaconfig.engine.web.WebClient.Constants.ACCEPT;
-import static com.github.akarazhev.metaconfig.engine.web.WebClient.Constants.CONFIG_NAME;
-import static com.github.akarazhev.metaconfig.engine.web.WebClient.Constants.CONTENT;
-import static com.github.akarazhev.metaconfig.engine.web.WebClient.Constants.METHOD;
-import static com.github.akarazhev.metaconfig.engine.web.WebClient.Constants.URL;
+import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.ACCEPT;
+import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.CONFIG_NAME;
+import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.CONTENT;
+import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.METHOD;
+import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.URL;
 import static com.github.akarazhev.metaconfig.engine.web.WebConstants.APPLICATION_JSON;
 import static com.github.akarazhev.metaconfig.engine.web.WebConstants.CONTENT_TYPE;
 import static com.github.akarazhev.metaconfig.engine.web.WebConstants.Method.DELETE;
