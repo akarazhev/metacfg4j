@@ -13,22 +13,11 @@ package com.github.akarazhev.metaconfig.engine.web;
 import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.ConfigService;
 import com.github.akarazhev.metaconfig.api.Property;
-import com.github.cliftonlabs.json_simple.JsonException;
 import com.github.cliftonlabs.json_simple.JsonObject;
-import com.github.cliftonlabs.json_simple.Jsoner;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -36,10 +25,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Scanner;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import static com.github.akarazhev.metaconfig.api.Property.Type.STRING;
+import static com.github.akarazhev.metaconfig.engine.web.WebClient.Constants.ACCEPT;
+import static com.github.akarazhev.metaconfig.engine.web.WebClient.Constants.CONFIG_NAME;
+import static com.github.akarazhev.metaconfig.engine.web.WebClient.Constants.CONTENT;
+import static com.github.akarazhev.metaconfig.engine.web.WebClient.Constants.METHOD;
+import static com.github.akarazhev.metaconfig.engine.web.WebClient.Constants.URL;
+import static com.github.akarazhev.metaconfig.engine.web.WebConstants.APPLICATION_JSON;
+import static com.github.akarazhev.metaconfig.engine.web.WebConstants.CONTENT_TYPE;
+import static com.github.akarazhev.metaconfig.engine.web.WebConstants.Method.DELETE;
+import static com.github.akarazhev.metaconfig.engine.web.WebConstants.Method.GET;
+import static com.github.akarazhev.metaconfig.engine.web.WebConstants.Method.POST;
+import static com.github.akarazhev.metaconfig.engine.web.WebConstants.Method.PUT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class WebServerTest {
@@ -48,7 +48,7 @@ class WebServerTest {
     @BeforeAll
     static void beforeAll() throws Exception {
         webServer = WebServers.newServer(new ConfigService() {
-            private Map<String, Config> map = new HashMap<>();
+            private final Map<String, Config> map = new HashMap<>();
 
             @Override
             public Config update(final Config config, final boolean override) {
@@ -89,93 +89,107 @@ class WebServerTest {
     }
 
     @AfterAll
-    static void afterAll() throws Exception {
+    static void afterAll() {
         webServer.stop();
+        webServer = null;
     }
 
     @Test
     void acceptConfig() throws Exception {
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpResponse response = client.execute(new HttpPost("http://localhost:8000/api/config/accept/name"));
+        final List<Property> properties = new ArrayList<>();
+        properties.add(new Property.Builder(URL, "http://localhost:8000/api/config/accept/name").build());
+        properties.add(new Property.Builder(METHOD, POST).build());
+
+        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
+        final WebClient client = new WebClient.Builder(config).build();
         // Test status code
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals(200, client.getStatusCode());
         // Get the response
-        assertEquals(true, getJsonObject(response.getEntity().getContent()).get("success"));
+        assertEquals(true, client.getJsonContent().get("success"));
     }
 
     @Test
     void getConfigNames() throws Exception {
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpResponse response = client.execute(new HttpGet("http://localhost:8000/api/config/names"));
+        final List<Property> properties = new ArrayList<>();
+        properties.add(new Property.Builder(URL, "http://localhost:8000/api/config/section/name").build());
+        properties.add(new Property.Builder(METHOD, GET).build());
+
+        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
+        final WebClient client = new WebClient.Builder(config).build();
         // Test status code
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals(200, client.getStatusCode());
         // Get the response
-        assertEquals(true, getJsonObject(response.getEntity().getContent()).get("success"));
+        assertEquals(false, client.getJsonContent().get("success"));
     }
 
     @Test
     void getConfigSections() throws Exception {
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpResponse response = client.execute(new HttpGet("http://localhost:8000/api/config/sections?names=" +
-                new String(Base64.getEncoder().encode("[\"name_1\", \"name_2\", \"name_3\"]".getBytes()))));
+        final List<Property> properties = new ArrayList<>();
+        properties.add(new Property.Builder(URL, "http://localhost:8000/api/config/sections?names=" +
+                new String(Base64.getEncoder().encode("[\"name_1\", \"name_2\", \"name_3\"]".getBytes()))).build());
+        properties.add(new Property.Builder(METHOD, GET).build());
+
+        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
+        final WebClient client = new WebClient.Builder(config).build();
         // Test status code
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals(200, client.getStatusCode());
         // Get the response
-        JsonObject jsonObject = getJsonObject(response.getEntity().getContent());
-        assertEquals(true, jsonObject.get("success"));
+        assertEquals(true, client.getJsonContent().get("success"));
     }
 
     @Test
     void getConfigSection() throws Exception {
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpResponse response = client.execute(new HttpGet("http://localhost:8000/api/config/section/name"));
+        final List<Property> properties = new ArrayList<>();
+        properties.add(new Property.Builder(URL, "http://localhost:8000/api/config/section/name").build());
+        properties.add(new Property.Builder(METHOD, GET).build());
+
+        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
+        final WebClient client = new WebClient.Builder(config).build();
         // Test status code
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals(200, client.getStatusCode());
         // Get the response
-        JsonObject jsonObject = getJsonObject(response.getEntity().getContent());
+        JsonObject jsonObject = client.getJsonContent();
         assertEquals(false, jsonObject.get("success"));
         assertEquals("Section not found", jsonObject.get("error"));
     }
 
     @Test
     void updateConfigSection() throws Exception {
-        final List<Property> properties = new ArrayList<>(2);
-        properties.add(new Property.Builder("Property_1", Property.Type.STRING, "Value_1").build());
-        properties.add(new Property.Builder("Property_2", Property.Type.STRING, "Value_2").build());
-        final Config config = new Config.Builder("Meta Config", properties).attributes(Collections.singletonMap("key", "value")).build();
-        HttpPut httpPut = new HttpPut("http://localhost:8000/api/config/section");
-        httpPut.setEntity(new StringEntity(config.toJson()));
+        List<Property> properties = new ArrayList<>(2);
+        properties.add(new Property.Builder("Property_1", STRING, "Value_1").build());
+        properties.add(new Property.Builder("Property_2", STRING, "Value_2").build());
+        Config config = new Config.Builder("Meta Config", properties).attributes(Collections.singletonMap("key", "value")).build();
 
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpResponse response = client.execute(httpPut);
+        properties.add(new Property.Builder(URL,
+                "http://localhost:8000/api/config/section").build());
+        properties.add(new Property.Builder(METHOD, PUT).build());
+        properties.add(new Property.Builder(ACCEPT, APPLICATION_JSON).build());
+        properties.add(new Property.Builder(CONTENT_TYPE, APPLICATION_JSON).build());
+        properties.add(new Property.Builder(CONTENT, config.toJson()).build());
+
+        config = new Config.Builder(CONFIG_NAME, properties).build();
+        final WebClient client = new WebClient.Builder(config).build();
         // Test status code
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals(200, client.getStatusCode());
         // Get the response
-        JsonObject jsonObject = getJsonObject(response.getEntity().getContent());
+        JsonObject jsonObject = client.getJsonContent();
         assertEquals(true, jsonObject.get("success"));
 //        assertEquals("Section not found", jsonObject.get("error"));
     }
 
     @Test
     void deleteConfigSection() throws Exception {
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpResponse response = client.execute(new HttpDelete("http://localhost:8000/api/config/section/name"));
+        final List<Property> properties = new ArrayList<>();
+        properties.add(new Property.Builder(URL, "http://localhost:8000/api/config/section/name").build());
+        properties.add(new Property.Builder(METHOD, DELETE).build());
+
+        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
+        final WebClient client = new WebClient.Builder(config).build();
         // Test status code
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals(200, client.getStatusCode());
         // Get the response
-        JsonObject jsonObject = getJsonObject(response.getEntity().getContent());
+        JsonObject jsonObject = client.getJsonContent();
         assertEquals(true, jsonObject.get("success"));
         assertEquals(true, jsonObject.get("result"));
-    }
-
-    private JsonObject getJsonObject(final InputStream inputStream) throws JsonException {
-        final Scanner scanner = new Scanner(inputStream);
-        final StringBuilder json = new StringBuilder();
-        while(scanner.hasNext()){
-            json.append(scanner.nextLine());
-        }
-
-        scanner.close();
-        return (JsonObject) Jsoner.deserialize(json.toString());
     }
 }

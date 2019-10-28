@@ -126,8 +126,8 @@ public final class Property implements Configurable {
      * {@inheritDoc}
      */
     @Override
-    public Optional<String> getAttribute(String key) {
-        return Optional.ofNullable(attributes.get(key));
+    public Optional<String> getAttribute(final String key) {
+        return Optional.ofNullable(attributes.get(Objects.requireNonNull(key)));
     }
 
     /**
@@ -142,7 +142,15 @@ public final class Property implements Configurable {
      * {@inheritDoc}
      */
     @Override
-    public void toJson(Writer writer) throws IOException {
+    public Optional<Property> getProperty(final String name) {
+        return properties.stream().filter(property -> property.getName().equals(name)).findFirst();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void toJson(final Writer writer) throws IOException {
         final JsonObject json = new JsonObject();
         json.put("name", name);
         json.put("caption", caption);
@@ -218,6 +226,18 @@ public final class Property implements Configurable {
             this.value = (String) jsonObject.get("value");
             getAttributes(jsonObject.get("attributes")).ifPresent(attributes -> this.attributes = attributes);
             this.properties = getProperties(jsonObject.get("properties")).collect(Collectors.toList());
+        }
+
+        /**
+         * Constructs a property model with required parameters.
+         *
+         * @param name  a property name.
+         * @param value a property value.
+         */
+        public Builder(final String name, final String value) {
+            this.name = Objects.requireNonNull(name);
+            this.type = Type.STRING;
+            this.value = Objects.requireNonNull(value);
         }
 
         /**

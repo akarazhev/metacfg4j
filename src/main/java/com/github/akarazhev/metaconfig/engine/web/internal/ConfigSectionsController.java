@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.Method.GET;
+import static com.github.akarazhev.metaconfig.engine.web.WebConstants.Method.GET;
 import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.METHOD_NOT_ALLOWED;
 
 /**

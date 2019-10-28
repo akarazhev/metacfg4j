@@ -63,7 +63,7 @@ final class OperationResponse<T> implements ExtJsonable {
      * {@inheritDoc}
      */
     @Override
-    public void toJson(Writer writer) throws IOException {
+    public void toJson(final Writer writer) throws IOException {
         final JsonObject json = new JsonObject();
         json.put("success", success);
         json.put("error", error);

@@ -20,10 +20,10 @@ import java.net.InetSocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.API.ACCEPT_CONFIG;
-import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.API.CONFIG_NAMES;
-import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.API.CONFIG_SECTION;
-import static com.github.akarazhev.metaconfig.engine.web.internal.ConfigConstants.API.CONFIG_SECTIONS;
+import static com.github.akarazhev.metaconfig.engine.web.WebConstants.API.ACCEPT_CONFIG;
+import static com.github.akarazhev.metaconfig.engine.web.WebConstants.API.CONFIG_NAMES;
+import static com.github.akarazhev.metaconfig.engine.web.WebConstants.API.CONFIG_SECTION;
+import static com.github.akarazhev.metaconfig.engine.web.WebConstants.API.CONFIG_SECTIONS;
 
 /**
  * The internal implementation of the web server.

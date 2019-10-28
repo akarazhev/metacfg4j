@@ -172,7 +172,6 @@ public final class MetaConfig implements ConfigService, Closeable {
             ConnectionPool connectionPool;
             WebServer webServer;
             ConfigService configService;
-
             try {
                 // DB Server
                 if (dbConfig != null) {
@@ -197,7 +196,7 @@ public final class MetaConfig implements ConfigService, Closeable {
                 // Create the main instance
                 return new MetaConfig(dbServer, webServer, connectionPool, configService);
             } catch (Exception e) {
-                throw new RuntimeException("The MetaConfig instance can't be created");
+                throw new RuntimeException("MetaConfig instance can not be created");
             }
         }
     }

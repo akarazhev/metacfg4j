@@ -106,8 +106,8 @@ public final class Config implements Configurable {
      * {@inheritDoc}
      */
     @Override
-    public Optional<String> getAttribute(String key) {
-        return Optional.ofNullable(attributes.get(key));
+    public Optional<String> getAttribute(final String key) {
+        return Optional.ofNullable(attributes.get(Objects.requireNonNull(key)));
     }
 
     /**
@@ -122,7 +122,15 @@ public final class Config implements Configurable {
      * {@inheritDoc}
      */
     @Override
-    public void toJson(Writer writer) throws IOException {
+    public Optional<Property> getProperty(final String name) {
+        return properties.stream().filter(property -> property.getName().equals(name)).findFirst();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void toJson(final Writer writer) throws IOException {
         final JsonObject json = new JsonObject();
         json.put("name", name);
         json.put("description", description);
@@ -137,7 +145,7 @@ public final class Config implements Configurable {
      * {@inheritDoc}
      */
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final Config config = (Config) o;

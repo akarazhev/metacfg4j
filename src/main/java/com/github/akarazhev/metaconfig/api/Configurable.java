@@ -46,7 +46,7 @@ interface Configurable extends ExtJsonable {
      * @param key attribute key.
      * @return a value by the key.
      */
-    Optional<String> getAttribute(String key);
+    Optional<String> getAttribute(final String key);
 
     /**
      * Returns properties which belong to configurations.
@@ -54,6 +54,14 @@ interface Configurable extends ExtJsonable {
      * @return properties as a stream.
      */
     Stream<Property> getProperties();
+
+    /**
+     * Returns a property by the name.
+     *
+     * @param name a property name.
+     * @return a property.
+     */
+    Optional<Property> getProperty(final String name);
 
     /**
      * Provides methods for getting attributes and properties from json objects.
