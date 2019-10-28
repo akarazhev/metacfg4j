@@ -14,6 +14,7 @@ import com.github.akarazhev.metaconfig.extension.ExtJsonable;
 import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -67,6 +68,9 @@ interface Configurable extends ExtJsonable {
      * Provides methods for getting attributes and properties from json objects.
      */
     class ConfigBuilder {
+        Map<String, String> attributes;
+        Collection<Property> properties;
+
         /**
          * Returns attributes which belong to configurations.
          *

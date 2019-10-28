@@ -185,8 +185,6 @@ public final class Config implements Configurable {
         private String description;
         private final long created;
         private final long updated;
-        private Map<String, String> attributes;
-        private Collection<Property> properties;
 
         /**
          * Constructs a configuration model based on the json object.

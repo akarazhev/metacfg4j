@@ -72,30 +72,26 @@ public final class WebClient {
                     // Set a method
                     connection.setRequestMethod(property.get().getValue());
                 }
-                property = config.getProperty(Constants.ACCEPT);
-                if (property.isPresent()) {
-                    // Set the accept header
-                    connection.setRequestProperty(WebConstants.ACCEPT, property.get().getValue());
-                }
-                property = config.getProperty(Constants.CONTENT_TYPE);
-                if (property.isPresent()) {
-                    // Set the content type
-                    connection.setRequestProperty(WebConstants.CONTENT_TYPE, property.get().getValue());
-                }
+                // Set the accept header
+                config.getProperty(Constants.ACCEPT).ifPresent(acceptProp ->
+                        connection.setRequestProperty(WebConstants.ACCEPT, acceptProp.getValue()));
+                // Set the content type
+                config.getProperty(Constants.CONTENT_TYPE).ifPresent(contentTypeProp ->
+                        connection.setRequestProperty(WebConstants.CONTENT_TYPE, contentTypeProp.getValue()));
                 property = config.getProperty(Constants.CONTENT);
                 if (property.isPresent()) {
                     // Enable the output stream
                     connection.setDoOutput(true);
-                    // Set the content type
-                    setContent(property.get().getValue(), connection);
+                    // Write the content type
+                    writeContent(connection, property.get().getValue());
                 }
                 // Get a response code
                 statusCode = connection.getResponseCode();
                 // Get a content
                 if (statusCode > 299) {
-                    content = getContent(connection.getErrorStream());
+                    content = readContent(connection.getErrorStream());
                 } else {
-                    content = getContent(connection.getInputStream());
+                    content = readContent(connection.getInputStream());
                 }
                 // Close the connection
                 connection.disconnect();
@@ -115,16 +111,25 @@ public final class WebClient {
     }
 
     /**
+     * Returns a content of the response.
+     *
+     * @return the content.
+     */
+    String getContent() {
+        return content;
+    }
+
+    /**
      * Returns a json content of the response.
      *
      * @return the content.
      * @throws JsonException when a web client encounters a problem.
      */
     JsonObject getJsonContent() throws JsonException {
-        return (JsonObject) Jsoner.deserialize(content);
+        return (JsonObject) Jsoner.deserialize(getContent());
     }
 
-    private String getContent(final InputStream inputStream) throws IOException {
+    private String readContent(final InputStream inputStream) throws IOException {
         try (final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
             final StringBuilder content = new StringBuilder();
             String inputLine;
@@ -136,10 +141,10 @@ public final class WebClient {
         }
     }
 
-    private void setContent(final String content, final HttpURLConnection connection) throws IOException {
-        try (final OutputStream os = connection.getOutputStream()) {
+    private void writeContent(final HttpURLConnection connection, final String content) throws IOException {
+        try (final OutputStream outputStream = connection.getOutputStream()) {
             final byte[] input = content.getBytes(StandardCharsets.UTF_8);
-            os.write(input, 0, input.length);
+            outputStream.write(input, 0, input.length);
         }
     }
 

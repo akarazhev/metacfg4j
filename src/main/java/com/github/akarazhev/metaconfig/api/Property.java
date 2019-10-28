@@ -210,8 +210,6 @@ public final class Property implements Configurable {
         private String description;
         private final Type type;
         private final String value;
-        private Map<String, String> attributes;
-        private Collection<Property> properties;
 
         /**
          * Constructs a property model based on the json object.
