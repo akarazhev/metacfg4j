@@ -22,7 +22,7 @@ Add a maven dependency into your project:
 <dependency>
     <groupId>com.github.akarazhev.metacfg</groupId>
     <artifactId>metacfg4j</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
 Instantiate a meta configuration class in your project:
