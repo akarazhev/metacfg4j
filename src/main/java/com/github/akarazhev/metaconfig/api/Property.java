@@ -116,6 +116,24 @@ public final class Property implements Configurable {
      * {@inheritDoc}
      */
     @Override
+    public Stream<String> getAttributeKeys() {
+        return attributes != null ?
+                attributes.keySet().stream() :
+                Stream.empty();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Optional<String> getAttribute(String key) {
+        return Optional.ofNullable(attributes.get(key));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Stream<Property> getProperties() {
         return properties.stream();
     }

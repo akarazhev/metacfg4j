@@ -34,6 +34,21 @@ interface Configurable extends ExtJsonable {
     Optional<Map<String, String>> getAttributes();
 
     /**
+     * Returns attribute keys which belong to configurations.
+     *
+     * @return attribute keys as a stream.
+     */
+    Stream<String> getAttributeKeys();
+
+    /**
+     * Returns an attribute value by the key.
+     *
+     * @param key attribute key.
+     * @return a value by the key.
+     */
+    Optional<String> getAttribute(String key);
+
+    /**
      * Returns properties which belong to configurations.
      *
      * @return properties as a stream.
