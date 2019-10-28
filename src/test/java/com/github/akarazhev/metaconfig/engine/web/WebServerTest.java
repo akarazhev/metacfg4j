@@ -48,7 +48,11 @@ class WebServerTest {
     @BeforeAll
     static void beforeAll() throws Exception {
         webServer = WebServers.newServer(new ConfigService() {
-            private final Map<String, Config> map = new HashMap<>();
+            private Consumer<Config> consumer;
+            private final Map<String, Config> map = new HashMap<String, Config>() {{
+                put("name", new Config.Builder("name", Collections.singletonList(
+                        new Property.Builder("name", "value").build())).build());
+            }};
 
             @Override
             public Config update(final Config config, final boolean override) {
@@ -58,32 +62,34 @@ class WebServerTest {
 
             @Override
             public Stream<String> getNames() {
-                return Stream.empty();
+                return map.keySet().stream();
             }
 
             @Override
             public Stream<Config> get() {
-                return Stream.empty();
+                return map.values().stream();
             }
 
             @Override
             public Optional<Config> get(final String name) {
-                return Optional.empty();
+                return Optional.ofNullable(map.get(name));
             }
 
             @Override
             public void remove(final String name) {
-
+                map.remove(name);
             }
 
             @Override
             public void accept(final String name) {
-
+                if (consumer != null) {
+                    get(name).ifPresent(config -> consumer.accept(config));
+                }
             }
 
             @Override
             public void addConsumer(final Consumer<Config> consumer) {
-
+                this.consumer = consumer;
             }
         }).start();
     }
@@ -111,7 +117,7 @@ class WebServerTest {
     @Test
     void getConfigNames() throws Exception {
         final List<Property> properties = new ArrayList<>();
-        properties.add(new Property.Builder(URL, "http://localhost:8000/api/config/section/name").build());
+        properties.add(new Property.Builder(URL, "http://localhost:8000/api/config/names").build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
@@ -119,7 +125,7 @@ class WebServerTest {
         // Test status code
         assertEquals(200, client.getStatusCode());
         // Get the response
-        assertEquals(false, client.getJsonContent().get("success"));
+        assertEquals(true, client.getJsonContent().get("success"));
     }
 
     @Test
@@ -149,8 +155,7 @@ class WebServerTest {
         assertEquals(200, client.getStatusCode());
         // Get the response
         JsonObject jsonObject = client.getJsonContent();
-        assertEquals(false, jsonObject.get("success"));
-        assertEquals("Section not found", jsonObject.get("error"));
+        assertEquals(true, jsonObject.get("success"));
     }
 
     @Test
@@ -174,7 +179,6 @@ class WebServerTest {
         // Get the response
         JsonObject jsonObject = client.getJsonContent();
         assertEquals(true, jsonObject.get("success"));
-//        assertEquals("Section not found", jsonObject.get("error"));
     }
 
     @Test

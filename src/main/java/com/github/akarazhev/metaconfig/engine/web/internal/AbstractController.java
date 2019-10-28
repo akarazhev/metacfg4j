@@ -72,7 +72,7 @@ abstract class AbstractController {
      */
     Stream<String> getPathParams(final String path, final String api) {
         return path.contains(api) ?
-                Arrays.stream(path.substring(api.length()).split("/")) :
+                Arrays.stream(path.substring(api.length() + 1).split("/")) :
                 Stream.empty();
     }
 
