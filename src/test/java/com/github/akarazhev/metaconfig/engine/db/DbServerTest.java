@@ -35,7 +35,7 @@ class DbServerTest {
 
     @Test
     void getPublicSchema() throws Exception {
-        Connection connection = DriverManager.getConnection("jdbc:h2:~/test", "sa", "");
+        Connection connection = DriverManager.getConnection("jdbc:h2:./data/metacfg4j", "sa", "");
         // add application code here
         assertEquals("PUBLIC", connection.getSchema());
         connection.close();
