@@ -10,8 +10,8 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -50,9 +50,9 @@ final class ConfigServiceImpl implements ConfigService {
      */
     @Override
     public Stream<Config> get() {
-        Collection<Config> configs = new LinkedList<>();
-        configRepository.findNames().forEach(name ->
-                configs.addAll(configRepository.findByName(name).collect(Collectors.toList())));
+        Stream<String> names = configRepository.findNames();
+        Collection<Config> configs = new ArrayList<>((int) names.count());
+        names.forEach(name -> configs.addAll(configRepository.findByName(name).collect(Collectors.toList())));
         return configs.stream();
     }
 

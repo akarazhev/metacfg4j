@@ -16,10 +16,10 @@ import java.io.IOException;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -219,7 +219,7 @@ public final class Config implements Configurable {
             this.name = Objects.requireNonNull(name);
             this.version = 1;
             this.updated = Clock.systemDefaultZone().millis();
-            this.properties = new LinkedList<>(Objects.requireNonNull(properties));
+            this.properties = new ArrayList<>(Objects.requireNonNull(properties));
         }
 
         /**
