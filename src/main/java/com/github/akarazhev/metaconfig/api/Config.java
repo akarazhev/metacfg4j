@@ -32,7 +32,7 @@ import java.util.stream.Stream;
 public final class Config implements Configurable {
     private final String name;
     private final String description;
-    private final long created;
+    private final int version;
     private final long updated;
     private final Map<String, String> attributes;
     private final Collection<Property> properties;
@@ -40,7 +40,7 @@ public final class Config implements Configurable {
     private Config(final Builder builder) {
         this.name = builder.name;
         this.description = builder.description;
-        this.created = builder.created;
+        this.version = builder.version;
         this.updated = builder.updated;
         this.attributes = builder.attributes;
         this.properties = builder.properties;
@@ -65,12 +65,12 @@ public final class Config implements Configurable {
     }
 
     /**
-     * Returns a creation time of the configuration.
+     * Returns a version of the configuration.
      *
-     * @return a configuration created time value.
+     * @return a version value.
      */
-    public long getCreated() {
-        return created;
+    public int getVersion() {
+        return version;
     }
 
     /**
@@ -134,7 +134,7 @@ public final class Config implements Configurable {
         final JsonObject json = new JsonObject();
         json.put("name", name);
         json.put("description", description);
-        json.put("created", created);
+        json.put("version", version);
         json.put("updated", updated);
         json.put("attributes", attributes);
         json.put("properties", properties);
@@ -149,7 +149,7 @@ public final class Config implements Configurable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final Config config = (Config) o;
-        return created == config.created &&
+        return version == config.version &&
                 updated == config.updated &&
                 name.equals(config.name) &&
                 Objects.equals(description, config.description) &&
@@ -162,7 +162,7 @@ public final class Config implements Configurable {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, created, updated, attributes, properties);
+        return Objects.hash(name, description, version, updated, attributes, properties);
     }
 
     /**
@@ -172,7 +172,7 @@ public final class Config implements Configurable {
     public String toString() {
         return "Config{" +
                 "name='" + name + '\'' +
-                ", created=" + created +
+                ", version=" + version +
                 ", updated=" + updated +
                 '}';
     }
@@ -183,7 +183,7 @@ public final class Config implements Configurable {
     public final static class Builder extends ConfigBuilder {
         private final String name;
         private String description;
-        private final long created;
+        private final int version;
         private final long updated;
 
         /**
@@ -194,7 +194,7 @@ public final class Config implements Configurable {
         public Builder(final JsonObject jsonObject) {
             this.name = Objects.requireNonNull((String) jsonObject.get("name"));
             this.description = (String) jsonObject.get("description");
-            this.created = Objects.requireNonNull((BigDecimal) jsonObject.get("created")).longValue();
+            this.version = Objects.requireNonNull((BigDecimal) jsonObject.get("version")).intValue();
             this.updated = Objects.requireNonNull((BigDecimal) jsonObject.get("updated")).longValue();
             getAttributes(jsonObject.get("attributes")).ifPresent(attributes -> this.attributes = attributes);
             this.properties = getProperties(jsonObject.get("properties")).collect(Collectors.toList());
@@ -208,9 +208,8 @@ public final class Config implements Configurable {
          */
         public Builder(final String name, final Collection<Property> properties) {
             this.name = Objects.requireNonNull(name);
-            final long millis = Clock.systemDefaultZone().millis();
-            this.created = millis;
-            this.updated = millis;
+            this.version = 1;
+            this.updated = Clock.systemDefaultZone().millis();
             this.properties = new ArrayList<>(Objects.requireNonNull(properties));
         }
 

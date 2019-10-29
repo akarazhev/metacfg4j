@@ -14,6 +14,7 @@ import com.github.cliftonlabs.json_simple.JsonObject;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,6 +34,7 @@ public final class Property implements Configurable {
     private final String description;
     private final Type type;
     private final String value;
+    private final int version;
     private final Map<String, String> attributes;
     private final Collection<Property> properties;
 
@@ -53,6 +55,7 @@ public final class Property implements Configurable {
         this.description = builder.description;
         this.type = builder.type;
         this.value = builder.value;
+        this.version = builder.version;
         this.attributes = builder.attributes;
         this.properties = builder.properties;
     }
@@ -100,6 +103,15 @@ public final class Property implements Configurable {
      */
     public String getValue() {
         return value;
+    }
+
+    /**
+     * Returns a version of the property.
+     *
+     * @return a version value.
+     */
+    public int getVersion() {
+        return version;
     }
 
     /**
@@ -157,6 +169,7 @@ public final class Property implements Configurable {
         json.put("description", description);
         json.put("type", type.name());
         json.put("value", value);
+        json.put("version", version);
         json.put("attributes", attributes);
         json.put("properties", properties);
         json.toJson(writer);
@@ -175,6 +188,7 @@ public final class Property implements Configurable {
                 Objects.equals(description, property.description) &&
                 type == property.type &&
                 value.equals(property.value) &&
+                version == property.version &&
                 Objects.equals(attributes, property.attributes) &&
                 Objects.equals(properties, property.properties);
     }
@@ -184,7 +198,7 @@ public final class Property implements Configurable {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(name, caption, description, type, value, attributes, properties);
+        return Objects.hash(name, caption, description, type, value, version, attributes, properties);
     }
 
     /**
@@ -198,6 +212,7 @@ public final class Property implements Configurable {
                 ", description='" + description + '\'' +
                 ", type=" + type +
                 ", value='" + value + '\'' +
+                ", version=" + version +
                 '}';
     }
 
@@ -210,6 +225,7 @@ public final class Property implements Configurable {
         private String description;
         private final Type type;
         private final String value;
+        private final int version;
 
         /**
          * Constructs a property model based on the json object.
@@ -220,8 +236,9 @@ public final class Property implements Configurable {
             this.name = Objects.requireNonNull((String) jsonObject.get("name"));
             this.caption = (String) jsonObject.get("caption");
             this.description = (String) jsonObject.get("description");
-            this.type = Type.valueOf((String) jsonObject.get("type"));
-            this.value = (String) jsonObject.get("value");
+            this.type = Type.valueOf(Objects.requireNonNull((String) jsonObject.get("type")));
+            this.value = Objects.requireNonNull((String) jsonObject.get("value"));
+            this.version = Objects.requireNonNull((BigDecimal) jsonObject.get("version")).intValue();
             getAttributes(jsonObject.get("attributes")).ifPresent(attributes -> this.attributes = attributes);
             this.properties = getProperties(jsonObject.get("properties")).collect(Collectors.toList());
         }
@@ -236,6 +253,7 @@ public final class Property implements Configurable {
             this.name = Objects.requireNonNull(name);
             this.type = Type.STRING;
             this.value = Objects.requireNonNull(value);
+            this.version = 1;
         }
 
         /**
@@ -249,6 +267,7 @@ public final class Property implements Configurable {
             this.name = Objects.requireNonNull(name);
             this.type = Objects.requireNonNull(type);
             this.value = Objects.requireNonNull(value);
+            this.version = 1;
         }
 
         /**
