@@ -28,7 +28,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static com.github.akarazhev.metaconfig.api.Property.Type.STRING;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.ACCEPT;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.CONFIG_NAME;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.CONTENT;
@@ -161,8 +160,8 @@ class WebServerTest {
     @Test
     void updateConfigSection() throws Exception {
         List<Property> properties = new ArrayList<>(2);
-        properties.add(new Property.Builder("Property_1", STRING, "Value_1").build());
-        properties.add(new Property.Builder("Property_2", STRING, "Value_2").build());
+        properties.add(new Property.Builder("Property_1", "Value_1").build());
+        properties.add(new Property.Builder("Property_2", "Value_2").build());
         Config config = new Config.Builder("Meta Config", properties).attributes(Collections.singletonMap("key", "value")).build();
 
         properties.add(new Property.Builder(URL,

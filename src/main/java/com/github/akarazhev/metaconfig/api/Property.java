@@ -10,12 +10,15 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
+import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
+import com.github.cliftonlabs.json_simple.Jsoner;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,11 +41,8 @@ public final class Property implements Configurable {
     private final Map<String, String> attributes;
     private final Collection<Property> properties;
 
-    /**
-     * Types of a stored property value.
-     */
-    public static enum Type {
-        BOOLEAN,
+    private enum Type {
+        BOOL,
         DOUBLE,
         LONG,
         STRING,
@@ -88,21 +88,66 @@ public final class Property implements Configurable {
     }
 
     /**
-     * Returns a type of the property.
-     *
-     * @return a property type.
-     */
-    public Type getType() {
-        return type;
-    }
-
-    /**
      * Returns a value of the property.
      *
      * @return a property value.
      */
     public String getValue() {
         return value;
+    }
+
+    /**
+     * Returns a boolean value of the property.
+     *
+     * @return a property value.
+     */
+    public boolean asBool() {
+        if (Type.BOOL.equals(type)) {
+            return Boolean.valueOf(value);
+        }
+
+        throw new ClassCastException("Property has the different type: " + type);
+    }
+
+    /**
+     * Returns a double value of the property.
+     *
+     * @return a property value.
+     */
+    public double asDouble() {
+        if (Type.DOUBLE.equals(type)) {
+            return Double.valueOf(value);
+        }
+
+        throw new ClassCastException("Property has the different type: " + type);
+    }
+
+    /**
+     * Returns a long value of the property.
+     *
+     * @return a property value.
+     */
+    public long asLong() {
+        if (Type.LONG.equals(type)) {
+            return Long.valueOf(value);
+        }
+
+        throw new ClassCastException("Property has the different type: " + type);
+    }
+
+    /**
+     * Returns an array value of the property.
+     *
+     * @return a property value.
+     */
+    public String[] asArray() {
+        if (Type.STRING_ARRAY.equals(type)) {
+            return Jsoner.deserialize(value, new JsonArray()).stream().
+                    map(Object::toString).
+                    toArray(String[]::new);
+        }
+
+        throw new ClassCastException("Property has the different type: " + type);
     }
 
     /**
@@ -156,6 +201,15 @@ public final class Property implements Configurable {
     @Override
     public Optional<Property> getProperty(final String name) {
         return properties.stream().filter(property -> property.getName().equals(name)).findFirst();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Optional<Property> getProperty(final String[] paths, final String name) {
+        // todo is not implemented
+        return Optional.empty();
     }
 
     /**
@@ -247,7 +301,7 @@ public final class Property implements Configurable {
          * Constructs a property model with required parameters.
          *
          * @param name  a property name.
-         * @param value a property value.
+         * @param value a string property value.
          */
         public Builder(final String name, final String value) {
             this.name = Objects.requireNonNull(name);
@@ -260,13 +314,51 @@ public final class Property implements Configurable {
          * Constructs a property model with required parameters.
          *
          * @param name  a property name.
-         * @param type  a property type.
-         * @param value a property value.
+         * @param value a boolean property value.
          */
-        public Builder(final String name, final Type type, final String value) {
+        public Builder(final String name, final boolean value) {
             this.name = Objects.requireNonNull(name);
-            this.type = Objects.requireNonNull(type);
-            this.value = Objects.requireNonNull(value);
+            this.type = Type.BOOL;
+            this.value = String.valueOf(value);
+            this.version = 1;
+        }
+
+        /**
+         * Constructs a property model with required parameters.
+         *
+         * @param name  a property name.
+         * @param value a double property value.
+         */
+        public Builder(final String name, final double value) {
+            this.name = Objects.requireNonNull(name);
+            this.type = Type.DOUBLE;
+            this.value = String.valueOf(value);
+            this.version = 1;
+        }
+
+        /**
+         * Constructs a property model with required parameters.
+         *
+         * @param name  a property name.
+         * @param value a long property value.
+         */
+        public Builder(final String name, final long value) {
+            this.name = Objects.requireNonNull(name);
+            this.type = Type.LONG;
+            this.value = String.valueOf(value);
+            this.version = 1;
+        }
+
+        /**
+         * Constructs a property model with required parameters.
+         *
+         * @param name  a property name.
+         * @param value an array property value.
+         */
+        public Builder(final String name, final String... value) {
+            this.name = Objects.requireNonNull(name);
+            this.type = Type.STRING_ARRAY;
+            this.value = new JsonArray(Arrays.asList(Objects.requireNonNull(value))).toJson();
             this.version = 1;
         }
 
@@ -300,6 +392,30 @@ public final class Property implements Configurable {
          */
         public Builder attributes(final Map<String, String> attributes) {
             this.attributes = new HashMap<>(Objects.requireNonNull(attributes));
+            return this;
+        }
+
+        /**
+         * Constructs a property model with a property.
+         *
+         * @param path     a path to a property.
+         * @param property a property property.
+         * @return a builder of the property model.
+         */
+        public Builder property(final String[] path, final Property property) {
+            // todo is not implemented
+            return this;
+        }
+
+        /**
+         * Constructs a property model with properties.
+         *
+         * @param path       a path to a properties.
+         * @param properties property properties.
+         * @return a builder of the property model.
+         */
+        public Builder properties(final String[] path, final Collection<Property> properties) {
+            // todo is not implemented
             return this;
         }
 

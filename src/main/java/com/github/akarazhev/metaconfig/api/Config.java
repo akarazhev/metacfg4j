@@ -16,10 +16,10 @@ import java.io.IOException;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -130,6 +130,15 @@ public final class Config implements Configurable {
      * {@inheritDoc}
      */
     @Override
+    public Optional<Property> getProperty(final String[] paths, final String name) {
+        // todo is not implemented
+        return Optional.empty();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void toJson(final Writer writer) throws IOException {
         final JsonObject json = new JsonObject();
         json.put("name", name);
@@ -210,7 +219,7 @@ public final class Config implements Configurable {
             this.name = Objects.requireNonNull(name);
             this.version = 1;
             this.updated = Clock.systemDefaultZone().millis();
-            this.properties = new ArrayList<>(Objects.requireNonNull(properties));
+            this.properties = new LinkedList<>(Objects.requireNonNull(properties));
         }
 
         /**
@@ -232,6 +241,30 @@ public final class Config implements Configurable {
          */
         public Builder attributes(final Map<String, String> attributes) {
             this.attributes = new HashMap<>(Objects.requireNonNull(attributes));
+            return this;
+        }
+
+        /**
+         * Constructs a configuration model with a property.
+         *
+         * @param path a path to a property.
+         * @param property a configuration property.
+         * @return a builder of the configuration model.
+         */
+        public Builder property(final String[] path, final Property property) {
+            // todo is not implemented
+            return this;
+        }
+
+        /**
+         * Constructs a configuration model with properties.
+         *
+         * @param path a path to a properties.
+         * @param properties configuration properties.
+         * @return a builder of the configuration model.
+         */
+        public Builder properties(final String[] path, final Collection<Property> properties) {
+            // todo is not implemented
             return this;
         }
 

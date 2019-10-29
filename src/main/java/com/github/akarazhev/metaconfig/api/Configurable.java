@@ -65,6 +65,15 @@ interface Configurable extends ExtJsonable {
     Optional<Property> getProperty(final String name);
 
     /**
+     * Returns a property by the path and name.
+     *
+     * @param name a property name.
+     * @param path a property path.
+     * @return a property.
+     */
+    Optional<Property> getProperty(final String[] path, final String name);
+
+    /**
      * Provides methods for getting attributes and properties from json objects.
      */
     class ConfigBuilder {
