@@ -16,6 +16,7 @@ import com.github.cliftonlabs.json_simple.JsonObject;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -67,18 +68,18 @@ interface Configurable extends ExtJsonable {
     /**
      * Returns a property by the path and name.
      *
-     * @param name a property name.
-     * @param path a property path.
+     * @param name  a property name.
+     * @param paths property paths.
      * @return a property.
      */
-    Optional<Property> getProperty(final String[] path, final String name);
+    Optional<Property> getProperty(final String[] paths, final String name);
 
     /**
      * Provides methods for getting attributes and properties from json objects.
      */
     class ConfigBuilder {
-        Map<String, String> attributes;
-        Collection<Property> properties;
+        final Map<String, String> attributes = new HashMap<>();
+        final Collection<Property> properties = new LinkedList<>();
 
         /**
          * Returns attributes which belong to configurations.

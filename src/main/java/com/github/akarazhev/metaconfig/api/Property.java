@@ -17,11 +17,9 @@ import com.github.cliftonlabs.json_simple.Jsoner;
 import java.io.IOException;
 import java.io.Writer;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -293,8 +291,8 @@ public final class Property implements Configurable {
             this.type = Type.valueOf(Objects.requireNonNull((String) jsonObject.get("type")));
             this.value = Objects.requireNonNull((String) jsonObject.get("value"));
             this.version = Objects.requireNonNull((BigDecimal) jsonObject.get("version")).intValue();
-            getAttributes(jsonObject.get("attributes")).ifPresent(attributes -> this.attributes = attributes);
-            this.properties = getProperties(jsonObject.get("properties")).collect(Collectors.toList());
+            getAttributes(jsonObject.get("attributes")).ifPresent(this.attributes::putAll);
+            this.properties.addAll(getProperties(jsonObject.get("properties")).collect(Collectors.toList()));
         }
 
         /**
@@ -391,30 +389,38 @@ public final class Property implements Configurable {
          * @return a builder of the property model.
          */
         public Builder attributes(final Map<String, String> attributes) {
-            this.attributes = new HashMap<>(Objects.requireNonNull(attributes));
+            this.attributes.putAll(Objects.requireNonNull(attributes));
             return this;
         }
 
         /**
          * Constructs a property model with a property.
          *
-         * @param path     a path to a property.
+         * @param paths    paths to a property.
          * @param property a property property.
          * @return a builder of the property model.
          */
-        public Builder property(final String[] path, final Property property) {
-            // todo is not implemented
+        public Builder property(final String[] paths, final Property property) {
+            final String[] propertyPaths = Objects.requireNonNull(paths);
+            if (propertyPaths.length > 0) {
+                for (String path : propertyPaths) {
+                    // todo is not implemented
+                }
+            } else {
+                this.properties.add(Objects.requireNonNull(property));
+            }
+
             return this;
         }
 
         /**
          * Constructs a property model with properties.
          *
-         * @param path       a path to a properties.
+         * @param paths      paths to a properties.
          * @param properties property properties.
          * @return a builder of the property model.
          */
-        public Builder properties(final String[] path, final Collection<Property> properties) {
+        public Builder properties(final String[] paths, final Collection<Property> properties) {
             // todo is not implemented
             return this;
         }
@@ -426,7 +432,7 @@ public final class Property implements Configurable {
          * @return a builder of the property model.
          */
         public Builder properties(final Collection<Property> properties) {
-            this.properties = new ArrayList<>(Objects.requireNonNull(properties));
+            this.properties.addAll(Objects.requireNonNull(properties));
             return this;
         }
 

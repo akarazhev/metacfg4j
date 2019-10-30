@@ -16,10 +16,8 @@ import java.io.IOException;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -205,8 +203,8 @@ public final class Config implements Configurable {
             this.description = (String) jsonObject.get("description");
             this.version = Objects.requireNonNull((BigDecimal) jsonObject.get("version")).intValue();
             this.updated = Objects.requireNonNull((BigDecimal) jsonObject.get("updated")).longValue();
-            getAttributes(jsonObject.get("attributes")).ifPresent(attributes -> this.attributes = attributes);
-            this.properties = getProperties(jsonObject.get("properties")).collect(Collectors.toList());
+            getAttributes(jsonObject.get("attributes")).ifPresent(this.attributes::putAll);
+            this.properties.addAll(getProperties(jsonObject.get("properties")).collect(Collectors.toList()));
         }
 
         /**
@@ -219,7 +217,7 @@ public final class Config implements Configurable {
             this.name = Objects.requireNonNull(name);
             this.version = 1;
             this.updated = Clock.systemDefaultZone().millis();
-            this.properties = new ArrayList<>(Objects.requireNonNull(properties));
+            this.properties.addAll(Objects.requireNonNull(properties));
         }
 
         /**
@@ -240,18 +238,18 @@ public final class Config implements Configurable {
          * @return a builder of the configuration model.
          */
         public Builder attributes(final Map<String, String> attributes) {
-            this.attributes = new HashMap<>(Objects.requireNonNull(attributes));
+            this.attributes.putAll(Objects.requireNonNull(attributes));
             return this;
         }
 
         /**
          * Constructs a configuration model with a property.
          *
-         * @param path a path to a property.
+         * @param paths    paths to a property.
          * @param property a configuration property.
          * @return a builder of the configuration model.
          */
-        public Builder property(final String[] path, final Property property) {
+        public Builder property(final String[] paths, final Property property) {
             // todo is not implemented
             return this;
         }
@@ -259,11 +257,11 @@ public final class Config implements Configurable {
         /**
          * Constructs a configuration model with properties.
          *
-         * @param path a path to a properties.
+         * @param paths      path to a properties.
          * @param properties configuration properties.
          * @return a builder of the configuration model.
          */
-        public Builder properties(final String[] path, final Collection<Property> properties) {
+        public Builder properties(final String[] paths, final Collection<Property> properties) {
             // todo is not implemented
             return this;
         }

@@ -101,7 +101,7 @@ class WebServerTest {
 
     @Test
     void acceptConfig() throws Exception {
-        final List<Property> properties = new ArrayList<>();
+        final List<Property> properties = new ArrayList<>(2);
         properties.add(new Property.Builder(URL, "http://localhost:8000/api/config/accept/name").build());
         properties.add(new Property.Builder(METHOD, POST).build());
 
@@ -115,7 +115,7 @@ class WebServerTest {
 
     @Test
     void getConfigNames() throws Exception {
-        final List<Property> properties = new ArrayList<>();
+        final List<Property> properties = new ArrayList<>(2);
         properties.add(new Property.Builder(URL, "http://localhost:8000/api/config/names").build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
@@ -129,7 +129,7 @@ class WebServerTest {
 
     @Test
     void getConfigSections() throws Exception {
-        final List<Property> properties = new ArrayList<>();
+        final List<Property> properties = new ArrayList<>(2);
         properties.add(new Property.Builder(URL, "http://localhost:8000/api/config/sections?names=" +
                 new String(Base64.getEncoder().encode("[\"name_1\", \"name_2\", \"name_3\"]".getBytes()))).build());
         properties.add(new Property.Builder(METHOD, GET).build());
@@ -144,7 +144,7 @@ class WebServerTest {
 
     @Test
     void getConfigSection() throws Exception {
-        final List<Property> properties = new ArrayList<>();
+        final List<Property> properties = new ArrayList<>(2);
         properties.add(new Property.Builder(URL, "http://localhost:8000/api/config/section/name").build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
@@ -182,7 +182,7 @@ class WebServerTest {
 
     @Test
     void deleteConfigSection() throws Exception {
-        final List<Property> properties = new ArrayList<>();
+        final List<Property> properties = new ArrayList<>(2);
         properties.add(new Property.Builder(URL, "http://localhost:8000/api/config/section/name").build());
         properties.add(new Property.Builder(METHOD, DELETE).build());
 
