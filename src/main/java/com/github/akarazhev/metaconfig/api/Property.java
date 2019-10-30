@@ -197,17 +197,8 @@ public final class Property implements Configurable {
      * {@inheritDoc}
      */
     @Override
-    public Optional<Property> getProperty(final String name) {
-        return properties.stream().filter(property -> property.getName().equals(name)).findFirst();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Optional<Property> getProperty(final String[] paths, final String name) {
-        // todo is not implemented
-        return Optional.empty();
+    public Optional<Property> getProperty(final String... paths) {
+        return Configurable.getProperty(0, paths, getProperties());
     }
 
     /**
@@ -401,16 +392,7 @@ public final class Property implements Configurable {
          * @return a builder of the property model.
          */
         public Builder property(final String[] paths, final Property property) {
-            final String[] propertyPaths = Objects.requireNonNull(paths);
-            if (propertyPaths.length > 0) {
-                for (String path : propertyPaths) {
-                    // todo is not implemented
-                }
-            } else {
-                this.properties.add(Objects.requireNonNull(property));
-            }
-
-            return this;
+            return properties(paths, Collections.singletonList(Objects.requireNonNull(property)));
         }
 
         /**
@@ -421,7 +403,13 @@ public final class Property implements Configurable {
          * @return a builder of the property model.
          */
         public Builder properties(final String[] paths, final Collection<Property> properties) {
-            // todo is not implemented
+            final String[] propertyPaths = Objects.requireNonNull(paths);
+            if (propertyPaths.length > 0) {
+                addAll(0, paths, this.properties, properties);
+            } else {
+                this.properties.addAll(Objects.requireNonNull(properties));
+            }
+
             return this;
         }
 
@@ -443,6 +431,24 @@ public final class Property implements Configurable {
          */
         public Property build() {
             return new Property(this);
+        }
+
+        private void addAll(final int index, final String[] paths, final Collection<Property> target,
+                            final Collection<Property> source) {
+            if (index < paths.length) {
+                final int nextIndex = index + 1;
+                final Optional<Property> currentProperty = target.stream().
+                        filter(property -> paths[index].equals(property.getName())).findFirst();
+                if (currentProperty.isPresent()) {
+                    addAll(nextIndex, paths, currentProperty.get().properties, source);
+                } else {
+                    final Property newProperty = new Property.Builder(paths[index], "").build();
+                    target.add(newProperty);
+                    addAll(nextIndex, paths, newProperty.properties, source);
+                }
+            } else {
+                target.addAll(source);
+            }
         }
     }
 }

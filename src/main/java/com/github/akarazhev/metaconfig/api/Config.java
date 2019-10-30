@@ -120,17 +120,8 @@ public final class Config implements Configurable {
      * {@inheritDoc}
      */
     @Override
-    public Optional<Property> getProperty(final String name) {
-        return properties.stream().filter(property -> property.getName().equals(name)).findFirst();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Optional<Property> getProperty(final String[] paths, final String name) {
-        // todo is not implemented
-        return Optional.empty();
+    public Optional<Property> getProperty(final String... paths) {
+        return Configurable.getProperty(0, paths, getProperties());
     }
 
     /**
@@ -250,8 +241,7 @@ public final class Config implements Configurable {
          * @return a builder of the configuration model.
          */
         public Builder property(final String[] paths, final Property property) {
-            // todo is not implemented
-            return this;
+            return properties(paths, Collections.singletonList(Objects.requireNonNull(property)));
         }
 
         /**
@@ -262,7 +252,14 @@ public final class Config implements Configurable {
          * @return a builder of the configuration model.
          */
         public Builder properties(final String[] paths, final Collection<Property> properties) {
-            // todo is not implemented
+            final String[] propertyPaths = Objects.requireNonNull(paths);
+            if (propertyPaths.length > 0) {
+                // todo implement additing properties
+//                addAll(paths, 0, this.properties, properties);
+            } else {
+                this.properties.addAll(Objects.requireNonNull(properties));
+            }
+
             return this;
         }
 
