@@ -162,9 +162,7 @@ public final class Property implements Configurable {
      */
     @Override
     public Optional<Map<String, String>> getAttributes() {
-        return attributes != null ?
-                Optional.of(Collections.unmodifiableMap(attributes)) :
-                Optional.empty();
+        return Optional.of(Collections.unmodifiableMap(attributes));
     }
 
     /**
@@ -172,9 +170,7 @@ public final class Property implements Configurable {
      */
     @Override
     public Stream<String> getAttributeKeys() {
-        return attributes != null ?
-                attributes.keySet().stream() :
-                Stream.empty();
+        return attributes.keySet().stream();
     }
 
     /**

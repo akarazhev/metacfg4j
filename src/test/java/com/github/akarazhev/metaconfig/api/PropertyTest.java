@@ -13,6 +13,7 @@ package com.github.akarazhev.metaconfig.api;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,8 +26,41 @@ final class PropertyTest {
     void createSimpleProperty() {
         final Property property = new Property.Builder("Simple Property", "Simple Value").build();
         // Check test results
-        assertEquals("Simple Property", property.getName(), "The name must be: 'Simple Property'");
-        assertEquals("Simple Value", property.getValue(), "The name must be: 'Simple Value'");
+        assertEquals("Simple Property", property.getName());
+        assertEquals("Simple Value", property.getValue());
+        assertEquals(1, property.getVersion());
+        assertTrue(property.getAttributes().isPresent());
+        assertTrue(property.getAttributes().get().isEmpty());
+        assertEquals(0, property.getAttributeKeys().count());
+    }
+
+    @Test
+    @DisplayName("Create a property with parameters")
+    void createPropertyWithParameters() {
+        final Property firstSubProperty = new Property.Builder("Sub-Property-1", "Sub-Value-1").build();
+        final Property secondSubProperty = new Property.Builder("Sub-Property-2", "Sub-Value-2").build();
+        final Property thirdSubProperty = new Property.Builder("Sub-Property-3", "Sub-Value-3").build();
+        final Property property = new Property.Builder("Property", "Value").
+                caption("Caption").
+                description("Description").
+                attributes(Collections.singletonMap("key", "value")).
+                property(new String[0], firstSubProperty).
+                properties(new String[0], Collections.singletonList(secondSubProperty)).
+                properties(Collections.singletonList(thirdSubProperty)).
+                build();
+        // Check test results
+        assertEquals("Property", property.getName());
+        assertEquals("Value", property.getValue());
+        assertEquals(1, property.getVersion());
+        assertEquals("Caption", property.getCaption());
+        assertEquals("Description", property.getDescription());
+        assertTrue(property.getAttributes().isPresent());
+        assertEquals(1, property.getAttributeKeys().count());
+        assertTrue(property.getAttribute("key").isPresent());
+        assertEquals(3, property.getProperties().count());
+        assertTrue(property.getProperty("Sub-Property-1").isPresent());
+        assertTrue(property.getProperty("Sub-Property-2").isPresent());
+        assertTrue(property.getProperty("Sub-Property-3").isPresent());
     }
 
     @Test
@@ -35,29 +69,30 @@ final class PropertyTest {
         final Property property = new Property.Builder("Simple Property", "Simple Value").
                 property(new String[0], new Property.Builder("Sub-property", "Sub-value").build()).build();
         // Check test results
-        assertEquals("Simple Property", property.getName(), "The name must be: 'Simple Property'");
-        assertEquals("Simple Value", property.getValue(), "The name must be: 'Simple Value'");
+        assertEquals("Simple Property", property.getName());
+        assertEquals("Simple Value", property.getValue());
         final Optional<Property> subProperty = property.getProperty("Sub-property");
-        assertTrue(subProperty.isPresent(), "The sub-property should be existed");
-        assertEquals("Sub-property", subProperty.get().getName(), "The name must be: 'Sub-property'");
+        assertTrue(subProperty.isPresent());
+        assertEquals("Sub-property", subProperty.get().getName());
     }
 
     @Test
     @DisplayName("Create a simple property with property by the single path")
     void createSimplePropertyWithPropertyBySinglePath() {
         final Property property = new Property.Builder("Simple Property", "Simple Value").
-                property(new String[]{"Sub-property-1"}, new Property.Builder("Sub-property-2", "Sub-value-2").build()).build();
+                property(new String[]{"Sub-property-1"},
+                        new Property.Builder("Sub-property-2", "Sub-value-2").build()).build();
         // Check test results
-        assertEquals("Simple Property", property.getName(), "The name must be: 'Simple Property'");
-        assertEquals("Simple Value", property.getValue(), "The name must be: 'Simple Value'");
+        assertEquals("Simple Property", property.getName());
+        assertEquals("Simple Value", property.getValue());
         // Check Sub-property-1
         final Optional<Property> firstSubProperty = property.getProperty("Sub-property-1");
-        assertTrue(firstSubProperty.isPresent(), "The sub-property-1 should be existed");
-        assertEquals("Sub-property-1", firstSubProperty.get().getName(), "The name must be: 'Sub-property-1'");
+        assertTrue(firstSubProperty.isPresent());
+        assertEquals("Sub-property-1", firstSubProperty.get().getName());
         // Check Sub-property-2
         final Optional<Property> secondSubProperty = firstSubProperty.get().getProperty("Sub-property-2");
-        assertTrue(secondSubProperty.isPresent(), "The sub-property-2 should be existed");
-        assertEquals("Sub-property-2", secondSubProperty.get().getName(), "The name must be: 'Sub-property-2'");
+        assertTrue(secondSubProperty.isPresent());
+        assertEquals("Sub-property-2", secondSubProperty.get().getName());
     }
 
     @Test
@@ -67,19 +102,82 @@ final class PropertyTest {
                 property(new String[]{"Sub-property-1", "Sub-property-2"},
                         new Property.Builder("Sub-property-3", "Sub-value-3").build()).build();
         // Check test results
-        assertEquals("Simple Property", property.getName(), "The name must be: 'Simple Property'");
-        assertEquals("Simple Value", property.getValue(), "The name must be: 'Simple Value'");
+        assertEquals("Simple Property", property.getName());
+        assertEquals("Simple Value", property.getValue());
         // Check Sub-property-1
         final Optional<Property> firstSubProperty = property.getProperty("Sub-property-1");
-        assertTrue(firstSubProperty.isPresent(), "The sub-property-1 should be existed");
-        assertEquals("Sub-property-1", firstSubProperty.get().getName(), "The name must be: 'Sub-property-1'");
+        assertTrue(firstSubProperty.isPresent());
+        assertEquals("Sub-property-1", firstSubProperty.get().getName());
         // Check Sub-property-2
         final Optional<Property> secondSubProperty = firstSubProperty.get().getProperty("Sub-property-2");
-        assertTrue(secondSubProperty.isPresent(), "The sub-property-2 should be existed");
-        assertEquals("Sub-property-2", secondSubProperty.get().getName(), "The name must be: 'Sub-property-2'");
+        assertTrue(secondSubProperty.isPresent());
+        assertEquals("Sub-property-2", secondSubProperty.get().getName());
         // Check Sub-property-3
         final Optional<Property> thirdSubProperty = secondSubProperty.get().getProperty("Sub-property-3");
-        assertTrue(thirdSubProperty.isPresent(), "The sub-property-3 should be existed");
-        assertEquals("Sub-property-3", thirdSubProperty.get().getName(), "The name must be: 'Sub-property-3'");
+        assertTrue(thirdSubProperty.isPresent());
+        assertEquals("Sub-property-3", thirdSubProperty.get().getName());
+    }
+
+    @Test
+    @DisplayName("Create a simple bool property")
+    void createSimpleBoolProperty() {
+        final Property property = new Property.Builder("Simple Property", true).build();
+        // Check test results
+        assertEquals("Simple Property", property.getName());
+        assertTrue(property.asBool());
+    }
+
+    @Test
+    @DisplayName("Create a simple double property")
+    void createSimpleDoubleProperty() {
+        final Property property = new Property.Builder("Simple Property", 0.0).build();
+        // Check test results
+        assertEquals("Simple Property", property.getName());
+        assertEquals(0.0, property.asDouble());
+    }
+
+    @Test
+    @DisplayName("Create a simple long property")
+    void createSimpleLongProperty() {
+        final Property property = new Property.Builder("Simple Property", 0L).build();
+        // Check test results
+        assertEquals("Simple Property", property.getName());
+        assertEquals(0L, property.asLong());
+    }
+
+    @Test
+    @DisplayName("Create a simple array property")
+    void createSimpleArrayProperty() {
+        final Property property = new Property.Builder("Simple Property", new String[]{"Simple Value"}).build();
+        // Check test results
+        assertEquals("Simple Property", property.getName());
+        assertEquals(new String[]{"Simple Value"}[0], property.asArray()[0]);
+    }
+
+    @Test
+    @DisplayName("Compare two properties")
+    void compareTwoProperties() {
+        final Property firstProperty = new Property.Builder("Simple Property", new String[]{"Simple Value"}).build();
+        final Property secondProperty = new Property.Builder("Simple Property", new String[]{"Simple Value"}).build();
+        // Check test results
+        assertEquals(firstProperty, secondProperty);
+    }
+
+    @Test
+    @DisplayName("Check hash codes of two properties")
+    void checkHashCodesOfTwoProperties() {
+        final Property firstProperty = new Property.Builder("Simple Property", new String[]{"Simple Value"}).build();
+        final Property secondProperty = new Property.Builder("Simple Property", new String[]{"Simple Value"}).build();
+        // Check test results
+        assertEquals(firstProperty.hashCode(), secondProperty.hashCode());
+    }
+
+    @Test
+    @DisplayName("Check toString() of two properties")
+    void checkToStringOfTwoProperties() {
+        final Property firstProperty = new Property.Builder("Simple Property", new String[]{"Simple Value"}).build();
+        final Property secondProperty = new Property.Builder("Simple Property", new String[]{"Simple Value"}).build();
+        // Check test results
+        assertEquals(firstProperty.toString(), secondProperty.toString());
     }
 }
