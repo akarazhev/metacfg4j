@@ -72,8 +72,8 @@ public final class Property implements Configurable {
      *
      * @return a property caption.
      */
-    public String getCaption() {
-        return caption;
+    public Optional<String> getCaption() {
+        return Optional.ofNullable(caption);
     }
 
     /**
@@ -81,8 +81,8 @@ public final class Property implements Configurable {
      *
      * @return a property description.
      */
-    public String getDescription() {
-        return description;
+    public Optional<String> getDescription() {
+        return Optional.ofNullable(description);
     }
 
     /**

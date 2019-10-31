@@ -17,6 +17,8 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class PropertyTest {
@@ -28,9 +30,16 @@ final class PropertyTest {
         // Check test results
         assertEquals("Simple Property", property.getName());
         assertEquals("Simple Value", property.getValue());
+        assertThrows(ClassCastException.class, property::asBool);
+        assertThrows(ClassCastException.class, property::asDouble);
+        assertThrows(ClassCastException.class, property::asLong);
+        assertThrows(ClassCastException.class, property::asArray);
         assertEquals(1, property.getVersion());
+        assertFalse(property.getCaption().isPresent());
+        assertFalse(property.getDescription().isPresent());
         assertTrue(property.getAttributes().isPresent());
         assertTrue(property.getAttributes().get().isEmpty());
+        assertFalse(property.getAttribute("key").isPresent());
         assertEquals(0, property.getAttributeKeys().count());
     }
 
@@ -52,9 +61,12 @@ final class PropertyTest {
         assertEquals("Property", property.getName());
         assertEquals("Value", property.getValue());
         assertEquals(1, property.getVersion());
-        assertEquals("Caption", property.getCaption());
-        assertEquals("Description", property.getDescription());
+        assertTrue(property.getCaption().isPresent());
+        assertEquals("Caption", property.getCaption().get());
+        assertTrue(property.getDescription().isPresent());
+        assertEquals("Description", property.getDescription().get());
         assertTrue(property.getAttributes().isPresent());
+        assertEquals(1, property.getAttributes().get().size());
         assertEquals(1, property.getAttributeKeys().count());
         assertTrue(property.getAttribute("key").isPresent());
         assertEquals(3, property.getProperties().count());
@@ -123,7 +135,6 @@ final class PropertyTest {
     void createSimpleBoolProperty() {
         final Property property = new Property.Builder("Simple Property", true).build();
         // Check test results
-        assertEquals("Simple Property", property.getName());
         assertTrue(property.asBool());
     }
 
@@ -132,7 +143,6 @@ final class PropertyTest {
     void createSimpleDoubleProperty() {
         final Property property = new Property.Builder("Simple Property", 0.0).build();
         // Check test results
-        assertEquals("Simple Property", property.getName());
         assertEquals(0.0, property.asDouble());
     }
 
@@ -141,7 +151,6 @@ final class PropertyTest {
     void createSimpleLongProperty() {
         final Property property = new Property.Builder("Simple Property", 0L).build();
         // Check test results
-        assertEquals("Simple Property", property.getName());
         assertEquals(0L, property.asLong());
     }
 
@@ -150,7 +159,6 @@ final class PropertyTest {
     void createSimpleArrayProperty() {
         final Property property = new Property.Builder("Simple Property", new String[]{"Simple Value"}).build();
         // Check test results
-        assertEquals("Simple Property", property.getName());
         assertEquals(new String[]{"Simple Value"}[0], property.asArray()[0]);
     }
 
