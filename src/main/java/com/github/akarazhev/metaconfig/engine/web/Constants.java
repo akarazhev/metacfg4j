@@ -11,12 +11,12 @@
 package com.github.akarazhev.metaconfig.engine.web;
 
 /**
- * Web сonstants of the web client-server.
+ * Constants of the web client-server.
  */
-public final class WebConstants {
+public final class Constants {
 
-    private WebConstants() {
-        // WebConstants class
+    private Constants() {
+        // Constants class
     }
 
     public static final String CONTENT_TYPE = "Content-Type";
@@ -29,7 +29,7 @@ public final class WebConstants {
     public final static class Method {
 
         private Method() {
-            // WebConstants class
+            // Constants class
         }
 
         public static final String POST = "POST";
@@ -44,7 +44,7 @@ public final class WebConstants {
     public final static class API {
 
         private API() {
-            // WebConstants class
+            // Constants class
         }
 
         public static final String ACCEPT_CONFIG = "/api/config/accept";

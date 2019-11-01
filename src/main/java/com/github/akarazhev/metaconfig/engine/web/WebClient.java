@@ -27,6 +27,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.REQUEST_SEND_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_CONFIG_NAME;
+
 /**
  * The internal implementation of the web client. The config name must be "web-client".
  * The following parameters can be set in a config property (e.g. name, value):
@@ -74,10 +77,10 @@ public final class WebClient {
                 }
                 // Set the accept header
                 config.getProperty(Settings.ACCEPT).ifPresent(acceptProp ->
-                        connection.setRequestProperty(WebConstants.ACCEPT, acceptProp.getValue()));
+                        connection.setRequestProperty(Constants.ACCEPT, acceptProp.getValue()));
                 // Set the content type
                 config.getProperty(Settings.CONTENT_TYPE).ifPresent(contentTypeProp ->
-                        connection.setRequestProperty(WebConstants.CONTENT_TYPE, contentTypeProp.getValue()));
+                        connection.setRequestProperty(Constants.CONTENT_TYPE, contentTypeProp.getValue()));
                 property = config.getProperty(Settings.CONTENT);
                 if (property.isPresent()) {
                     // Enable the output stream
@@ -97,7 +100,7 @@ public final class WebClient {
                 connection.disconnect();
             }
         } catch (Exception e) {
-            throw new RuntimeException("Request can not be performed", e);
+            throw new RuntimeException(REQUEST_SEND_ERROR, e);
         }
     }
 
@@ -162,7 +165,7 @@ public final class WebClient {
         public Builder(final Config config) {
             this.config = Objects.requireNonNull(config);
             if (!Settings.CONFIG_NAME.equals(this.config.getName())) {
-                throw new RuntimeException("Configuration name is wrong");
+                throw new RuntimeException(WRONG_CONFIG_NAME);
             }
         }
 

@@ -23,10 +23,10 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 
-import static com.github.akarazhev.metaconfig.engine.web.WebConstants.API.CONFIG_SECTION;
-import static com.github.akarazhev.metaconfig.engine.web.WebConstants.Method.DELETE;
-import static com.github.akarazhev.metaconfig.engine.web.WebConstants.Method.GET;
-import static com.github.akarazhev.metaconfig.engine.web.WebConstants.Method.PUT;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG_SECTION;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.DELETE;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.GET;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.PUT;
 import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.BAD_REQUEST;
 import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.METHOD_NOT_ALLOWED;
 

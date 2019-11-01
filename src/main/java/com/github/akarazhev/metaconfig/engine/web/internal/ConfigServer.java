@@ -20,10 +20,12 @@ import java.net.InetSocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.github.akarazhev.metaconfig.engine.web.WebConstants.API.ACCEPT_CONFIG;
-import static com.github.akarazhev.metaconfig.engine.web.WebConstants.API.CONFIG_NAMES;
-import static com.github.akarazhev.metaconfig.engine.web.WebConstants.API.CONFIG_SECTION;
-import static com.github.akarazhev.metaconfig.engine.web.WebConstants.API.CONFIG_SECTIONS;
+import static com.github.akarazhev.metaconfig.Constants.Messages.IMPLEMENTATION_NOT_PROVIDED;
+import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_ALREADY_CREATED;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.API.ACCEPT_CONFIG;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG_NAMES;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG_SECTION;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG_SECTIONS;
 
 /**
  * The internal implementation of the web server.
@@ -47,7 +49,7 @@ public final class ConfigServer implements WebServer {
             server.createContext(CONFIG_SECTION, new ConfigSectionController.Builder(configService).build()::handle);
             server.setExecutor(null);
         } else {
-            throw new RuntimeException("Server has been already created");
+            throw new RuntimeException(SERVER_ALREADY_CREATED);
         }
     }
 
@@ -59,7 +61,7 @@ public final class ConfigServer implements WebServer {
      * @throws IOException when a web server encounters a problem.
      */
     public ConfigServer(final Config config, final ConfigService configService) throws IOException {
-        throw new RuntimeException("constructor with the configuration is not implemented");
+        throw new RuntimeException(IMPLEMENTATION_NOT_PROVIDED);
     }
 
     /**

@@ -22,8 +22,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-import static com.github.akarazhev.metaconfig.engine.web.WebConstants.APPLICATION_JSON;
-import static com.github.akarazhev.metaconfig.engine.web.WebConstants.CONTENT_TYPE;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.APPLICATION_JSON;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.CONTENT_TYPE;
 import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.BAD_REQUEST;
 import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.OK;
 

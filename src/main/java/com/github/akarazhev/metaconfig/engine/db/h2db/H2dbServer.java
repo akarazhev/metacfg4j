@@ -18,6 +18,9 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.IMPLEMENTATION_NOT_PROVIDED;
+import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_ALREADY_CREATED;
+
 /**
  * The internal implementation of the db server.
  */
@@ -34,7 +37,7 @@ public final class H2dbServer implements DbServer {
         if (server == null) {
             server = Server.createTcpServer("-tcp", "-tcpPort", "8043");
         } else {
-            throw new RuntimeException("Server has been already created");
+            throw new RuntimeException(SERVER_ALREADY_CREATED);
         }
     }
 
@@ -45,7 +48,7 @@ public final class H2dbServer implements DbServer {
      * @throws SQLException when a db server encounters a problem.
      */
     public H2dbServer(final Config config) throws SQLException {
-        throw new RuntimeException("constructor with the configuration is not implemented");
+        throw new RuntimeException(IMPLEMENTATION_NOT_PROVIDED);
     }
 
     /**

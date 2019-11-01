@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 /**
  * The property model that contains parameters, attributes and properties.
  */
-public final class Property implements Configurable {
+public final class Property extends AbstractConfig {
     private final String name;
     private final String caption;
     private final String description;
@@ -194,7 +194,7 @@ public final class Property implements Configurable {
      */
     @Override
     public Optional<Property> getProperty(final String... paths) {
-        return Configurable.getProperty(0, paths, getProperties());
+        return getProperty(0, paths, getProperties());
     }
 
     /**

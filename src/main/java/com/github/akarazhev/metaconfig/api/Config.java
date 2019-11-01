@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 /**
  * The configuration model that contains parameters, attributes and properties.
  */
-public final class Config implements Configurable {
+public final class Config extends AbstractConfig {
     private final String name;
     private final String description;
     private final int version;
@@ -85,9 +85,7 @@ public final class Config implements Configurable {
      */
     @Override
     public Optional<Map<String, String>> getAttributes() {
-        return attributes != null ?
-                Optional.of(Collections.unmodifiableMap(attributes)) :
-                Optional.empty();
+        return Optional.of(Collections.unmodifiableMap(attributes));
     }
 
     /**
@@ -95,9 +93,7 @@ public final class Config implements Configurable {
      */
     @Override
     public Stream<String> getAttributeKeys() {
-        return attributes != null ?
-                attributes.keySet().stream() :
-                Stream.empty();
+        return attributes.keySet().stream();
     }
 
     /**
@@ -121,7 +117,7 @@ public final class Config implements Configurable {
      */
     @Override
     public Optional<Property> getProperty(final String... paths) {
-        return Configurable.getProperty(0, paths, getProperties());
+        return getProperty(0, paths, getProperties());
     }
 
     /**

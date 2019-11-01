@@ -33,12 +33,12 @@ import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.CONF
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.CONTENT;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.METHOD;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.URL;
-import static com.github.akarazhev.metaconfig.engine.web.WebConstants.APPLICATION_JSON;
-import static com.github.akarazhev.metaconfig.engine.web.WebConstants.CONTENT_TYPE;
-import static com.github.akarazhev.metaconfig.engine.web.WebConstants.Method.DELETE;
-import static com.github.akarazhev.metaconfig.engine.web.WebConstants.Method.GET;
-import static com.github.akarazhev.metaconfig.engine.web.WebConstants.Method.POST;
-import static com.github.akarazhev.metaconfig.engine.web.WebConstants.Method.PUT;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.APPLICATION_JSON;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.CONTENT_TYPE;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.DELETE;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.GET;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.POST;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.PUT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class WebServerTest {

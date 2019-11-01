@@ -16,7 +16,7 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
-import static com.github.akarazhev.metaconfig.engine.web.WebConstants.Method.GET;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.GET;
 import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.METHOD_NOT_ALLOWED;
 
 /**

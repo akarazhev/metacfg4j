@@ -16,6 +16,8 @@ import org.h2.jdbcx.JdbcConnectionPool;
 import javax.sql.DataSource;
 import java.io.IOException;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.IMPLEMENTATION_NOT_PROVIDED;
+
 /**
  * Provides factory methods to create a connection pool.
  */
@@ -53,6 +55,6 @@ public final class ConnectionPools {
      * @return a connection pool.
      */
     public static ConnectionPool newPool(final Config config) {
-        throw new RuntimeException("newPool is not implemented");
+        throw new RuntimeException(IMPLEMENTATION_NOT_PROVIDED);
     }
 }

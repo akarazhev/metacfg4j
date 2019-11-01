@@ -15,6 +15,8 @@ import com.github.cliftonlabs.json_simple.Jsonable;
 import java.io.IOException;
 import java.io.StringWriter;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.STRING_TO_JSON_ERROR;
+
 /**
  * Extends the basic interface of <code>Jsonable<code/>.
  *
@@ -34,7 +36,7 @@ public interface ExtJsonable extends Jsonable {
             toJson(writable);
         } catch (final IOException e) {
             e.printStackTrace();
-            throw new RuntimeException("String can not be parsed to JSON", e);
+            throw new RuntimeException(STRING_TO_JSON_ERROR, e);
         }
 
         return writable.toString();

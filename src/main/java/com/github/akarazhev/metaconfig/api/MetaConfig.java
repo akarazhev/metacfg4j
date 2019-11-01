@@ -23,6 +23,8 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.META_CONFIG_ERROR;
+
 /**
  * The core configuration class that provides the functionality.
  */
@@ -196,7 +198,7 @@ public final class MetaConfig implements ConfigService, Closeable {
                 // Create the main instance
                 return new MetaConfig(dbServer, webServer, connectionPool, configService);
             } catch (Exception e) {
-                throw new RuntimeException("MetaConfig instance can not be created");
+                throw new RuntimeException(META_CONFIG_ERROR, e);
             }
         }
     }
