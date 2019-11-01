@@ -29,11 +29,11 @@ import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.GET;
 import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.METHOD_NOT_ALLOWED;
 
 /**
- * Provides a handler functionality for the GET config sections method.
+ * Provides a handler functionality for the GET configs method.
  */
-final class ConfigSectionsController extends AbstractController {
+final class ConfigsController extends AbstractController {
 
-    private ConfigSectionsController(final Builder builder) {
+    private ConfigsController(final Builder builder) {
         super(builder);
     }
 
@@ -48,12 +48,12 @@ final class ConfigSectionsController extends AbstractController {
                         try {
                             final String array = new String(Base64.getDecoder().decode(param), StandardCharsets.UTF_8);
                             final JsonArray jsonArray = (JsonArray) Jsoner.deserialize(array);
-                            final List<Config> sections = new ArrayList<>(jsonArray.size());
+                            final List<Config> configs = new ArrayList<>(jsonArray.size());
                             for (int i = 0; i < jsonArray.size(); i++) {
-                                configService.get(jsonArray.getString(i)).ifPresent(sections::add);
+                                configService.get(jsonArray.getString(i)).ifPresent(configs::add);
                             }
 
-                            return new OperationResponse.Builder<>().result(sections).build();
+                            return new OperationResponse.Builder<>().result(configs).build();
                         } catch (Exception e) {
                             return new OperationResponse.Builder<>().error(STRING_TO_JSON_ERROR).build();
                         }
@@ -66,7 +66,7 @@ final class ConfigSectionsController extends AbstractController {
     }
 
     /**
-     * Wraps and builds the instance of the config sections controller.
+     * Wraps and builds the instance of the configs controller.
      */
     static class Builder extends AbstractBuilder {
         /**
@@ -82,8 +82,8 @@ final class ConfigSectionsController extends AbstractController {
          * {@inheritDoc}
          */
         @Override
-        ConfigSectionsController build() {
-            return new ConfigSectionsController(this);
+        ConfigsController build() {
+            return new ConfigsController(this);
         }
     }
 }

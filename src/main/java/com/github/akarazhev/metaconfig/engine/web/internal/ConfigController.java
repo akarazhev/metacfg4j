@@ -24,10 +24,10 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.CONFIG_NOT_FOUND;
 import static com.github.akarazhev.metaconfig.Constants.Messages.JSON_TO_CONFIG_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.PATH_PARAM_NOT_PRESENT;
-import static com.github.akarazhev.metaconfig.Constants.Messages.SECTION_NOT_FOUND;
-import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG_SECTION;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.DELETE;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.GET;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.PUT;
@@ -35,11 +35,11 @@ import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.BA
 import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.METHOD_NOT_ALLOWED;
 
 /**
- * Provides a handler functionality for the GET, PUT, DELETE config section methods.
+ * Provides a handler functionality for the GET, PUT, DELETE config methods.
  */
-final class ConfigSectionController extends AbstractController {
+final class ConfigController extends AbstractController {
 
-    private ConfigSectionController(final Builder builder) {
+    private ConfigController(final Builder builder) {
         super(builder);
     }
 
@@ -52,10 +52,10 @@ final class ConfigSectionController extends AbstractController {
         final Supplier<OperationResponse> paramIsNotPresent =
                 () -> new OperationResponse.Builder<>().error(PATH_PARAM_NOT_PRESENT).build();
         if (GET.equals(method)) {
-            final OperationResponse response = getPathParams(httpExchange.getRequestURI().getPath(), CONFIG_SECTION).findAny().
+            final OperationResponse response = getPathParams(httpExchange.getRequestURI().getPath(), CONFIG).findAny().
                     map(param -> configService.get(param).
                             map(config -> new OperationResponse.Builder<>().result(config).build()).
-                            orElseGet(() -> new OperationResponse.Builder<>().error(SECTION_NOT_FOUND).build())
+                            orElseGet(() -> new OperationResponse.Builder<>().error(CONFIG_NOT_FOUND).build())
                     ).
                     orElseGet(paramIsNotPresent);
             writeResponse(httpExchange, response);
@@ -70,7 +70,7 @@ final class ConfigSectionController extends AbstractController {
                 throw new InvalidRequestException(BAD_REQUEST.getCode(), JSON_TO_CONFIG_ERROR);
             }
         } else if (DELETE.equals(method)) {
-            final OperationResponse response = getPathParams(httpExchange.getRequestURI().getPath(), CONFIG_SECTION).findAny().
+            final OperationResponse response = getPathParams(httpExchange.getRequestURI().getPath(), CONFIG).findAny().
                     map(param -> {
                         configService.remove(param);
                         return new OperationResponse.Builder<>().result(true).build();
@@ -83,7 +83,7 @@ final class ConfigSectionController extends AbstractController {
     }
 
     /**
-     * Wraps and builds the instance of the config section controller.
+     * Wraps and builds the instance of the config controller.
      */
     static class Builder extends AbstractBuilder {
         /**
@@ -99,8 +99,8 @@ final class ConfigSectionController extends AbstractController {
          * {@inheritDoc}
          */
         @Override
-        ConfigSectionController build() {
-            return new ConfigSectionController(this);
+        ConfigController build() {
+            return new ConfigController(this);
         }
     }
 }

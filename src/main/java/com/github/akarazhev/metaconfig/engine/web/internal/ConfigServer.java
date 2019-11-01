@@ -25,9 +25,9 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_ALREADY_
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STARTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STOPPED;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.API.ACCEPT_CONFIG;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIGS;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG_NAMES;
-import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG_SECTION;
-import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG_SECTIONS;
 
 /**
  * The internal implementation of the web server.
@@ -47,8 +47,8 @@ public final class ConfigServer implements WebServer {
             server = HttpServer.create(new InetSocketAddress(8000), 0);
             server.createContext(ACCEPT_CONFIG, new AcceptConfigController.Builder(configService).build()::handle);
             server.createContext(CONFIG_NAMES, new ConfigNamesController.Builder(configService).build()::handle);
-            server.createContext(CONFIG_SECTIONS, new ConfigSectionsController.Builder(configService).build()::handle);
-            server.createContext(CONFIG_SECTION, new ConfigSectionController.Builder(configService).build()::handle);
+            server.createContext(CONFIGS, new ConfigsController.Builder(configService).build()::handle);
+            server.createContext(CONFIG, new ConfigController.Builder(configService).build()::handle);
             server.setExecutor(null);
         } else {
             throw new RuntimeException(SERVER_ALREADY_CREATED);

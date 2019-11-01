@@ -102,7 +102,7 @@ class WebServerTest {
     @Test
     void acceptConfig() throws Exception {
         final List<Property> properties = new ArrayList<>(2);
-        properties.add(new Property.Builder(URL, "http://localhost:8000/api/config/accept/name").build());
+        properties.add(new Property.Builder(URL, "http://localhost:8000/api/metacfg/accept_config/name").build());
         properties.add(new Property.Builder(METHOD, POST).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
@@ -116,7 +116,7 @@ class WebServerTest {
     @Test
     void getConfigNames() throws Exception {
         final List<Property> properties = new ArrayList<>(2);
-        properties.add(new Property.Builder(URL, "http://localhost:8000/api/config/names").build());
+        properties.add(new Property.Builder(URL, "http://localhost:8000/api/metacfg/config_names").build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
@@ -130,7 +130,7 @@ class WebServerTest {
     @Test
     void getConfigSections() throws Exception {
         final List<Property> properties = new ArrayList<>(2);
-        properties.add(new Property.Builder(URL, "http://localhost:8000/api/config/sections?names=" +
+        properties.add(new Property.Builder(URL, "http://localhost:8000/api/metacfg/configs?names=" +
                 new String(Base64.getEncoder().encode("[\"name_1\", \"name_2\", \"name_3\"]".getBytes()))).build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
@@ -145,7 +145,7 @@ class WebServerTest {
     @Test
     void getConfigSection() throws Exception {
         final List<Property> properties = new ArrayList<>(2);
-        properties.add(new Property.Builder(URL, "http://localhost:8000/api/config/section/name").build());
+        properties.add(new Property.Builder(URL, "http://localhost:8000/api/metacfg/config/name").build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
@@ -165,7 +165,7 @@ class WebServerTest {
         Config config = new Config.Builder("Meta Config", properties).attributes(Collections.singletonMap("key", "value")).build();
 
         properties.add(new Property.Builder(URL,
-                "http://localhost:8000/api/config/section").build());
+                "http://localhost:8000/api/metacfg/config").build());
         properties.add(new Property.Builder(METHOD, PUT).build());
         properties.add(new Property.Builder(ACCEPT, APPLICATION_JSON).build());
         properties.add(new Property.Builder(CONTENT_TYPE, APPLICATION_JSON).build());
@@ -183,7 +183,7 @@ class WebServerTest {
     @Test
     void deleteConfigSection() throws Exception {
         final List<Property> properties = new ArrayList<>(2);
-        properties.add(new Property.Builder(URL, "http://localhost:8000/api/config/section/name").build());
+        properties.add(new Property.Builder(URL, "http://localhost:8000/api/metacfg/config/name").build());
         properties.add(new Property.Builder(METHOD, DELETE).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();

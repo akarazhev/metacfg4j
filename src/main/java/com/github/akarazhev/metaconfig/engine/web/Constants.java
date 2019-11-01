@@ -47,9 +47,9 @@ public final class Constants {
             // Constants class
         }
 
-        public static final String ACCEPT_CONFIG = "/api/config/accept";
-        public static final String CONFIG_NAMES = "/api/config/names";
-        public static final String CONFIG_SECTIONS = "/api/config/sections";
-        public static final String CONFIG_SECTION = "/api/config/section";
+        public static final String ACCEPT_CONFIG = "/api/metacfg/accept_config";
+        public static final String CONFIG_NAMES = "/api/metacfg/config_names";
+        public static final String CONFIGS = "/api/metacfg/configs";
+        public static final String CONFIG = "/api/metacfg/config";
     }
 }

@@ -40,7 +40,7 @@ public final class Constants {
         public static final String PATH_PARAM_NOT_PRESENT = "Path param is not present.";
         public static final String REQUEST_PARAM_NOT_PRESENT = "Request param is not present.";
         public static final String JSON_TO_CONFIG_ERROR = "JSON can not be parsed to config.";
-        public static final String SECTION_NOT_FOUND = "Section not found.";
+        public static final String CONFIG_NOT_FOUND = "Config not found.";
         public static final String CONFIG_ACCEPTED = "Accepted '%s' config.";
     }
 }
