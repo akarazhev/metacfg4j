@@ -278,8 +278,8 @@ public final class Property extends AbstractConfig {
             this.type = Type.valueOf(Objects.requireNonNull((String) jsonObject.get("type")));
             this.value = Objects.requireNonNull((String) jsonObject.get("value"));
             this.version = Objects.requireNonNull((BigDecimal) jsonObject.get("version")).intValue();
-            getAttributes(jsonObject.get("attributes")).ifPresent(this.attributes::putAll);
-            this.properties.addAll(getProperties(jsonObject.get("properties")).collect(Collectors.toList()));
+            getAttributes(jsonObject).ifPresent(this.attributes::putAll);
+            this.properties.addAll(getProperties(jsonObject).collect(Collectors.toList()));
         }
 
         /**

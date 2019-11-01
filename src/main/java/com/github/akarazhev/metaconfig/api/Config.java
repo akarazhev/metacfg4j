@@ -190,8 +190,8 @@ public final class Config extends AbstractConfig {
             this.description = (String) jsonObject.get("description");
             this.version = Objects.requireNonNull((BigDecimal) jsonObject.get("version")).intValue();
             this.updated = Objects.requireNonNull((BigDecimal) jsonObject.get("updated")).longValue();
-            getAttributes(jsonObject.get("attributes")).ifPresent(this.attributes::putAll);
-            this.properties.addAll(getProperties(jsonObject.get("properties")).collect(Collectors.toList()));
+            getAttributes(jsonObject).ifPresent(this.attributes::putAll);
+            this.properties.addAll(getProperties(jsonObject).collect(Collectors.toList()));
         }
 
         /**

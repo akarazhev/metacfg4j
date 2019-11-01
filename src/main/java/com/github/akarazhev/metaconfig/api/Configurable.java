@@ -75,15 +75,15 @@ interface Configurable extends ExtJsonable {
         /**
          * Returns attributes which belong to configurations.
          *
-         * @param object a json object with attributes.
+         * @param jsonObject a raw json object.
          * @return attributes as a map.
          */
-        Optional<Map<String, String>> getAttributes(final Object object) {
-            if (object != null) {
-                final JsonObject jsonObject = (JsonObject) object;
+        Optional<Map<String, String>> getAttributes(final JsonObject jsonObject) {
+            if (jsonObject != null) {
+                final JsonObject jsonAttributes = (JsonObject) jsonObject.get("attributes");
                 final Map<String, String> attributes = new HashMap<>();
-                for (Object key : jsonObject.keySet()) {
-                    attributes.put((String) key, (String) jsonObject.get(key));
+                for (Object key : jsonAttributes.keySet()) {
+                    attributes.put((String) key, (String) jsonAttributes.get(key));
                 }
 
                 return Optional.of(attributes);
@@ -95,13 +95,13 @@ interface Configurable extends ExtJsonable {
         /**
          * Returns properties which belong to configurations.
          *
-         * @param object a json object with properties.
+         * @param jsonObject a raw json object.
          * @return properties as a stream.
          */
-        Stream<Property> getProperties(final Object object) {
-            return object != null ?
-                    ((JsonArray) object).stream().
-                            map(jsonObject -> new Property.Builder((JsonObject) jsonObject).build()) :
+        Stream<Property> getProperties(final JsonObject jsonObject) {
+            JsonArray jsonProperties = (JsonArray) jsonObject.get("properties");
+            return jsonProperties != null ?
+                    jsonProperties.stream().map(json -> new Property.Builder((JsonObject) json).build()) :
                     Stream.empty();
         }
     }
