@@ -21,6 +21,7 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 
@@ -48,11 +49,12 @@ final class ConfigController extends AbstractController {
      */
     @Override
     void execute(final HttpExchange httpExchange) throws IOException {
+        final URI uri = httpExchange.getRequestURI();
         final String method = httpExchange.getRequestMethod();
         final Supplier<OperationResponse> paramIsNotPresent =
                 () -> new OperationResponse.Builder<>().error(PATH_PARAM_NOT_PRESENT).build();
         if (GET.equals(method)) {
-            final OperationResponse response = getPathParams(httpExchange.getRequestURI().getPath(), CONFIG).findAny().
+            final OperationResponse response = getPathParams(uri.getPath(), CONFIG).findAny().
                     map(param -> configService.get(param).
                             map(config -> new OperationResponse.Builder<>().result(config).build()).
                             orElseGet(() -> new OperationResponse.Builder<>().error(CONFIG_NOT_FOUND).build())
@@ -60,17 +62,18 @@ final class ConfigController extends AbstractController {
                     orElseGet(paramIsNotPresent);
             writeResponse(httpExchange, response);
         } else if (PUT.equals(method)) {
-            // it can be re-implemented
+            final boolean override = getRequestParam(uri.getQuery(), "override").
+                    map(Boolean::valueOf).orElse(false);
             try (final BufferedReader bufferedReader =
                          new BufferedReader(new InputStreamReader(httpExchange.getRequestBody(), StandardCharsets.UTF_8))) {
                 final Config config = new Config.Builder((JsonObject) Jsoner.deserialize(bufferedReader)).build();
                 writeResponse(httpExchange,
-                        new OperationResponse.Builder<>().result(configService.update(config, true)).build());
-            } catch (JsonException e) {
+                        new OperationResponse.Builder<>().result(configService.update(config, override)).build());
+            } catch (final JsonException e) {
                 throw new InvalidRequestException(BAD_REQUEST.getCode(), JSON_TO_CONFIG_ERROR);
             }
         } else if (DELETE.equals(method)) {
-            final OperationResponse response = getPathParams(httpExchange.getRequestURI().getPath(), CONFIG).findAny().
+            final OperationResponse response = getPathParams(uri.getPath(), CONFIG).findAny().
                     map(param -> {
                         configService.remove(param);
                         return new OperationResponse.Builder<>().result(true).build();

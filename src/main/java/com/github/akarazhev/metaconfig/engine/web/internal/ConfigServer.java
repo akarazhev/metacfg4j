@@ -21,7 +21,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.IMPLEMENTATION_NOT_PROVIDED;
-import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_ALREADY_CREATED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STARTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STOPPED;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.API.ACCEPT_CONFIG;
@@ -34,7 +33,7 @@ import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG_NA
  */
 public final class ConfigServer implements WebServer {
     private final static Logger logger = Logger.getLogger(ConfigServer.class.getSimpleName());
-    private static HttpServer server = null;
+    private HttpServer httpServer;
 
     /**
      * Constructs a default web server.
@@ -43,16 +42,12 @@ public final class ConfigServer implements WebServer {
      * @throws IOException when a web server encounters a problem.
      */
     public ConfigServer(final ConfigService configService) throws IOException {
-        if (server == null) {
-            server = HttpServer.create(new InetSocketAddress(8000), 0);
-            server.createContext(ACCEPT_CONFIG, new AcceptConfigController.Builder(configService).build()::handle);
-            server.createContext(CONFIG_NAMES, new ConfigNamesController.Builder(configService).build()::handle);
-            server.createContext(CONFIGS, new ConfigsController.Builder(configService).build()::handle);
-            server.createContext(CONFIG, new ConfigController.Builder(configService).build()::handle);
-            server.setExecutor(null);
-        } else {
-            throw new RuntimeException(SERVER_ALREADY_CREATED);
-        }
+        httpServer = HttpServer.create(new InetSocketAddress(8000), 0);
+        httpServer.createContext(ACCEPT_CONFIG, new AcceptConfigController.Builder(configService).build()::handle);
+        httpServer.createContext(CONFIG_NAMES, new ConfigNamesController.Builder(configService).build()::handle);
+        httpServer.createContext(CONFIGS, new ConfigsController.Builder(configService).build()::handle);
+        httpServer.createContext(CONFIG, new ConfigController.Builder(configService).build()::handle);
+        httpServer.setExecutor(null);
     }
 
     /**
@@ -71,7 +66,7 @@ public final class ConfigServer implements WebServer {
      */
     @Override
     public WebServer start() {
-        server.start();
+        httpServer.start();
         logger.log(Level.INFO, SERVER_STARTED);
         return this;
     }
@@ -81,7 +76,7 @@ public final class ConfigServer implements WebServer {
      */
     @Override
     public void stop() {
-        server.stop(0);
+        httpServer.stop(0);
         logger.log(Level.INFO, SERVER_STOPPED);
     }
 }

@@ -42,7 +42,7 @@ interface ConfigRepository {
     /**
      * Deletes a configuration model.
      *
-     * @param name a configuration name.
+     * @param id a configuration id.
      */
-    void delete(final String name);
+    void delete(final int id);
 }

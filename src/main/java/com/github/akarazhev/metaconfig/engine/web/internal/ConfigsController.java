@@ -54,7 +54,7 @@ final class ConfigsController extends AbstractController {
                             }
 
                             return new OperationResponse.Builder<>().result(configs).build();
-                        } catch (Exception e) {
+                        } catch (final Exception e) {
                             return new OperationResponse.Builder<>().error(STRING_TO_JSON_ERROR).build();
                         }
                     }).

@@ -192,7 +192,7 @@ public final class MetaConfig implements ConfigService, Closeable {
                 }
                 // Create the main instance
                 return new MetaConfig(dbServer, webServer, connectionPool, configService);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new RuntimeException(META_CONFIG_ERROR, e);
             }
         }

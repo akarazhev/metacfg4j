@@ -19,7 +19,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.IMPLEMENTATION_NOT_PROVIDED;
-import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_ALREADY_CREATED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STARTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STOPPED;
 
@@ -28,7 +27,7 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STOPPED;
  */
 public final class H2dbServer implements DbServer {
     private final static Logger logger = Logger.getLogger(H2dbServer.class.getSimpleName());
-    private static Server server = null;
+    private Server dbServer;
 
     /**
      * Constructs a default db server.
@@ -36,12 +35,7 @@ public final class H2dbServer implements DbServer {
      * @throws SQLException when a db server encounters a problem.
      */
     public H2dbServer() throws SQLException {
-        if (server == null) {
-            server = Server.createTcpServer("-tcp", "-tcpPort", "8043");
-        } else {
-            throw new RuntimeException(SERVER_ALREADY_CREATED);
-        }
-    }
+        dbServer = Server.createTcpServer("-tcp", "-tcpPort", "8043"); }
 
     /**
      * Constructs a db server based on the configuration.
@@ -58,8 +52,8 @@ public final class H2dbServer implements DbServer {
      */
     @Override
     public DbServer start() throws SQLException {
-        if (!server.isRunning(true)) {
-            server.start();
+        if (!dbServer.isRunning(true)) {
+            dbServer.start();
             logger.log(Level.INFO, SERVER_STARTED);
         }
 
@@ -71,8 +65,8 @@ public final class H2dbServer implements DbServer {
      */
     @Override
     public void stop() {
-        if (server.isRunning(true)) {
-            server.stop();
+        if (dbServer.isRunning(true)) {
+            dbServer.stop();
             logger.log(Level.INFO, SERVER_STOPPED);
         }
     }

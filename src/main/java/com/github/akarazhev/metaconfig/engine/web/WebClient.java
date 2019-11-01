@@ -99,7 +99,7 @@ public final class WebClient {
                 // Close the connection
                 connection.disconnect();
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException(REQUEST_SEND_ERROR, e);
         }
     }

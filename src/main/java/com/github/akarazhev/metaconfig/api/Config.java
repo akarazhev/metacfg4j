@@ -24,10 +24,15 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_ID_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_UPDATED_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_VERSION_VALUE;
+
 /**
  * The configuration model that contains parameters, attributes and properties.
  */
 public final class Config extends AbstractConfig {
+    private final int id;
     private final String name;
     private final String description;
     private final int version;
@@ -36,12 +41,22 @@ public final class Config extends AbstractConfig {
     private final Collection<Property> properties;
 
     private Config(final Builder builder) {
+        this.id = builder.id;
         this.name = builder.name;
         this.description = builder.description;
         this.version = builder.version;
         this.updated = builder.updated;
         this.attributes = builder.attributes;
         this.properties = builder.properties;
+    }
+
+    /**
+     * Returns an id of the configuration.
+     *
+     * @return a configuration id.
+     */
+    public int getId() {
+        return id;
     }
 
     /**
@@ -126,6 +141,7 @@ public final class Config extends AbstractConfig {
     @Override
     public void toJson(final Writer writer) throws IOException {
         final JsonObject json = new JsonObject();
+        json.put("id", id);
         json.put("name", name);
         json.put("description", description);
         json.put("version", version);
@@ -139,15 +155,16 @@ public final class Config extends AbstractConfig {
      * {@inheritDoc}
      */
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        final Config config = (Config) o;
-        return version == config.version &&
+        Config config = (Config) o;
+        return id == config.id &&
+                version == config.version &&
                 updated == config.updated &&
                 name.equals(config.name) &&
                 Objects.equals(description, config.description) &&
-                Objects.equals(attributes, config.attributes) &&
+                attributes.equals(config.attributes) &&
                 properties.equals(config.properties);
     }
 
@@ -156,7 +173,7 @@ public final class Config extends AbstractConfig {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, version, updated, attributes, properties);
+        return Objects.hash(id, name, description, version, updated, attributes, properties);
     }
 
     /**
@@ -165,6 +182,7 @@ public final class Config extends AbstractConfig {
     @Override
     public String toString() {
         return "Config{" +
+                "id=" + id +
                 "name='" + name + '\'' +
                 ", version=" + version +
                 ", updated=" + updated +
@@ -175,10 +193,27 @@ public final class Config extends AbstractConfig {
      * Wraps and builds the instance of the configuration model.
      */
     public final static class Builder extends ConfigBuilder {
+        private int id;
         private final String name;
         private String description;
-        private final int version;
-        private final long updated;
+        private int version;
+        private long updated;
+
+        /**
+         * Constructs a configuration model based on the config object.
+         *
+         * @param config a configuration model.
+         */
+        public Builder(final Config config) {
+            final Config prototype = Objects.requireNonNull(config);
+            this.id = config.id;
+            this.name = prototype.name;
+            this.description = prototype.description;
+            this.version = prototype.version;
+            this.updated = prototype.updated;
+            this.attributes.putAll(prototype.attributes);
+            this.properties.addAll(prototype.properties);
+        }
 
         /**
          * Constructs a configuration model based on the json object.
@@ -186,12 +221,17 @@ public final class Config extends AbstractConfig {
          * @param jsonObject a json object with the configuration model.
          */
         public Builder(final JsonObject jsonObject) {
-            this.name = Objects.requireNonNull((String) jsonObject.get("name"));
-            this.description = (String) jsonObject.get("description");
-            this.version = Objects.requireNonNull((BigDecimal) jsonObject.get("version")).intValue();
-            this.updated = Objects.requireNonNull((BigDecimal) jsonObject.get("updated")).longValue();
-            getAttributes(jsonObject).ifPresent(this.attributes::putAll);
-            this.properties.addAll(getProperties(jsonObject).collect(Collectors.toList()));
+            final JsonObject prototype = Objects.requireNonNull(jsonObject);
+            final Object id = prototype.get("id");
+            this.id = id != null ? ((BigDecimal) id).intValue() : 0;
+            this.name = Objects.requireNonNull((String) prototype.get("name"));
+            this.description = (String) prototype.get("description");
+            final Object version = prototype.get("version");
+            this.version = version != null ? ((BigDecimal) version).intValue() : 1;
+            final Object updated = prototype.get("updated");
+            this.updated = updated != null ? ((BigDecimal) updated).longValue() : Clock.systemDefaultZone().millis();
+            getAttributes(prototype).ifPresent(this.attributes::putAll);
+            this.properties.addAll(getProperties(prototype).collect(Collectors.toList()));
         }
 
         /**
@@ -201,10 +241,59 @@ public final class Config extends AbstractConfig {
          * @param properties configuration properties.
          */
         public Builder(final String name, final Collection<Property> properties) {
+            this.id = 0;
             this.name = Objects.requireNonNull(name);
             this.version = 1;
             this.updated = Clock.systemDefaultZone().millis();
             this.properties.addAll(Objects.requireNonNull(properties));
+        }
+
+        /**
+         * Constructs a configuration model with the id parameter.
+         *
+         * @param id a configuration id.
+         * @return a builder of the configuration model.
+         */
+        public Builder id(final int id) {
+            if (id > 0) {
+                this.id = id;
+            } else {
+                throw new IllegalArgumentException(WRONG_ID_VALUE);
+            }
+
+            return this;
+        }
+
+        /**
+         * Constructs a configuration model with the version parameter.
+         *
+         * @param version a configuration version.
+         * @return a builder of the configuration model.
+         */
+        public Builder version(final int version) {
+            if (version > 0) {
+                this.version = version;
+            } else {
+                throw new IllegalArgumentException(WRONG_VERSION_VALUE);
+            }
+
+            return this;
+        }
+
+        /**
+         * Constructs a configuration model with the updated parameter.
+         *
+         * @param updated a configuration updated.
+         * @return a builder of the configuration model.
+         */
+        public Builder updated(final long updated) {
+            if (updated > 0) {
+                this.updated = updated;
+            } else {
+                throw new IllegalArgumentException(WRONG_UPDATED_VALUE);
+            }
+
+            return this;
         }
 
         /**
@@ -214,7 +303,7 @@ public final class Config extends AbstractConfig {
          * @return a builder of the configuration model.
          */
         public Builder description(final String description) {
-            this.description = Objects.requireNonNull(description);
+            this.description = description;
             return this;
         }
 

@@ -69,7 +69,7 @@ final class ConfigServiceImpl implements ConfigService {
      */
     @Override
     public void remove(final String name) {
-        configRepository.delete(name);
+        get(name).ifPresent(config -> configRepository.delete(config.getId()));
     }
 
     /**

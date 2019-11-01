@@ -11,20 +11,34 @@
 package com.github.akarazhev.metaconfig.api;
 
 import javax.sql.DataSource;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Stream;
+
+import static com.github.akarazhev.metaconfig.Constants.Messages.CONFIG_ID_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_CONFIG_TABLE_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.DELETE_CONFIG_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_CONFIG_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIGS_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIG_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_CONFIG_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_ID_VALUE;
 
 /**
  * {@inheritDoc}
  */
 final class ConfigRepositoryImpl implements ConfigRepository {
-    // todo implement a real datasource
     private final DataSource dataSource;
-    private final Map<String, Config> inMemDataSource = new ConcurrentHashMap<>();
 
     private ConfigRepositoryImpl(final Builder builder) {
         this.dataSource = builder.dataSource;
+        createTables();
     }
 
     /**
@@ -32,7 +46,28 @@ final class ConfigRepositoryImpl implements ConfigRepository {
      */
     @Override
     public Stream<Config> findByName(final String name) {
-        return Stream.of(inMemDataSource.get(name));
+        try {
+            final String sql = "SELECT `ID`, `NAME`, `DESCRIPTION`, `VERSION`, `UPDATED` FROM `CONFIGS` WHERE `NAME` = ?";
+            try (final Connection connection = dataSource.getConnection();
+                 final PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, name);
+                try (final ResultSet resultSet = statement.executeQuery()) {
+                    final List<Config> configs = new LinkedList<>();
+                    if (resultSet.next()) {
+                        configs.add(new Config.Builder(resultSet.getString(2), Collections.emptyList()).
+                                id(resultSet.getInt(1)).
+                                description(resultSet.getString(3)).
+                                version(resultSet.getInt(4)).
+                                updated(resultSet.getLong(5)).
+                                build());
+                    }
+
+                    return configs.stream();
+                }
+            }
+        } catch (final SQLException e) {
+            throw new RuntimeException(String.format(RECEIVED_CONFIG_ERROR, name), e);
+        }
     }
 
     /**
@@ -40,7 +75,21 @@ final class ConfigRepositoryImpl implements ConfigRepository {
      */
     @Override
     public Stream<String> findNames() {
-        return inMemDataSource.keySet().stream();
+        try {
+            final String sql = "SELECT `NAME` FROM `CONFIGS`";
+            try (final Connection connection = dataSource.getConnection();
+                 final Statement statement = connection.createStatement();
+                 final ResultSet resultSet = statement.executeQuery(sql)) {
+                final List<String> names = new LinkedList<>();
+                while (resultSet.next()) {
+                    names.add(resultSet.getString(1));
+                }
+
+                return names.stream();
+            }
+        } catch (final SQLException e) {
+            throw new RuntimeException(RECEIVED_CONFIGS_ERROR, e);
+        }
     }
 
     /**
@@ -48,25 +97,118 @@ final class ConfigRepositoryImpl implements ConfigRepository {
      */
     @Override
     public Config saveAndFlush(final Config config) {
-        inMemDataSource.put(config.getName(), config);
-        return inMemDataSource.get(config.getName());
+        if (config.getId() > 1) {
+            try {
+                return updateConfig(config);
+            } catch (final SQLException e) {
+                throw new RuntimeException(String.format(UPDATE_CONFIG_ERROR, config.getName()), e);
+            }
+        } else {
+            try {
+                return insertConfig(config);
+            } catch (final SQLException e) {
+                throw new RuntimeException(String.format(INSERT_CONFIG_ERROR, config.getName()), e);
+            }
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void delete(final String name) {
-        inMemDataSource.remove(name);
+    public void delete(final int id) {
+        if (id > 0) {
+            try {
+                final String sql = "DELETE FROM `CONFIGS` WHERE `ID` = ?";
+                try (final Connection connection = dataSource.getConnection();
+                     final PreparedStatement statement = connection.prepareStatement(sql)) {
+                    statement.setInt(1, id);
+                    statement.executeUpdate();
+                }
+            } catch (final SQLException e) {
+                throw new RuntimeException(DELETE_CONFIG_ERROR, e);
+            }
+        } else {
+            throw new RuntimeException(WRONG_ID_VALUE);
+        }
     }
 
+    private void createTables() {
+        try {
+            final String sql = "CREATE TABLE IF NOT EXISTS `CONFIGS` " +
+                    "(`ID` IDENTITY NOT NULL, " +
+                    "`NAME` VARCHAR(255) NOT NULL, " +
+                    "`DESCRIPTION` VARCHAR(1024), " +
+                    "`VERSION` INT NOT NULL, " +
+                    "`UPDATED` BIGINT NOT NULL)";
+            try (final Connection connection = dataSource.getConnection();
+                 final Statement statement = connection.createStatement()) {
+                statement.executeUpdate(sql);
+            }
+        } catch (final SQLException e) {
+            throw new RuntimeException(CREATE_CONFIG_TABLE_ERROR, e);
+        }
+    }
+
+    private Config insertConfig(final Config config) throws SQLException {
+        final String sql = "INSERT INTO `CONFIGS` (`NAME`, `DESCRIPTION`, `VERSION`, `UPDATED`) VALUES (?, ?, ?, ?)";
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setString(1, config.getName());
+            statement.setString(2, config.getDescription());
+            statement.setLong(3, config.getVersion());
+            statement.setLong(4, config.getUpdated());
+            if (statement.executeUpdate() > 0) {
+                try (final ResultSet resultSet = statement.getGeneratedKeys()) {
+                    if (resultSet.next()) {
+                        return new Config.Builder(config).id(resultSet.getInt(1)).build();
+                    } else {
+                        throw new RuntimeException(CONFIG_ID_ERROR);
+                    }
+                }
+            } else {
+                throw new RuntimeException(String.format(INSERT_CONFIG_ERROR, config.getName()));
+            }
+        }
+    }
+
+    private Config updateConfig(final Config config) throws SQLException {
+        final String sql = "UPDATE `CONFIGS` SET `NAME` = ?, `DESCRIPTION` = ?, `VERSION` = ?, `UPDATED` = ? WHERE `ID` = ?";
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, config.getName());
+            statement.setString(2, config.getDescription());
+            statement.setLong(3, config.getVersion());
+            statement.setLong(4, config.getUpdated());
+            statement.setLong(5, config.getId());
+            if (statement.executeUpdate() > 0) {
+                return config;
+            } else {
+                throw new RuntimeException(String.format(UPDATE_CONFIG_ERROR, config.getName()));
+            }
+        }
+    }
+
+    /**
+     * Wraps and builds the instance of the config repository.
+     */
     public final static class Builder {
         private final DataSource dataSource;
 
+        /**
+         * Constructs a config repository with a required parameter.
+         *
+         * @param dataSource a datasource.
+         */
         public Builder(final DataSource dataSource) {
             this.dataSource = dataSource;
         }
 
+        /**
+         * Builds a config repository with a required parameter.
+         *
+         * @return a builder of the config repository.
+         */
         public ConfigRepository build() {
             return new ConfigRepositoryImpl(this);
         }

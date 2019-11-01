@@ -47,7 +47,7 @@ abstract class AbstractController {
     void handle(HttpExchange httpExchange) {
         try {
             execute(httpExchange);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             handle(httpExchange, e);
         } finally {
             httpExchange.close();
@@ -84,10 +84,12 @@ abstract class AbstractController {
      * @return a value of a param.
      */
     Optional<String> getRequestParam(final String query, final String param) {
-        return Arrays.stream(query.split("&")).
-                filter(q -> q.contains(param)).
-                map(p -> p.split("=")[1]).
-                findFirst();
+        return query != null ?
+                Arrays.stream(query.split("&")).
+                        filter(q -> q.contains(param)).
+                        map(p -> p.split("=")[1]).
+                        findFirst() :
+                Optional.empty();
     }
 
     /**
@@ -106,7 +108,7 @@ abstract class AbstractController {
             OutputStream outputStream = httpExchange.getResponseBody();
             outputStream.write(jsonBytes);
             outputStream.flush();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new InvalidRequestException(BAD_REQUEST.getCode(), e.getMessage());
         }
     }
@@ -119,7 +121,7 @@ abstract class AbstractController {
             final OutputStream responseBody = httpExchange.getResponseBody();
             responseBody.write(getErrorResponse(throwable, httpExchange).toJson().getBytes());
             responseBody.close();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             logger.log(Level.SEVERE, throwable.getMessage());
             e.printStackTrace();
         }

@@ -12,22 +12,73 @@ package com.github.akarazhev.metaconfig.api;
 
 import com.github.akarazhev.metaconfig.engine.db.DbServer;
 import com.github.akarazhev.metaconfig.engine.db.DbServers;
+import com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPool;
+import com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPools;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class ConfigRepositoryTest {
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ConfigRepositoryTest {
+    private static final String SIMPLE_CONFIG = "Simple Config";
+    private static ConnectionPool connectionPool;
+    private static ConfigRepository configRepository;
     private static DbServer dbServer;
+    private int id;
 
     @BeforeAll
     static void beforeAll() throws Exception {
-        dbServer = DbServers.newServer();
-        dbServer.start();
+        if (dbServer == null) {
+            dbServer = DbServers.newServer().start();
+        }
+
+        if (connectionPool == null) {
+            connectionPool = ConnectionPools.newPool();
+        }
+
+        if (configRepository == null) {
+            configRepository = new ConfigRepositoryImpl.Builder(connectionPool.getDataSource()).build();
+        }
     }
 
     @AfterAll
-    static void afterAll() {
-        dbServer.stop();
+    static void afterAll() throws IOException {
+        if (connectionPool != null) {
+            connectionPool.close();
+            connectionPool = null;
+        }
+
+        if (dbServer != null) {
+            dbServer.stop();
+            dbServer = null;
+        }
+
+//        Files.deleteIfExists(Paths.get("data"));
     }
 
+    @BeforeEach
+    void beforeEach() {
+        id = configRepository.saveAndFlush(new Config.Builder(SIMPLE_CONFIG, Collections.emptyList()).build()).getId();
+    }
 
+    @AfterEach
+    void afterEach() {
+        configRepository.delete(id);
+    }
+
+    @Test
+    void findConfigByName() {
+        final Optional<Config> config = configRepository.findByName(SIMPLE_CONFIG).findFirst();
+        // Check test results
+        assertTrue(config.isPresent());
+        assertEquals(SIMPLE_CONFIG, config.get().getName());
+    }
 }

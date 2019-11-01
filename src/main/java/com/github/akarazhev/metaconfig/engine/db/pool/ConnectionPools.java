@@ -35,7 +35,7 @@ public final class ConnectionPools {
     public static ConnectionPool newPool() {
         return new ConnectionPool() {
             private final JdbcConnectionPool cp =
-                    JdbcConnectionPool.create("jdbc:h2:~/test", "sa", "sa");
+                    JdbcConnectionPool.create("jdbc:h2:./data/metacfg4j", "sa", "sa");
 
             @Override
             public DataSource getDataSource() {

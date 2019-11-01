@@ -24,18 +24,22 @@ class DbServerTest {
 
     @BeforeAll
     static void beforeAll() throws Exception {
-        dbServer = DbServers.newServer();
-        dbServer.start();
+        if (dbServer == null) {
+            dbServer = DbServers.newServer().start();
+        }
     }
 
     @AfterAll
     static void afterAll() {
-        dbServer.stop();
+        if (dbServer != null) {
+            dbServer.stop();
+            dbServer = null;
+        }
     }
 
     @Test
     void getPublicSchema() throws Exception {
-        Connection connection = DriverManager.getConnection("jdbc:h2:./data/metacfg4j", "sa", "");
+        Connection connection = DriverManager.getConnection("jdbc:h2:./data/metacfg4j", "sa", "sa");
         // add application code here
         assertEquals("PUBLIC", connection.getSchema());
         connection.close();
