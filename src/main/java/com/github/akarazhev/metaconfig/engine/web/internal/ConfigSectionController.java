@@ -10,6 +10,7 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.engine.web.internal;
 
+import com.github.akarazhev.metaconfig.Constants;
 import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.ConfigService;
 import com.github.cliftonlabs.json_simple.JsonException;
@@ -23,6 +24,9 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.JSON_TO_CONFIG_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.PATH_PARAM_NOT_PRESENT;
+import static com.github.akarazhev.metaconfig.Constants.Messages.SECTION_NOT_FOUND;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG_SECTION;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.DELETE;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.GET;
@@ -46,12 +50,12 @@ final class ConfigSectionController extends AbstractController {
     void execute(final HttpExchange httpExchange) throws IOException {
         final String method = httpExchange.getRequestMethod();
         final Supplier<OperationResponse> paramIsNotPresent =
-                () -> new OperationResponse.Builder<>().error("Path param is not present").build();
+                () -> new OperationResponse.Builder<>().error(PATH_PARAM_NOT_PRESENT).build();
         if (GET.equals(method)) {
             final OperationResponse response = getPathParams(httpExchange.getRequestURI().getPath(), CONFIG_SECTION).findAny().
                     map(param -> configService.get(param).
                             map(config -> new OperationResponse.Builder<>().result(config).build()).
-                            orElseGet(() -> new OperationResponse.Builder<>().error("Section not found").build())
+                            orElseGet(() -> new OperationResponse.Builder<>().error(SECTION_NOT_FOUND).build())
                     ).
                     orElseGet(paramIsNotPresent);
             writeResponse(httpExchange, response);
@@ -63,7 +67,7 @@ final class ConfigSectionController extends AbstractController {
                 writeResponse(httpExchange,
                         new OperationResponse.Builder<>().result(configService.update(config, true)).build());
             } catch (JsonException e) {
-                throw new InvalidRequestException(BAD_REQUEST.getCode(), "Config can not be parsed");
+                throw new InvalidRequestException(BAD_REQUEST.getCode(), JSON_TO_CONFIG_ERROR);
             }
         } else if (DELETE.equals(method)) {
             final OperationResponse response = getPathParams(httpExchange.getRequestURI().getPath(), CONFIG_SECTION).findAny().
@@ -74,7 +78,7 @@ final class ConfigSectionController extends AbstractController {
                     orElseGet(paramIsNotPresent);
             writeResponse(httpExchange, response);
         } else {
-            throw new MethodNotAllowedException(METHOD_NOT_ALLOWED.getCode(), "Method not allowed");
+            throw new MethodNotAllowedException(METHOD_NOT_ALLOWED.getCode(), Constants.Messages.METHOD_NOT_ALLOWED);
         }
     }
 

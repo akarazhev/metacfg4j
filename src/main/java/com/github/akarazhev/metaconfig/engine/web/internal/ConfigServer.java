@@ -22,6 +22,8 @@ import java.util.logging.Logger;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.IMPLEMENTATION_NOT_PROVIDED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_ALREADY_CREATED;
+import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STARTED;
+import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STOPPED;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.API.ACCEPT_CONFIG;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG_NAMES;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG_SECTION;
@@ -70,7 +72,7 @@ public final class ConfigServer implements WebServer {
     @Override
     public WebServer start() {
         server.start();
-        logger.log(Level.INFO, "Server started");
+        logger.log(Level.INFO, SERVER_STARTED);
         return this;
     }
 
@@ -80,6 +82,6 @@ public final class ConfigServer implements WebServer {
     @Override
     public void stop() {
         server.stop(0);
-        logger.log(Level.INFO, "Server stopped");
+        logger.log(Level.INFO, SERVER_STOPPED);
     }
 }

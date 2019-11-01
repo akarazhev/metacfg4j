@@ -10,6 +10,7 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.engine.web.internal;
 
+import com.github.akarazhev.metaconfig.Constants;
 import com.github.akarazhev.metaconfig.api.ConfigService;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -38,7 +39,7 @@ final class ConfigNamesController extends AbstractController {
                     new OperationResponse.Builder<>().result(configService.getNames().collect(Collectors.toList())).build();
             writeResponse(httpExchange, response);
         } else {
-            throw new MethodNotAllowedException(METHOD_NOT_ALLOWED.getCode(), "Method not allowed");
+            throw new MethodNotAllowedException(METHOD_NOT_ALLOWED.getCode(), Constants.Messages.METHOD_NOT_ALLOWED);
         }
     }
 

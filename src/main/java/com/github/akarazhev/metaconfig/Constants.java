@@ -34,5 +34,13 @@ public final class Constants {
         public static final String STRING_TO_JSON_ERROR = "String can not be parsed to JSON.";
         public static final String WRONG_CONFIG_NAME = "Config name is wrong.";
         public static final String REQUEST_SEND_ERROR = "Request can not be sent.";
+        public static final String SERVER_STARTED = "Server started.";
+        public static final String SERVER_STOPPED = "Server stopped.";
+        public static final String METHOD_NOT_ALLOWED = "Method not allowed.";
+        public static final String PATH_PARAM_NOT_PRESENT = "Path param is not present.";
+        public static final String REQUEST_PARAM_NOT_PRESENT = "Request param is not present.";
+        public static final String JSON_TO_CONFIG_ERROR = "JSON can not be parsed to config.";
+        public static final String SECTION_NOT_FOUND = "Section not found.";
+        public static final String CONFIG_ACCEPTED = "Accepted '%s' config.";
     }
 }

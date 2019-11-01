@@ -10,11 +10,14 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.engine.web.internal;
 
+import com.github.akarazhev.metaconfig.Constants;
 import com.github.akarazhev.metaconfig.api.ConfigService;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.CONFIG_ACCEPTED;
+import static com.github.akarazhev.metaconfig.Constants.Messages.PATH_PARAM_NOT_PRESENT;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.API.ACCEPT_CONFIG;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.POST;
 import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.METHOD_NOT_ALLOWED;
@@ -37,12 +40,12 @@ final class AcceptConfigController extends AbstractController {
             final OperationResponse response = getPathParams(httpExchange.getRequestURI().getPath(), ACCEPT_CONFIG).findAny().
                     map(param -> {
                         configService.accept(param);
-                        return new OperationResponse.Builder<>().result("Accepted '" + param + "' config").build();
+                        return new OperationResponse.Builder<>().result(String.format(CONFIG_ACCEPTED, param)).build();
                     }).
-                    orElseGet(() -> new OperationResponse.Builder<>().error("Path param is not present").build());
+                    orElseGet(() -> new OperationResponse.Builder<>().error(PATH_PARAM_NOT_PRESENT).build());
             writeResponse(httpExchange, response);
         } else {
-            throw new MethodNotAllowedException(METHOD_NOT_ALLOWED.getCode(), "Method not allowed");
+            throw new MethodNotAllowedException(METHOD_NOT_ALLOWED.getCode(), Constants.Messages.METHOD_NOT_ALLOWED);
         }
     }
 

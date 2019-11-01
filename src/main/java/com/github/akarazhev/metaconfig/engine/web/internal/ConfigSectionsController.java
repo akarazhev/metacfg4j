@@ -10,6 +10,7 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.engine.web.internal;
 
+import com.github.akarazhev.metaconfig.Constants;
 import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.ConfigService;
 import com.github.cliftonlabs.json_simple.JsonArray;
@@ -22,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.REQUEST_PARAM_NOT_PRESENT;
+import static com.github.akarazhev.metaconfig.Constants.Messages.STRING_TO_JSON_ERROR;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.GET;
 import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.METHOD_NOT_ALLOWED;
 
@@ -52,13 +55,13 @@ final class ConfigSectionsController extends AbstractController {
 
                             return new OperationResponse.Builder<>().result(sections).build();
                         } catch (Exception e) {
-                            return new OperationResponse.Builder<>().error("Request param can not be parsed").build();
+                            return new OperationResponse.Builder<>().error(STRING_TO_JSON_ERROR).build();
                         }
                     }).
-                    orElseGet(() -> new OperationResponse.Builder<>().error("Request param is not present").build());
+                    orElseGet(() -> new OperationResponse.Builder<>().error(REQUEST_PARAM_NOT_PRESENT).build());
             writeResponse(httpExchange, response);
         } else {
-            throw new MethodNotAllowedException(METHOD_NOT_ALLOWED.getCode(), "Method not allowed");
+            throw new MethodNotAllowedException(METHOD_NOT_ALLOWED.getCode(), Constants.Messages.METHOD_NOT_ALLOWED);
         }
     }
 

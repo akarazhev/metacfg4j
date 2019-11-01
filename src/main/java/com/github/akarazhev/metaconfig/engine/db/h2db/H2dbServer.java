@@ -20,6 +20,8 @@ import java.util.logging.Logger;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.IMPLEMENTATION_NOT_PROVIDED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_ALREADY_CREATED;
+import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STARTED;
+import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STOPPED;
 
 /**
  * The internal implementation of the db server.
@@ -58,7 +60,7 @@ public final class H2dbServer implements DbServer {
     public DbServer start() throws SQLException {
         if (!server.isRunning(true)) {
             server.start();
-            logger.log(Level.INFO, "Server started");
+            logger.log(Level.INFO, SERVER_STARTED);
         }
 
         return this;
@@ -71,7 +73,7 @@ public final class H2dbServer implements DbServer {
     public void stop() {
         if (server.isRunning(true)) {
             server.stop();
-            logger.log(Level.INFO, "Server stopped");
+            logger.log(Level.INFO, SERVER_STOPPED);
         }
     }
 }
