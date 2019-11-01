@@ -24,8 +24,8 @@ final class ConfigServiceImpl implements ConfigService {
     private final ConfigRepository configRepository;
     private Consumer<Config> consumer;
 
-    ConfigServiceImpl(final ConfigRepository configRepository) {
-        this.configRepository = configRepository;
+    private ConfigServiceImpl(final Builder builder) {
+        this.configRepository = builder.configRepository;
     }
 
     /**
@@ -88,5 +88,30 @@ final class ConfigServiceImpl implements ConfigService {
     @Override
     public void addConsumer(final Consumer<Config> consumer) {
         this.consumer = consumer;
+    }
+
+    /**
+     * Wraps and builds the instance of the config service.
+     */
+    public final static class Builder {
+        private final ConfigRepository configRepository;
+
+        /**
+         * Constructs a config service with a required parameter.
+         *
+         * @param configRepository a config repository.
+         */
+        public Builder(final ConfigRepository configRepository) {
+            this.configRepository = configRepository;
+        }
+
+        /**
+         * Builds a config service with a required parameter.
+         *
+         * @return a builder of the config service.
+         */
+        public ConfigService build() {
+            return new ConfigServiceImpl(this);
+        }
     }
 }

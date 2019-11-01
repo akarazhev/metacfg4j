@@ -21,11 +21,10 @@ import java.util.stream.Stream;
 final class ConfigRepositoryImpl implements ConfigRepository {
     // todo implement a real datasource
     private final DataSource dataSource;
-    private final Map<String, Config> inMemDataSource;
+    private final Map<String, Config> inMemDataSource = new ConcurrentHashMap<>();
 
-    ConfigRepositoryImpl(final DataSource dataSource) {
-        this.dataSource = dataSource;
-        this.inMemDataSource = new ConcurrentHashMap<>();
+    private ConfigRepositoryImpl(final Builder builder) {
+        this.dataSource = builder.dataSource;
     }
 
     /**
@@ -59,5 +58,17 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     @Override
     public void delete(final String name) {
         inMemDataSource.remove(name);
+    }
+
+    public final static class Builder {
+        private final DataSource dataSource;
+
+        public Builder(final DataSource dataSource) {
+            this.dataSource = dataSource;
+        }
+
+        public ConfigRepository build() {
+            return new ConfigRepositoryImpl(this);
+        }
     }
 }

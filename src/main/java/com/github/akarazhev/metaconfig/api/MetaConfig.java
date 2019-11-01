@@ -176,19 +176,14 @@ public final class MetaConfig implements ConfigService, Closeable {
             ConfigService configService;
             try {
                 // DB Server
-                if (dbConfig != null) {
-                    dbServer = DbServers.newServer(dbConfig).start();
-                } else {
-                    dbServer = DbServers.newServer().start();
-                }
+                dbServer = dbConfig == null ? DbServers.newServer().start() : DbServers.newServer(dbConfig).start();
                 // Connection pool
-                if (poolConfig != null) {
-                    connectionPool = ConnectionPools.newPool(poolConfig);
-                } else {
-                    connectionPool = ConnectionPools.newPool();
-                }
+                connectionPool = poolConfig == null ? ConnectionPools.newPool() : ConnectionPools.newPool(poolConfig);
+                // Config Repository
+                final ConfigRepository configRepository =
+                        new ConfigRepositoryImpl.Builder(connectionPool.getDataSource()).build();
                 // Config service
-                configService = new ConfigServiceImpl(new ConfigRepositoryImpl(connectionPool.getDataSource()));
+                configService = new ConfigServiceImpl.Builder(configRepository).build();
                 // Web server
                 if (webConfig != null) {
                     webServer = WebServers.newServer(webConfig, configService).start();
