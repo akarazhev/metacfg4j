@@ -99,12 +99,14 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     public Config saveAndFlush(final Config config) {
         if (config.getId() > 1) {
             try {
+                // Implement transaction support, batch push, rollbacks, optimistic locking
                 return updateConfig(config);
             } catch (final SQLException e) {
                 throw new RuntimeException(String.format(UPDATE_CONFIG_ERROR, config.getName()), e);
             }
         } else {
             try {
+                // Implement transaction support, batch push, rollbacks, optimistic locking
                 return insertConfig(config);
             } catch (final SQLException e) {
                 throw new RuntimeException(String.format(INSERT_CONFIG_ERROR, config.getName()), e);
