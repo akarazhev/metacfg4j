@@ -154,10 +154,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         final String sql = "INSERT INTO `CONFIGS` (`NAME`, `DESCRIPTION`, `VERSION`, `UPDATED`) VALUES (?, ?, ?, ?)";
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            statement.setString(1, config.getName());
-            statement.setString(2, config.getDescription());
-            statement.setLong(3, config.getVersion());
-            statement.setLong(4, config.getUpdated());
+            setStatement(config, statement);
             if (statement.executeUpdate() > 0) {
                 try (final ResultSet resultSet = statement.getGeneratedKeys()) {
                     if (resultSet.next()) {
@@ -173,13 +170,11 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     }
 
     private Config updateConfig(final Config config) throws SQLException {
-        final String sql = "UPDATE `CONFIGS` SET `NAME` = ?, `DESCRIPTION` = ?, `VERSION` = ?, `UPDATED` = ? WHERE `ID` = ?";
+        final String sql =
+                "UPDATE `CONFIGS` SET `NAME` = ?, `DESCRIPTION` = ?, `VERSION` = ?, `UPDATED` = ? WHERE `ID` = ?";
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, config.getName());
-            statement.setString(2, config.getDescription());
-            statement.setLong(3, config.getVersion());
-            statement.setLong(4, config.getUpdated());
+            setStatement(config, statement);
             statement.setLong(5, config.getId());
             if (statement.executeUpdate() > 0) {
                 return config;
@@ -187,6 +182,13 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                 throw new RuntimeException(String.format(UPDATE_CONFIG_ERROR, config.getName()));
             }
         }
+    }
+
+    private void setStatement(final Config config, final PreparedStatement statement) throws SQLException {
+        statement.setString(1, config.getName());
+        statement.setString(2, config.getDescription());
+        statement.setLong(3, config.getVersion());
+        statement.setLong(4, config.getUpdated());
     }
 
     /**
