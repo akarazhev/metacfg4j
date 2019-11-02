@@ -9,5 +9,5 @@
 *.ipr
 *.iws
 
-data
-target
+data/
+target/
