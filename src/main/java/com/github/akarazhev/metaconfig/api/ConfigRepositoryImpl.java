@@ -19,6 +19,7 @@ import java.sql.Statement;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.CONFIG_ID_ERROR;
@@ -38,7 +39,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
 
     private ConfigRepositoryImpl(final Builder builder) {
         this.dataSource = builder.dataSource;
-        createTables();
+        init(this.dataSource);
     }
 
     /**
@@ -135,20 +136,36 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         }
     }
 
-    private void createTables() {
+    private void init(final DataSource dataSource) {
+        Connection connection = null;
         try {
-            final String sql = "CREATE TABLE IF NOT EXISTS `CONFIGS` " +
-                    "(`ID` IDENTITY NOT NULL, " +
-                    "`NAME` VARCHAR(255) NOT NULL, " +
-                    "`DESCRIPTION` VARCHAR(1024), " +
-                    "`VERSION` INT NOT NULL, " +
-                    "`UPDATED` BIGINT NOT NULL)";
-            try (final Connection connection = dataSource.getConnection();
-                 final Statement statement = connection.createStatement()) {
-                statement.executeUpdate(sql);
-            }
+            connection = JDBCUtils.open(dataSource);
+            createTables(connection);
         } catch (final SQLException e) {
-            throw new RuntimeException(CREATE_CONFIG_TABLE_ERROR, e);
+            JDBCUtils.handle(connection, e);
+        } finally {
+            JDBCUtils.handle(connection);
+        }
+    }
+
+    private void createTables(final Connection connection) throws SQLException {
+        try {
+            try (final Statement statement = connection.createStatement()) {
+                statement.executeUpdate("CREATE TABLE IF NOT EXISTS `CONFIGS` " +
+                        "(`ID` IDENTITY NOT NULL, " +
+                        "`NAME` VARCHAR(255) NOT NULL, " +
+                        "`DESCRIPTION` VARCHAR(1024), " +
+                        "`VERSION` INT NOT NULL, " +
+                        "`UPDATED` BIGINT NOT NULL)");
+                statement.executeUpdate("CREATE TABLE IF NOT EXISTS `CONFIG_ATTRIBUTES` " +
+                        "(`ID` IDENTITY NOT NULL, " +
+                        "`CONFIG_ID` BIGINT NOT NULL, " +
+                        "`KEY` VARCHAR(255) NOT NULL, " +
+                        "`VALUE` VARCHAR(1024))");
+                connection.commit();
+            }
+        } catch (SQLException e) {
+            throw new SQLException(CREATE_CONFIG_TABLE_ERROR, e);
         }
     }
 
@@ -191,6 +208,36 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         statement.setString(2, config.getDescription());
         statement.setLong(3, config.getVersion());
         statement.setLong(4, config.getUpdated());
+    }
+
+    private static final class JDBCUtils {
+
+        private static Connection open(final DataSource dataSource) throws SQLException {
+            final Connection connection = Objects.requireNonNull(dataSource).getConnection();
+            connection.setAutoCommit(false);
+            return connection;
+        }
+
+        private static void handle(final Connection connection, final SQLException e) {
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException ex) {
+                    throw new RuntimeException("", e); //
+                }
+            }
+        }
+
+        private static void handle(final Connection connection) {
+            if (connection != null) {
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException e) {
+                    throw new RuntimeException(""); //
+                }
+            }
+        }
     }
 
     /**
