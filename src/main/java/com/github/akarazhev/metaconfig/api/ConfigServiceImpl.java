@@ -32,7 +32,7 @@ final class ConfigServiceImpl implements ConfigService {
      * {@inheritDoc}
      */
     @Override
-    public Config update(final Config config, final boolean override) {
+    public Stream<Config> update(final Config config, final boolean override) {
         // Ignore override at this moment
         return configRepository.saveAndFlush(config);
     }

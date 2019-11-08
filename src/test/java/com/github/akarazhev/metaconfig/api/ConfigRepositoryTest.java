@@ -66,7 +66,8 @@ class ConfigRepositoryTest {
 
     @BeforeEach
     void beforeEach() {
-        id = configRepository.saveAndFlush(new Config.Builder(SIMPLE_CONFIG, Collections.emptyList()).build()).getId();
+        final Config simpleConfig = new Config.Builder(SIMPLE_CONFIG, Collections.emptyList()).build();
+        configRepository.saveAndFlush(simpleConfig).findFirst().ifPresent(config -> id = config.getId());
     }
 
     @AfterEach

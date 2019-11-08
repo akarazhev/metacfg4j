@@ -46,7 +46,7 @@ public final class MetaConfig implements ConfigService, Closeable {
      * {@inheritDoc}
      */
     @Override
-    public Config update(final Config config, final boolean override) {
+    public Stream<Config> update(final Config config, final boolean override) {
         return configService.update(config, override);
     }
 

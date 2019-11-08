@@ -54,9 +54,9 @@ class WebServerTest {
             }};
 
             @Override
-            public Config update(final Config config, final boolean override) {
+            public Stream<Config> update(final Config config, final boolean override) {
                 map.put(config.getName(), config);
-                return config;
+                return Stream.of(config);
             }
 
             @Override

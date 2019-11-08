@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 /**
  * Provides repository methods to create, read, update and delete operations.
  */
-interface ConfigRepository {
+interface ConfigRepository { // todo: all methods as a stream
     /**
      * Returns configuration models for a configuration name.
      *
@@ -35,9 +35,9 @@ interface ConfigRepository {
      * Saves and flushes a configuration model.
      *
      * @param config a configuration model.
-     * @return an updated configuration model.
+     * @return a stream of an updated configuration model.
      */
-    Config saveAndFlush(final Config config);
+    Stream<Config> saveAndFlush(final Config config);
 
     /**
      * Deletes a configuration model.

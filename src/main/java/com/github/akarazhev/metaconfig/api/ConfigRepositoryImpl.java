@@ -97,7 +97,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
      * {@inheritDoc}
      */
     @Override
-    public Config saveAndFlush(final Config config) {
+    public Stream<Config> saveAndFlush(final Config config) {
         if (config.getId() > 1) {
             try {
                 // Implement transaction support, batch push, rollbacks, optimistic locking
@@ -184,7 +184,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         }
     }
 
-    private Config insertConfig(final Config config) throws SQLException {
+    private Stream<Config> insertConfig(final Config config) throws SQLException {
         final String sql = "INSERT INTO `CONFIGS` (`NAME`, `DESCRIPTION`, `VERSION`, `UPDATED`) VALUES (?, ?, ?, ?)";
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -192,7 +192,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
             if (statement.executeUpdate() > 0) {
                 try (final ResultSet resultSet = statement.getGeneratedKeys()) {
                     if (resultSet.next()) {
-                        return new Config.Builder(config).id(resultSet.getInt(1)).build();
+                        return Stream.of(new Config.Builder(config).id(resultSet.getInt(1)).build());
                     } else {
                         throw new RuntimeException(CONFIG_ID_ERROR);
                     }
@@ -203,7 +203,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         }
     }
 
-    private Config updateConfig(final Config config) throws SQLException {
+    private Stream<Config> updateConfig(final Config config) throws SQLException {
         final String sql =
                 "UPDATE `CONFIGS` SET `NAME` = ?, `DESCRIPTION` = ?, `VERSION` = ?, `UPDATED` = ? WHERE `ID` = ?";
         try (final Connection connection = dataSource.getConnection();
@@ -211,7 +211,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
             setStatement(config, statement);
             statement.setLong(5, config.getId());
             if (statement.executeUpdate() > 0) {
-                return config;
+                return Stream.of(config);
             } else {
                 throw new RuntimeException(String.format(UPDATE_CONFIG_ERROR, config.getName()));
             }

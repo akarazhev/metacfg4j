@@ -67,6 +67,7 @@ final class ConfigController extends AbstractController {
             try (final BufferedReader bufferedReader =
                          new BufferedReader(new InputStreamReader(httpExchange.getRequestBody(), StandardCharsets.UTF_8))) {
                 final Config config = new Config.Builder((JsonObject) Jsoner.deserialize(bufferedReader)).build();
+                // todo: fix the result
                 writeResponse(httpExchange,
                         new OperationResponse.Builder<>().result(configService.update(config, override)).build());
             } catch (final JsonException e) {

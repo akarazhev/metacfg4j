@@ -17,15 +17,15 @@ import java.util.stream.Stream;
 /**
  * Provides service methods to create, read, update and delete operations.
  */
-public interface ConfigService {
+public interface ConfigService { // todo: all methods as a stream
     /**
      * Updates a configuration model.
      *
-     * @param config a configuration model.
+     * @param config   a configuration model.
      * @param override indicates if the existed configuration model should be override or not.
-     * @return an updated configuration model.
+     * @return a stream of an updated configuration model.
      */
-    Config update(final Config config, final boolean override);
+    Stream<Config> update(final Config config, final boolean override);
 
     /**
      * Returns all configuration names.
