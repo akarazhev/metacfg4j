@@ -162,6 +162,21 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                         "`CONFIG_ID` BIGINT NOT NULL, " +
                         "`KEY` VARCHAR(255) NOT NULL, " +
                         "`VALUE` VARCHAR(1024))");
+                statement.executeUpdate("CREATE TABLE IF NOT EXISTS `PROPERTIES` " +
+                        "(`ID` IDENTITY NOT NULL, " +
+                        "`PROPERTY_ID` BIGINT NOT NULL, " +
+                        "`CONFIG_ID` BIGINT NOT NULL, " +
+                        "`NAME` VARCHAR(255) NOT NULL, " +
+                        "`CAPTION` VARCHAR(255), " +
+                        "`DESCRIPTION` VARCHAR(1024), " +
+                        "`TYPE` ENUM NOT NULL, " +
+                        "`VALUE` VARCHAR(4096) NOT NULL, " +
+                        "`VERSION` INT NOT NULL)");
+                statement.executeUpdate("CREATE TABLE IF NOT EXISTS `PROPERTY_ATTRIBUTES` " +
+                        "(`ID` IDENTITY NOT NULL, " +
+                        "`PROPERTY_ID` BIGINT NOT NULL, " +
+                        "`KEY` VARCHAR(255) NOT NULL, " +
+                        "`VALUE` VARCHAR(1024))");
                 connection.commit();
             }
         } catch (SQLException e) {
