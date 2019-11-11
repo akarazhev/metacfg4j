@@ -11,12 +11,18 @@
 package com.github.akarazhev.metaconfig.engine.web.internal;
 
 import com.github.akarazhev.metaconfig.api.ConfigService;
+import com.github.cliftonlabs.json_simple.JsonArray;
+import com.github.cliftonlabs.json_simple.JsonException;
+import com.github.cliftonlabs.json_simple.Jsoner;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,6 +38,8 @@ import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.OK
  */
 abstract class AbstractController {
     private final static Logger logger = Logger.getLogger(ConfigServer.class.getSimpleName());
+    final static String REQ_PARAM_NAMES = "names";
+    final static String REQ_PARAM_OVERRIDE = "override";
     final ConfigService configService;
 
     AbstractController(final AbstractBuilder abstractBuilder) {
@@ -90,6 +98,18 @@ abstract class AbstractController {
                         map(p -> p.split("=")[1]).
                         findFirst() :
                 Optional.empty();
+    }
+
+    /**
+     * Returns values belong to the param.
+     *
+     * @param param a param to get a value of.
+     * @return a stream of values.
+     * @throws JsonException when a parser encounters a problem.
+     */
+    Stream<String> getValues(final String param) throws JsonException {
+        final String json = new String(Base64.getDecoder().decode(param), StandardCharsets.UTF_8);
+        return ((JsonArray) Jsoner.deserialize(json)).stream().map(Objects::toString);
     }
 
     /**

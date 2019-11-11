@@ -24,12 +24,12 @@ import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.CONFIG_ID_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_CONFIG_TABLE_ERROR;
-import static com.github.akarazhev.metaconfig.Constants.Messages.DELETE_CONFIG_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.DB_CONNECTION_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.DB_ROLLBACK_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.DELETE_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_CONFIG_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIGS_ERROR;
-import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIG_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_CONFIG_ERROR;
-import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_ID_VALUE;
 
 /**
  * {@inheritDoc}
@@ -46,29 +46,37 @@ final class ConfigRepositoryImpl implements ConfigRepository {
      * {@inheritDoc}
      */
     @Override
-    public Stream<Config> findByName(final String name) {
-        try {
-            final String sql = "SELECT `ID`, `NAME`, `DESCRIPTION`, `VERSION`, `UPDATED` FROM `CONFIGS` WHERE `NAME` = ?";
-            try (final Connection connection = dataSource.getConnection();
-                 final PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setString(1, name);
-                try (final ResultSet resultSet = statement.executeQuery()) {
-                    final List<Config> configs = new LinkedList<>();
-                    if (resultSet.next()) {
-                        configs.add(new Config.Builder(resultSet.getString(2), Collections.emptyList()).
-                                id(resultSet.getInt(1)).
-                                description(resultSet.getString(3)).
-                                version(resultSet.getInt(4)).
-                                updated(resultSet.getLong(5)).
-                                build());
-                    }
+    public Stream<Config> findByNames(final Stream<String> names) {
+        if (names.count() > 0) {
+            try {
+                final StringBuilder sql = new StringBuilder("SELECT `ID`, `NAME`, `DESCRIPTION`, `VERSION`, `UPDATED` " +
+                        "FROM `CONFIGS` WHERE `NAME` = ?");
+                names.skip(1).forEach(name -> sql.append(" OR `NAME` = ?"));
 
-                    return configs.stream();
+                try (final Connection connection = dataSource.getConnection();
+                     final PreparedStatement statement = connection.prepareStatement(sql.toString())) {
+                    setStatement(names, statement);
+
+                    try (final ResultSet resultSet = statement.executeQuery()) {
+                        final List<Config> configs = new LinkedList<>();
+                        if (resultSet.next()) {
+                            configs.add(new Config.Builder(resultSet.getString(2), Collections.emptyList()).
+                                    id(resultSet.getInt(1)).
+                                    description(resultSet.getString(3)).
+                                    version(resultSet.getInt(4)).
+                                    updated(resultSet.getLong(5)).
+                                    build());
+                        }
+
+                        return configs.stream();
+                    }
                 }
+            } catch (final SQLException e) {
+                throw new RuntimeException(RECEIVED_CONFIGS_ERROR, e);
             }
-        } catch (final SQLException e) {
-            throw new RuntimeException(String.format(RECEIVED_CONFIG_ERROR, name), e);
         }
+
+        return Stream.empty();
     }
 
     /**
@@ -77,10 +85,9 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     @Override
     public Stream<String> findNames() {
         try {
-            final String sql = "SELECT `NAME` FROM `CONFIGS`";
             try (final Connection connection = dataSource.getConnection();
                  final Statement statement = connection.createStatement();
-                 final ResultSet resultSet = statement.executeQuery(sql)) {
+                 final ResultSet resultSet = statement.executeQuery("SELECT `NAME` FROM `CONFIGS`")) {
                 final List<String> names = new LinkedList<>();
                 while (resultSet.next()) {
                     names.add(resultSet.getString(1));
@@ -97,7 +104,54 @@ final class ConfigRepositoryImpl implements ConfigRepository {
      * {@inheritDoc}
      */
     @Override
-    public Stream<Config> saveAndFlush(final Config config) {
+    public Stream<Config> saveAndFlush(final Stream<Config> configs) {
+        Connection connection = null;
+        try {
+            connection = JDBCUtils.open(dataSource);
+            return saveAndFlush(connection, configs);
+        } catch (final SQLException e) {
+            JDBCUtils.rollback(connection, e);
+        } finally {
+            JDBCUtils.close(connection);
+        }
+
+        return Stream.empty();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int delete(final Stream<String> names) {
+        if (names.count() > 0) {
+            Connection connection = null;
+            try {
+                connection = JDBCUtils.open(dataSource);
+                return delete(connection, names);
+            } catch (final SQLException e) {
+                JDBCUtils.rollback(connection, e);
+            } finally {
+                JDBCUtils.close(connection);
+            }
+        }
+
+        return 0;
+    }
+
+    private void init(final DataSource dataSource) {
+        Connection connection = null;
+        try {
+            connection = JDBCUtils.open(dataSource);
+            createTables(connection);
+        } catch (final SQLException e) {
+            JDBCUtils.rollback(connection, e);
+        } finally {
+            JDBCUtils.close(connection);
+        }
+    }
+
+    private Stream<Config> saveAndFlush(final Connection connection, final Stream<Config> configs) throws SQLException {
+        /*
         if (config.getId() > 1) {
             try {
                 // Implement transaction support, batch push, rollbacks, optimistic locking
@@ -113,38 +167,24 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                 throw new RuntimeException(String.format(INSERT_CONFIG_ERROR, config.getName()), e);
             }
         }
+        */
+        // todo
+        return configs;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void delete(final int id) {
-        if (id > 0) {
-            try {
-                final String sql = "DELETE FROM `CONFIGS` WHERE `ID` = ?";
-                try (final Connection connection = dataSource.getConnection();
-                     final PreparedStatement statement = connection.prepareStatement(sql)) {
-                    statement.setInt(1, id);
-                    statement.executeUpdate();
-                }
-            } catch (final SQLException e) {
-                throw new RuntimeException(DELETE_CONFIG_ERROR, e);
-            }
-        } else {
-            throw new RuntimeException(WRONG_ID_VALUE);
-        }
-    }
-
-    private void init(final DataSource dataSource) {
-        Connection connection = null;
+    private int delete(final Connection connection, final Stream<String> names) throws SQLException {
         try {
-            connection = JDBCUtils.open(dataSource);
-            createTables(connection);
+            final StringBuilder sql = new StringBuilder("DELETE FROM `CONFIGS` WHERE `NAME` = ?");
+            names.skip(1).forEach(name -> sql.append(" OR `NAME` = ?"));
+
+            try (final PreparedStatement statement = connection.prepareStatement(sql.toString())) {
+                setStatement(names, statement);
+                final int deleted = statement.executeUpdate();
+                connection.commit();
+                return deleted;
+            }
         } catch (final SQLException e) {
-            JDBCUtils.handle(connection, e);
-        } finally {
-            JDBCUtils.handle(connection);
+            throw new SQLException(DELETE_CONFIGS_ERROR, e);
         }
     }
 
@@ -225,6 +265,13 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         statement.setLong(4, config.getUpdated());
     }
 
+    private void setStatement(final Stream<String> names, final PreparedStatement statement) throws SQLException {
+        Object[] args = names.toArray();
+        for (int i = 0; i < args.length; i++) {
+            statement.setString(i + 1, args[i].toString());
+        }
+    }
+
     private static final class JDBCUtils {
 
         private static Connection open(final DataSource dataSource) throws SQLException {
@@ -233,23 +280,23 @@ final class ConfigRepositoryImpl implements ConfigRepository {
             return connection;
         }
 
-        private static void handle(final Connection connection, final SQLException e) {
+        private static void rollback(final Connection connection, final SQLException e) {
             if (connection != null) {
                 try {
                     connection.rollback();
                 } catch (SQLException ex) {
-                    throw new RuntimeException("", e); //
+                    throw new RuntimeException(DB_ROLLBACK_ERROR, e);
                 }
             }
         }
 
-        private static void handle(final Connection connection) {
+        private static void close(final Connection connection) {
             if (connection != null) {
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
                 } catch (SQLException e) {
-                    throw new RuntimeException(""); //
+                    throw new RuntimeException(DB_CONNECTION_ERROR);
                 }
             }
         }
@@ -266,7 +313,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
          *
          * @param dataSource a datasource.
          */
-        public Builder(final DataSource dataSource) {
+        Builder(final DataSource dataSource) {
             this.dataSource = dataSource;
         }
 

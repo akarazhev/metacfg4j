@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -32,7 +33,7 @@ class ConfigRepositoryTest {
     private static ConnectionPool connectionPool;
     private static ConfigRepository configRepository;
     private static DbServer dbServer;
-    private int id;
+    private String name;
 
     @BeforeAll
     static void beforeAll() throws Exception {
@@ -67,17 +68,17 @@ class ConfigRepositoryTest {
     @BeforeEach
     void beforeEach() {
         final Config simpleConfig = new Config.Builder(SIMPLE_CONFIG, Collections.emptyList()).build();
-        configRepository.saveAndFlush(simpleConfig).findFirst().ifPresent(config -> id = config.getId());
+        configRepository.saveAndFlush(Stream.of(simpleConfig)).findFirst().ifPresent(config -> name = config.getName());
     }
 
     @AfterEach
     void afterEach() {
-        configRepository.delete(id);
+        configRepository.delete(Stream.of(name));
     }
 
     @Test
     void findConfigByName() {
-        final Optional<Config> config = configRepository.findByName(SIMPLE_CONFIG).findFirst();
+        final Optional<Config> config = configRepository.findByNames(Stream.of(SIMPLE_CONFIG)).findFirst();
         // Check test results
         assertTrue(config.isPresent());
         assertEquals(SIMPLE_CONFIG, config.get().getName());

@@ -25,7 +25,6 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STARTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STOPPED;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.API.ACCEPT_CONFIG;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG;
-import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIGS;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG_NAMES;
 
 /**
@@ -45,7 +44,6 @@ public final class ConfigServer implements WebServer {
         httpServer = HttpServer.create(new InetSocketAddress(8000), 0);
         httpServer.createContext(ACCEPT_CONFIG, new AcceptConfigController.Builder(configService).build()::handle);
         httpServer.createContext(CONFIG_NAMES, new ConfigNamesController.Builder(configService).build()::handle);
-        httpServer.createContext(CONFIGS, new ConfigsController.Builder(configService).build()::handle);
         httpServer.createContext(CONFIG, new ConfigController.Builder(configService).build()::handle);
         httpServer.setExecutor(null);
     }

@@ -10,11 +10,7 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -32,9 +28,9 @@ final class ConfigServiceImpl implements ConfigService {
      * {@inheritDoc}
      */
     @Override
-    public Stream<Config> update(final Config config, final boolean override) {
-        // Ignore override at this moment
-        return configRepository.saveAndFlush(config);
+    public Stream<Config> update(final Stream<Config> configs, final boolean override) {
+        // todo Ignore override at this moment
+        return configRepository.saveAndFlush(configs);
     }
 
     /**
@@ -50,26 +46,23 @@ final class ConfigServiceImpl implements ConfigService {
      */
     @Override
     public Stream<Config> get() {
-        Stream<String> names = configRepository.findNames();
-        Collection<Config> configs = new ArrayList<>((int) names.count());
-        names.forEach(name -> configs.addAll(configRepository.findByName(name).collect(Collectors.toList())));
-        return configs.stream();
+        return get(getNames());
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Optional<Config> get(final String name) {
-        return configRepository.findByName(name).findFirst();
+    public Stream<Config> get(final Stream<String> names) {
+        return configRepository.findByNames(names);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void remove(final String name) {
-        get(name).ifPresent(config -> configRepository.delete(config.getId()));
+    public int remove(final Stream<String> names) {
+        return configRepository.delete(names);
     }
 
     /**
@@ -78,7 +71,7 @@ final class ConfigServiceImpl implements ConfigService {
     @Override
     public void accept(final String name) {
         if (consumer != null) {
-            get(name).ifPresent(config -> consumer.accept(config));
+            get(Stream.of(name)).forEach(config -> consumer.accept(config));
         }
     }
 

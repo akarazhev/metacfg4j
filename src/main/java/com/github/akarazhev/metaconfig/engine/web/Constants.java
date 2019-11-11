@@ -16,9 +16,10 @@ package com.github.akarazhev.metaconfig.engine.web;
 public final class Constants {
 
     private Constants() {
-        // Constants class
+        throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
     }
 
+    private static final String CREATE_CONSTANT_CLASS_ERROR = "Constant class can not be created.";
     public static final String CONTENT_TYPE = "Content-Type";
     public static final String APPLICATION_JSON = "application/json";
     public static final String ACCEPT = "Accept";
@@ -29,7 +30,7 @@ public final class Constants {
     public final static class Method {
 
         private Method() {
-            // Constants class
+            throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
         }
 
         public static final String POST = "POST";
@@ -44,12 +45,11 @@ public final class Constants {
     public final static class API {
 
         private API() {
-            // Constants class
+            throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
         }
 
         public static final String ACCEPT_CONFIG = "/api/metacfg/accept_config";
         public static final String CONFIG_NAMES = "/api/metacfg/config_names";
-        public static final String CONFIGS = "/api/metacfg/configs";
         public static final String CONFIG = "/api/metacfg/config";
     }
 }

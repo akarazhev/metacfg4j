@@ -19,7 +19,6 @@ import com.github.akarazhev.metaconfig.engine.web.WebServers;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -46,8 +45,8 @@ public final class MetaConfig implements ConfigService, Closeable {
      * {@inheritDoc}
      */
     @Override
-    public Stream<Config> update(final Config config, final boolean override) {
-        return configService.update(config, override);
+    public Stream<Config> update(final Stream<Config> configs, final boolean override) {
+        return configService.update(configs, override);
     }
 
     /**
@@ -70,16 +69,16 @@ public final class MetaConfig implements ConfigService, Closeable {
      * {@inheritDoc}
      */
     @Override
-    public Optional<Config> get(final String name) {
-        return configService.get(name);
+    public Stream<Config> get(final Stream<String> names) {
+        return configService.get(names);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void remove(final String name) {
-        configService.remove(name);
+    public int remove(final Stream<String> names) {
+        return configService.remove(names);
     }
 
     /**

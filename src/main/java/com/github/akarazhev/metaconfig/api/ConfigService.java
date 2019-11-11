@@ -10,22 +10,21 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 /**
  * Provides service methods to create, read, update and delete operations.
  */
-public interface ConfigService { // todo: all methods as a stream
+public interface ConfigService {
     /**
-     * Updates a configuration model.
+     * Updates configuration models.
      *
-     * @param config   a configuration model.
+     * @param configs  a stream of configuration models.
      * @param override indicates if the existed configuration model should be override or not.
-     * @return a stream of an updated configuration model.
+     * @return a stream of updated configuration models.
      */
-    Stream<Config> update(final Config config, final boolean override);
+    Stream<Config> update(final Stream<Config> configs, final boolean override);
 
     /**
      * Returns all configuration names.
@@ -42,19 +41,20 @@ public interface ConfigService { // todo: all methods as a stream
     Stream<Config> get();
 
     /**
-     * Returns a configuration model by the name.
+     * Returns configuration models by names.
      *
-     * @param name a configuration name.
-     * @return a configuration model
+     * @param names a stream of names.
+     * @return a stream of configurations models.
      */
-    Optional<Config> get(final String name);
+    Stream<Config> get(final Stream<String> names);
 
     /**
-     * Removes a configuration model by the name.
+     * Removes configuration models by names.
      *
-     * @param name a configuration name.
+     * @param names a stream of names.
+     * @return a number of deleted models.
      */
-    void remove(final String name);
+    int remove(final Stream<String> names);
 
     /**
      * Removes a configuration model by the name.

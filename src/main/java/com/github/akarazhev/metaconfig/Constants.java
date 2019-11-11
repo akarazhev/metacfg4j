@@ -16,7 +16,7 @@ package com.github.akarazhev.metaconfig;
 public final class Constants {
 
     private Constants() {
-        // Constants class
+        throw new AssertionError(Messages.CREATE_CONSTANT_CLASS_ERROR);
     }
 
     /**
@@ -25,9 +25,11 @@ public final class Constants {
     public final static class Messages {
 
         private Messages() {
-            // Constants class
+            throw new AssertionError(Messages.CREATE_CONSTANT_CLASS_ERROR);
         }
 
+        public static final String CREATE_FACTORY_CLASS_ERROR = "Factory class can not be created.";
+        public static final String CREATE_CONSTANT_CLASS_ERROR = "Constant class can not be created.";
         public static final String IMPLEMENTATION_NOT_PROVIDED = "The library does not provide implementation.";
         public static final String META_CONFIG_ERROR = "MetaConfig can not be instantiated.";
         public static final String STRING_TO_JSON_ERROR = "String can not be parsed to JSON.";
@@ -42,14 +44,15 @@ public final class Constants {
         public static final String PATH_PARAM_NOT_PRESENT = "Path param is not present.";
         public static final String REQUEST_PARAM_NOT_PRESENT = "Request param is not present.";
         public static final String JSON_TO_CONFIG_ERROR = "JSON can not be parsed to config.";
-        public static final String CONFIG_NOT_FOUND = "Config not found.";
         public static final String CONFIG_ACCEPTED = "Accepted '%s' config.";
         public static final String CREATE_CONFIG_TABLE_ERROR = "'Configs' table can not be created.";
         public static final String INSERT_CONFIG_ERROR = "'%s' instance can not be inserted.";
         public static final String UPDATE_CONFIG_ERROR = "'%s' instance can not be updated.";
-        public static final String RECEIVED_CONFIG_ERROR = "'%s' instance can not be received.";
         public static final String RECEIVED_CONFIGS_ERROR = "Config instances can not be received.";
-        public static final String DELETE_CONFIG_ERROR = "Config with id '%d' can not be deleted.";
-        public static final String CONFIG_ID_ERROR = "'Id can not be set.";
+        public static final String DELETE_CONFIGS_ERROR = "Configs can not be deleted.";
+        public static final String SAVE_CONFIGS_ERROR = "Configs can not be saved.";
+        public static final String CONFIG_ID_ERROR = "Id can not be set.";
+        public static final String DB_ROLLBACK_ERROR = "Database rollback error.";
+        public static final String DB_CONNECTION_ERROR = "Database connection error.";
     }
 }

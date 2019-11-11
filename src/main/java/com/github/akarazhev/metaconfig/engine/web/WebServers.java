@@ -22,7 +22,7 @@ import java.io.IOException;
 public final class WebServers {
 
     private WebServers() {
-        // Factory class
+        throw new AssertionError("Factory class ca not be ");
     }
 
     /**

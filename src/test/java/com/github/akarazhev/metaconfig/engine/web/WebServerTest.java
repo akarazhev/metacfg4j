@@ -14,18 +14,21 @@ import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.ConfigService;
 import com.github.akarazhev.metaconfig.api.Property;
 import com.github.cliftonlabs.json_simple.JsonObject;
+import com.github.cliftonlabs.json_simple.Jsoner;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.ACCEPT;
@@ -54,9 +57,13 @@ class WebServerTest {
             }};
 
             @Override
-            public Stream<Config> update(final Config config, final boolean override) {
-                map.put(config.getName(), config);
-                return Stream.of(config);
+            public Stream<Config> update(final Stream<Config> configs, final boolean override) {
+                List<Config> list = configs.collect(Collectors.toList());
+                for (Config config : list) {
+                    map.put(config.getName(), config);
+                }
+
+                return list.stream();
             }
 
             @Override
@@ -70,19 +77,23 @@ class WebServerTest {
             }
 
             @Override
-            public Optional<Config> get(final String name) {
-                return Optional.ofNullable(map.get(name));
+            public Stream<Config> get(final Stream<String> names) {
+                final List<Config> configs = new LinkedList<>();
+                names.forEach(name -> configs.add(map.get(name)));
+                return configs.stream();
             }
 
             @Override
-            public void remove(final String name) {
-                map.remove(name);
+            public int remove(final Stream<String> names) {
+                int size = map.size();
+                names.forEach(map::remove);
+                return size - map.size();
             }
 
             @Override
             public void accept(final String name) {
                 if (consumer != null) {
-                    get(name).ifPresent(config -> consumer.accept(config));
+                    get(Stream.of(name)).findAny().ifPresent(config -> consumer.accept(config));
                 }
             }
 
@@ -169,7 +180,7 @@ class WebServerTest {
         properties.add(new Property.Builder(METHOD, PUT).build());
         properties.add(new Property.Builder(ACCEPT, APPLICATION_JSON).build());
         properties.add(new Property.Builder(CONTENT_TYPE, APPLICATION_JSON).build());
-        properties.add(new Property.Builder(CONTENT, config.toJson()).build());
+        properties.add(new Property.Builder(CONTENT, Jsoner.serialize(new Config[]{config})).build());
 
         config = new Config.Builder(CONFIG_NAME, properties).build();
         final WebClient client = new WebClient.Builder(config).build();
@@ -183,7 +194,8 @@ class WebServerTest {
     @Test
     void deleteConfigSection() throws Exception {
         final List<Property> properties = new ArrayList<>(2);
-        properties.add(new Property.Builder(URL, "http://localhost:8000/api/metacfg/config/name").build());
+        properties.add(new Property.Builder(URL, "http://localhost:8000/api/metacfg/config/" +
+                new String(Base64.getEncoder().encode("[\"name\"]".getBytes()))).build());
         properties.add(new Property.Builder(METHOD, DELETE).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
@@ -193,6 +205,6 @@ class WebServerTest {
         // Get the response
         JsonObject jsonObject = client.getJsonContent();
         assertEquals(true, jsonObject.get("success"));
-        assertEquals(true, jsonObject.get("result"));
+        assertEquals(1, ((BigDecimal) jsonObject.get("result")).intValue());
     }
 }

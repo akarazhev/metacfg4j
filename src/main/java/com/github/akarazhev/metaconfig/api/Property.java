@@ -141,7 +141,7 @@ public final class Property extends AbstractConfig {
     public String[] asArray() {
         if (Type.STRING_ARRAY.equals(type)) {
             return Jsoner.deserialize(value, new JsonArray()).stream().
-                    map(Object::toString).
+                    map(Objects::toString).
                     toArray(String[]::new);
         }
 

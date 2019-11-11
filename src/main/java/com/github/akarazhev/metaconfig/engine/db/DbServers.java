@@ -15,13 +15,15 @@ import com.github.akarazhev.metaconfig.engine.db.h2db.H2dbServer;
 
 import java.sql.SQLException;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_FACTORY_CLASS_ERROR;
+
 /**
  * Provides factory methods to create a db server.
  */
 public final class DbServers {
 
     private DbServers() {
-        // Factory class
+        throw new AssertionError(CREATE_FACTORY_CLASS_ERROR);
     }
 
     /**

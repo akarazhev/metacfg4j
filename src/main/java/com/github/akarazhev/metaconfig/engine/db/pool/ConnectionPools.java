@@ -16,6 +16,7 @@ import org.h2.jdbcx.JdbcConnectionPool;
 import javax.sql.DataSource;
 import java.io.IOException;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_FACTORY_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.IMPLEMENTATION_NOT_PROVIDED;
 
 /**
@@ -24,7 +25,7 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.IMPLEMENTATION_
 public final class ConnectionPools {
 
     private ConnectionPools() {
-        // Factory class
+        throw new AssertionError(CREATE_FACTORY_CLASS_ERROR);
     }
 
     /**
