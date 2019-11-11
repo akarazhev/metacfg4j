@@ -23,7 +23,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.CONFIG_NOT_FOUND;
 import static com.github.akarazhev.metaconfig.Constants.Messages.JSON_TO_CONFIG_ERROR;
@@ -67,9 +69,8 @@ final class ConfigController extends AbstractController {
             try (final BufferedReader bufferedReader =
                          new BufferedReader(new InputStreamReader(httpExchange.getRequestBody(), StandardCharsets.UTF_8))) {
                 final Config config = new Config.Builder((JsonObject) Jsoner.deserialize(bufferedReader)).build();
-                // todo: fix the result
-                writeResponse(httpExchange,
-                        new OperationResponse.Builder<>().result(configService.update(config, override)).build());
+                final Collection<Config> updatedConfigs = configService.update(config, override).collect(Collectors.toList());
+                writeResponse(httpExchange, new OperationResponse.Builder<>().result(updatedConfigs).build());
             } catch (final JsonException e) {
                 throw new InvalidRequestException(BAD_REQUEST.getCode(), JSON_TO_CONFIG_ERROR);
             }
