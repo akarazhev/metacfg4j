@@ -5,7 +5,7 @@ may extend an existed implementation to provide such software solutions as: vari
 
 ## Architecture
 
-It has been written without frameworks and delivered with two dependencies:
+This is a high-level abstraction based on the low-level API. It has been written without frameworks and delivered with two dependencies:
 
  &#8658; Embedded H2db (https://www.h2database.com)<br/>
  &#8658; JSON simple (https://github.com/fangyidong/json-simple)<br/>
