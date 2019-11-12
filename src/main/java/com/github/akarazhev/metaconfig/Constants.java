@@ -46,12 +46,10 @@ public final class Constants {
         public static final String JSON_TO_CONFIG_ERROR = "JSON can not be parsed to config.";
         public static final String CONFIG_ACCEPTED = "Accepted '%s' config.";
         public static final String CREATE_CONFIG_TABLE_ERROR = "'Configs' table can not be created.";
-        public static final String INSERT_CONFIG_ERROR = "'%s' instance can not be inserted.";
-        public static final String UPDATE_CONFIG_ERROR = "'%s' instance can not be updated.";
+        public static final String INSERT_CONFIGS_ERROR = "Configs instances can not be inserted.";
+        public static final String UPDATE_CONFIGS_ERROR = "Configs instances can not be updated.";
         public static final String RECEIVED_CONFIGS_ERROR = "Config instances can not be received.";
         public static final String DELETE_CONFIGS_ERROR = "Configs can not be deleted.";
-        public static final String SAVE_CONFIGS_ERROR = "Configs can not be saved.";
-        public static final String CONFIG_ID_ERROR = "Id can not be set.";
         public static final String DB_ROLLBACK_ERROR = "Database rollback error.";
         public static final String DB_CONNECTION_ERROR = "Database connection error.";
     }

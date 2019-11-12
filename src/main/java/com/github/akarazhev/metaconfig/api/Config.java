@@ -183,7 +183,7 @@ public final class Config extends AbstractConfig {
     public String toString() {
         return "Config{" +
                 "id=" + id +
-                "name='" + name + '\'' +
+                ", name='" + name + '\'' +
                 ", version=" + version +
                 ", updated=" + updated +
                 '}';
