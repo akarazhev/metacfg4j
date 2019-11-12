@@ -16,6 +16,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -47,36 +48,35 @@ final class ConfigRepositoryImpl implements ConfigRepository {
      */
     @Override
     public Stream<Config> findByNames(final Stream<String> names) {
-        if (names.count() > 0) {
-            try {
-                final StringBuilder sql = new StringBuilder("SELECT `ID`, `NAME`, `DESCRIPTION`, `VERSION`, `UPDATED` " +
-                        "FROM `CONFIGS` WHERE `NAME` = ?");
-                names.skip(1).forEach(name -> sql.append(" OR `NAME` = ?"));
-
-                try (final Connection connection = dataSource.getConnection();
-                     final PreparedStatement statement = connection.prepareStatement(sql.toString())) {
-                    setStatement(names, statement);
-
-                    try (final ResultSet resultSet = statement.executeQuery()) {
-                        final List<Config> configs = new LinkedList<>();
-                        if (resultSet.next()) {
-                            configs.add(new Config.Builder(resultSet.getString(2), Collections.emptyList()).
-                                    id(resultSet.getInt(1)).
-                                    description(resultSet.getString(3)).
-                                    version(resultSet.getInt(4)).
-                                    updated(resultSet.getLong(5)).
-                                    build());
-                        }
-
-                        return configs.stream();
-                    }
-                }
-            } catch (final SQLException e) {
-                throw new RuntimeException(RECEIVED_CONFIGS_ERROR, e);
+        try {
+            final StringBuilder sql = new StringBuilder("SELECT `ID`, `NAME`, `DESCRIPTION`, `VERSION`, `UPDATED` " +
+                    "FROM `CONFIGS` WHERE `NAME` = ?");
+            final String[] nameArray = names.toArray(String[]::new);
+            if (nameArray.length > 1) {
+                Arrays.stream(nameArray).skip(1).forEach(name -> sql.append(" OR `NAME` = ?"));
             }
-        }
 
-        return Stream.empty();
+            try (final Connection connection = dataSource.getConnection();
+                 final PreparedStatement statement = connection.prepareStatement(sql.toString())) {
+                setStatement(nameArray, statement);
+
+                try (final ResultSet resultSet = statement.executeQuery()) {
+                    final List<Config> configs = new LinkedList<>();
+                    while (resultSet.next()) {
+                        configs.add(new Config.Builder(resultSet.getString(2), Collections.emptyList()).
+                                id(resultSet.getInt(1)).
+                                description(resultSet.getString(3)).
+                                version(resultSet.getInt(4)).
+                                updated(resultSet.getLong(5)).
+                                build());
+                    }
+
+                    return configs.stream();
+                }
+            }
+        } catch (final SQLException e) {
+            throw new RuntimeException(RECEIVED_CONFIGS_ERROR, e);
+        }
     }
 
     /**
@@ -123,16 +123,14 @@ final class ConfigRepositoryImpl implements ConfigRepository {
      */
     @Override
     public int delete(final Stream<String> names) {
-        if (names.count() > 0) {
-            Connection connection = null;
-            try {
-                connection = JDBCUtils.open(dataSource);
-                return delete(connection, names);
-            } catch (final SQLException e) {
-                JDBCUtils.rollback(connection, e);
-            } finally {
-                JDBCUtils.close(connection);
-            }
+        Connection connection = null;
+        try {
+            connection = JDBCUtils.open(dataSource);
+            return delete(connection, names.toArray(String[]::new));
+        } catch (final SQLException e) {
+            JDBCUtils.rollback(connection, e);
+        } finally {
+            JDBCUtils.close(connection);
         }
 
         return 0;
@@ -172,13 +170,15 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         return configs;
     }
 
-    private int delete(final Connection connection, final Stream<String> names) throws SQLException {
+    private int delete(final Connection connection, final String[] nameArray) throws SQLException {
         try {
             final StringBuilder sql = new StringBuilder("DELETE FROM `CONFIGS` WHERE `NAME` = ?");
-            names.skip(1).forEach(name -> sql.append(" OR `NAME` = ?"));
+            if (nameArray.length > 1) {
+                Arrays.stream(nameArray).skip(1).forEach(name -> sql.append(" OR `NAME` = ?"));
+            }
 
             try (final PreparedStatement statement = connection.prepareStatement(sql.toString())) {
-                setStatement(names, statement);
+                setStatement(nameArray, statement);
                 final int deleted = statement.executeUpdate();
                 connection.commit();
                 return deleted;
@@ -265,10 +265,9 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         statement.setLong(4, config.getUpdated());
     }
 
-    private void setStatement(final Stream<String> names, final PreparedStatement statement) throws SQLException {
-        Object[] args = names.toArray();
-        for (int i = 0; i < args.length; i++) {
-            statement.setString(i + 1, args[i].toString());
+    private void setStatement(final String[] nameArray, final PreparedStatement statement) throws SQLException {
+        for (int i = 0; i < nameArray.length; i++) {
+            statement.setString(i + 1, nameArray[i]);
         }
     }
 

@@ -29,11 +29,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConfigRepositoryTest {
-    private static final String SIMPLE_CONFIG = "Simple Config";
+    private static final String FIRST_CONFIG = "The First Config";
+    private static final String SECOND_CONFIG = "The Second Config";
+
     private static ConnectionPool connectionPool;
     private static ConfigRepository configRepository;
     private static DbServer dbServer;
-    private String name;
 
     @BeforeAll
     static void beforeAll() throws Exception {
@@ -67,20 +68,20 @@ class ConfigRepositoryTest {
 
     @BeforeEach
     void beforeEach() {
-        final Config simpleConfig = new Config.Builder(SIMPLE_CONFIG, Collections.emptyList()).build();
-        configRepository.saveAndFlush(Stream.of(simpleConfig)).findFirst().ifPresent(config -> name = config.getName());
+        configRepository.saveAndFlush(Stream.of(new Config.Builder(FIRST_CONFIG, Collections.emptyList()).build(),
+                new Config.Builder(SECOND_CONFIG, Collections.emptyList()).build()));
     }
 
     @AfterEach
     void afterEach() {
-        configRepository.delete(Stream.of(name));
+        configRepository.delete(Stream.of(FIRST_CONFIG, SECOND_CONFIG));
     }
 
     @Test
     void findConfigByName() {
-        final Optional<Config> config = configRepository.findByNames(Stream.of(SIMPLE_CONFIG)).findFirst();
+        final Optional<Config> config = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
         // Check test results
         assertTrue(config.isPresent());
-        assertEquals(SIMPLE_CONFIG, config.get().getName());
+        assertEquals(FIRST_CONFIG, config.get().getName());
     }
 }
