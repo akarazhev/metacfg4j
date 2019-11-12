@@ -20,11 +20,11 @@ public interface ConfigService {
     /**
      * Updates configuration models.
      *
-     * @param configs  a stream of configuration models.
+     * @param stream   a stream of configuration models.
      * @param override indicates if the existed configuration model should be override or not.
      * @return a stream of updated configuration models.
      */
-    Stream<Config> update(final Stream<Config> configs, final boolean override);
+    Stream<Config> update(final Stream<Config> stream, final boolean override);
 
     /**
      * Returns all configuration names.
@@ -43,18 +43,18 @@ public interface ConfigService {
     /**
      * Returns configuration models by names.
      *
-     * @param names a stream of names.
+     * @param stream a stream of names.
      * @return a stream of configurations models.
      */
-    Stream<Config> get(final Stream<String> names);
+    Stream<Config> get(final Stream<String> stream);
 
     /**
      * Removes configuration models by names.
      *
-     * @param names a stream of names.
+     * @param stream a stream of names.
      * @return a number of deleted models.
      */
-    int remove(final Stream<String> names);
+    int remove(final Stream<String> stream);
 
     /**
      * Removes a configuration model by the name.

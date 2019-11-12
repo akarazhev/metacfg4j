@@ -19,10 +19,10 @@ interface ConfigRepository {
     /**
      * Returns configuration models for configuration names.
      *
-     * @param names a stream of names.
+     * @param stream a stream of names.
      * @return a stream of configurations models.
      */
-    Stream<Config> findByNames(final Stream<String> names);
+    Stream<Config> findByNames(final Stream<String> stream);
 
     /**
      * Returns all configuration names.
@@ -34,16 +34,16 @@ interface ConfigRepository {
     /**
      * Saves and flushes configuration models.
      *
-     * @param configs a stream of configuration models.
+     * @param stream a stream of configuration models.
      * @return a stream of updated configuration models.
      */
-    Stream<Config> saveAndFlush(final Stream<Config> configs);
+    Stream<Config> saveAndFlush(final Stream<Config> stream);
 
     /**
      * Deletes configuration models.
      *
-     * @param names a stream of names.
+     * @param stream a stream of names.
      * @return a number of deleted models.
      */
-    int delete(final Stream<String> names);
+    int delete(final Stream<String> stream);
 }

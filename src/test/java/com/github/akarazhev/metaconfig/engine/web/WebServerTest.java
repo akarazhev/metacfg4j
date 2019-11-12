@@ -57,8 +57,8 @@ class WebServerTest {
             }};
 
             @Override
-            public Stream<Config> update(final Stream<Config> configs, final boolean override) {
-                List<Config> list = configs.collect(Collectors.toList());
+            public Stream<Config> update(final Stream<Config> stream, final boolean override) {
+                List<Config> list = stream.collect(Collectors.toList());
                 for (Config config : list) {
                     map.put(config.getName(), config);
                 }
@@ -77,16 +77,16 @@ class WebServerTest {
             }
 
             @Override
-            public Stream<Config> get(final Stream<String> names) {
+            public Stream<Config> get(final Stream<String> stream) {
                 final List<Config> configs = new LinkedList<>();
-                names.forEach(name -> configs.add(map.get(name)));
+                stream.forEach(name -> configs.add(map.get(name)));
                 return configs.stream();
             }
 
             @Override
-            public int remove(final Stream<String> names) {
+            public int remove(final Stream<String> stream) {
                 int size = map.size();
-                names.forEach(map::remove);
+                stream.forEach(map::remove);
                 return size - map.size();
             }
 

@@ -28,9 +28,9 @@ final class ConfigServiceImpl implements ConfigService {
      * {@inheritDoc}
      */
     @Override
-    public Stream<Config> update(final Stream<Config> configs, final boolean override) {
+    public Stream<Config> update(final Stream<Config> stream, final boolean override) {
         // todo Ignore override at this moment
-        return configRepository.saveAndFlush(configs);
+        return configRepository.saveAndFlush(stream);
     }
 
     /**
@@ -53,16 +53,16 @@ final class ConfigServiceImpl implements ConfigService {
      * {@inheritDoc}
      */
     @Override
-    public Stream<Config> get(final Stream<String> names) {
-        return configRepository.findByNames(names);
+    public Stream<Config> get(final Stream<String> stream) {
+        return configRepository.findByNames(stream);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public int remove(final Stream<String> names) {
-        return configRepository.delete(names);
+    public int remove(final Stream<String> stream) {
+        return configRepository.delete(stream);
     }
 
     /**

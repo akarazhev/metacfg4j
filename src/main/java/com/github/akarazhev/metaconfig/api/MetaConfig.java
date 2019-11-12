@@ -45,8 +45,8 @@ public final class MetaConfig implements ConfigService, Closeable {
      * {@inheritDoc}
      */
     @Override
-    public Stream<Config> update(final Stream<Config> configs, final boolean override) {
-        return configService.update(configs, override);
+    public Stream<Config> update(final Stream<Config> stream, final boolean override) {
+        return configService.update(stream, override);
     }
 
     /**
@@ -69,16 +69,16 @@ public final class MetaConfig implements ConfigService, Closeable {
      * {@inheritDoc}
      */
     @Override
-    public Stream<Config> get(final Stream<String> names) {
-        return configService.get(names);
+    public Stream<Config> get(final Stream<String> stream) {
+        return configService.get(stream);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public int remove(final Stream<String> names) {
-        return configService.remove(names);
+    public int remove(final Stream<String> stream) {
+        return configService.remove(stream);
     }
 
     /**
