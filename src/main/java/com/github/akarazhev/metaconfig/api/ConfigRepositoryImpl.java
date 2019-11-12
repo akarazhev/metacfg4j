@@ -40,6 +40,8 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     private final DataSource dataSource;
 
     private ConfigRepositoryImpl(final Builder builder) {
+        // TODO: 1. implement sub-tables references
+        // TODO: 2. implement optimistic locking
         this.dataSource = builder.dataSource;
         init(this.dataSource);
     }
@@ -243,7 +245,8 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                         "(`ID` IDENTITY NOT NULL, " +
                         "`CONFIG_ID` BIGINT NOT NULL, " +
                         "`KEY` VARCHAR(255) NOT NULL, " +
-                        "`VALUE` VARCHAR(1024))");
+                        "`VALUE` VARCHAR(1024), " +
+                        "FOREIGN KEY(CONFIG_ID) REFERENCES CONFIGS(ID) ON DELETE CASCADE)");
                 statement.executeUpdate("CREATE TABLE IF NOT EXISTS `PROPERTIES` " +
                         "(`ID` IDENTITY NOT NULL, " +
                         "`PROPERTY_ID` BIGINT NOT NULL, " +
@@ -253,12 +256,15 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                         "`DESCRIPTION` VARCHAR(1024), " +
                         "`TYPE` ENUM NOT NULL, " +
                         "`VALUE` VARCHAR(4096) NOT NULL, " +
-                        "`VERSION` INT NOT NULL)");
+                        "`VERSION` INT NOT NULL, " +
+                        "FOREIGN KEY(CONFIG_ID) REFERENCES CONFIGS(ID) ON DELETE CASCADE," +
+                        "FOREIGN KEY(PROPERTY_ID) REFERENCES PROPERTIES(ID) ON DELETE CASCADE)");
                 statement.executeUpdate("CREATE TABLE IF NOT EXISTS `PROPERTY_ATTRIBUTES` " +
                         "(`ID` IDENTITY NOT NULL, " +
                         "`PROPERTY_ID` BIGINT NOT NULL, " +
                         "`KEY` VARCHAR(255) NOT NULL, " +
-                        "`VALUE` VARCHAR(1024))");
+                        "`VALUE` VARCHAR(1024), " +
+                        "FOREIGN KEY(PROPERTY_ID) REFERENCES PROPERTIES(ID) ON DELETE CASCADE)");
                 connection.commit();
             }
         } catch (SQLException e) {
