@@ -48,6 +48,7 @@ public final class Constants {
         public static final String CONFIG_ACCEPTED = "Accepted '%s' config.";
         public static final String CREATE_CONFIG_TABLE_ERROR = "'Configs' table can not be created.";
         public static final String INSERT_CONFIGS_ERROR = "Configs instances can not be inserted.";
+        public static final String INSERT_CONFIG_ATTRIBUTE_ERROR = "Attributes can not be inserted.";
         public static final String UPDATE_CONFIGS_ERROR = "Configs instances can not be updated.";
         public static final String RECEIVED_CONFIGS_ERROR = "Config instances can not be received.";
         public static final String DELETE_CONFIGS_ERROR = "Configs can not be deleted.";

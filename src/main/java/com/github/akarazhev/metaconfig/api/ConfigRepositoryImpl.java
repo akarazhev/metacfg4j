@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -30,6 +31,7 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.DB_CONNECTION_E
 import static com.github.akarazhev.metaconfig.Constants.Messages.DB_ROLLBACK_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DELETE_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_CONFIGS_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_CONFIG_ATTRIBUTE_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_CONFIGS_ERROR;
 
@@ -154,21 +156,21 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     }
 
     private Stream<Config> saveAndFlush(final Connection connection, final Stream<Config> stream) throws SQLException {
-        final List<Config> updateConfigs = new LinkedList<>();
-        final List<Config> insertConfigs = new LinkedList<>();
+        final List<Config> toUpdate = new LinkedList<>();
+        final List<Config> toInsert = new LinkedList<>();
         stream.forEach(config -> {
             if (config.getId() > 1) {
-                updateConfigs.add(config);
+                toUpdate.add(config);
             } else {
-                insertConfigs.add(config);
+                toInsert.add(config);
             }
         });
 
-        return Stream.concat(updateConfigs(connection, updateConfigs.toArray(new Config[0])),
-                insertConfigs(connection, insertConfigs.toArray(new Config[0])));
+        return Stream.concat(update(connection, toUpdate.toArray(new Config[0])),
+                insert(connection, toInsert.toArray(new Config[0])));
     }
 
-    private Stream<Config> insertConfigs(final Connection connection, final Config[] configs) throws SQLException {
+    private Stream<Config> insert(final Connection connection, final Config[] configs) throws SQLException {
         final Config[] inserted = new Config[configs.length];
         final String sql = "INSERT INTO `CONFIGS` (`NAME`, `DESCRIPTION`, `VERSION`, `UPDATED`) VALUES (?, ?, ?, ?)";
         try (final PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -179,9 +181,23 @@ final class ConfigRepositoryImpl implements ConfigRepository {
 
             if (statement.executeBatch().length == configs.length) {
                 try (final ResultSet resultSet = statement.getGeneratedKeys()) {
+                    final Set<SQLException> exceptions = new HashSet<>();
                     for (int i = 0; i < configs.length; i++) {
                         resultSet.absolute(i + 1);
-                        inserted[i] = new Config.Builder(configs[i]).id(resultSet.getInt(1)).build();
+                        final Config config = new Config.Builder(configs[i]).id(resultSet.getInt(1)).build();
+                        config.getAttributes().ifPresent(map -> {
+                            try {
+                                insert(connection, config.getId(), map);
+                            } catch (SQLException e) {
+                                exceptions.add(e);
+                            }
+                        });
+
+                        inserted[i] = config;
+                    }
+
+                    if (exceptions.size() > 0) {
+                        throw new SQLException(INSERT_CONFIG_ATTRIBUTE_ERROR);
                     }
                 }
             } else {
@@ -194,7 +210,21 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         return Arrays.stream(inserted);
     }
 
-    private Stream<Config> updateConfigs(final Connection connection, final Config[] configs) throws SQLException {
+    private void insert(final Connection connection, final int id, final Map<String, String> map) throws SQLException {
+        final String sql = "INSERT INTO `CONFIG_ATTRIBUTES` (`CONFIG_ID`, `KEY`, `VALUE`) VALUES (?, ?, ?)";
+        try (final PreparedStatement statement = connection.prepareStatement(sql)) {
+            for (String key : map.keySet()) {
+                JDBCUtils.setParameters(statement, id, key, map.get(key));
+                statement.addBatch();
+            }
+
+            if (statement.executeBatch().length != map.size()) {
+                throw new SQLException(INSERT_CONFIG_ATTRIBUTE_ERROR);
+            }
+        }
+    }
+
+    private Stream<Config> update(final Connection connection, final Config[] configs) throws SQLException {
         final String sql =
                 "UPDATE `CONFIGS` SET `NAME` = ?, `DESCRIPTION` = ?, `VERSION` = ?, `UPDATED` = ? WHERE `ID` = ?";
         try (final PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -312,6 +342,13 @@ final class ConfigRepositoryImpl implements ConfigRepository {
             for (int i = 0; i < names.length; i++) {
                 statement.setString(i + 1, names[i]);
             }
+        }
+
+        private static void setParameters(final PreparedStatement statement, final int id, final String key,
+                                          final String value) throws SQLException {
+            statement.setInt(1, id);
+            statement.setString(2, key);
+            statement.setString(3, value);
         }
     }
 

@@ -22,6 +22,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -68,8 +70,15 @@ class ConfigRepositoryTest {
 
     @BeforeEach
     void beforeEach() {
-        configRepository.saveAndFlush(Stream.of(new Config.Builder(FIRST_CONFIG, Collections.emptyList()).build(),
-                new Config.Builder(SECOND_CONFIG, Collections.emptyList()).build()));
+        final Map<String, String> attributes = new HashMap<>();
+        attributes.put("key_1", "value_1");
+        attributes.put("key_2", "value_2");
+        attributes.put("key_3", "value_3");
+
+        final Config firstConfig = new Config.Builder(FIRST_CONFIG, Collections.emptyList()).attributes(attributes).build();
+        final Config secondConfig = new Config.Builder(SECOND_CONFIG, Collections.emptyList()).attributes(attributes).build();
+
+        configRepository.saveAndFlush(Stream.of(firstConfig, secondConfig));
     }
 
     @AfterEach
