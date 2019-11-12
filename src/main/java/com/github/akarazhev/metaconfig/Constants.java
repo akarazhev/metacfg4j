@@ -15,8 +15,10 @@ package com.github.akarazhev.metaconfig;
  */
 public final class Constants {
 
+    private static final String CREATE_CONSTANT_CLASS_ERROR = "Constant class can not be created.";
+
     private Constants() {
-        throw new AssertionError(Messages.CREATE_CONSTANT_CLASS_ERROR);
+        throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
     }
 
     /**
@@ -25,11 +27,10 @@ public final class Constants {
     public final static class Messages {
 
         private Messages() {
-            throw new AssertionError(Messages.CREATE_CONSTANT_CLASS_ERROR);
+            throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
         }
 
         public static final String CREATE_FACTORY_CLASS_ERROR = "Factory class can not be created.";
-        public static final String CREATE_CONSTANT_CLASS_ERROR = "Constant class can not be created.";
         public static final String IMPLEMENTATION_NOT_PROVIDED = "The library does not provide implementation.";
         public static final String META_CONFIG_ERROR = "MetaConfig can not be instantiated.";
         public static final String STRING_TO_JSON_ERROR = "String can not be parsed to JSON.";
