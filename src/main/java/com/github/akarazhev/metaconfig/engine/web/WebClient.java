@@ -27,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.REQUEST_SEND_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_CONFIG_NAME;
 
@@ -44,6 +45,11 @@ public final class WebClient {
      * Settings constants for the web client.
      */
     final static class Settings {
+
+        private Settings() {
+            throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
+        }
+
         // The configuration name
         static final String CONFIG_NAME = "web-client";
         // The URL key

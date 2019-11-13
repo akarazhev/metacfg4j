@@ -15,7 +15,7 @@ package com.github.akarazhev.metaconfig;
  */
 public final class Constants {
 
-    private static final String CREATE_CONSTANT_CLASS_ERROR = "Constant class can not be created.";
+    public static final String CREATE_CONSTANT_CLASS_ERROR = "Constant class can not be created.";
 
     private Constants() {
         throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
@@ -31,6 +31,7 @@ public final class Constants {
         }
 
         public static final String CREATE_FACTORY_CLASS_ERROR = "Factory class can not be created.";
+        public static final String CREATE_UTILS_CLASS_ERROR = "Utils class can not be created.";
         public static final String IMPLEMENTATION_NOT_PROVIDED = "The library does not provide implementation.";
         public static final String META_CONFIG_ERROR = "MetaConfig can not be instantiated.";
         public static final String STRING_TO_JSON_ERROR = "String can not be parsed to JSON.";
@@ -48,7 +49,7 @@ public final class Constants {
         public static final String CONFIG_ACCEPTED = "Accepted '%s' config.";
         public static final String CREATE_CONFIG_TABLE_ERROR = "'Configs' table can not be created.";
         public static final String INSERT_CONFIGS_ERROR = "Configs instances can not be inserted.";
-        public static final String INSERT_CONFIG_ATTRIBUTE_ERROR = "Config attributes can not be inserted.";
+        public static final String INSERT_ATTRIBUTES_ERROR = "Attributes can not be inserted.";
         public static final String INSERT_CONFIG_PROPERTIES_ERROR = "Config properties can not be inserted.";
         public static final String UPDATE_CONFIGS_ERROR = "Configs instances can not be updated.";
         public static final String RECEIVED_CONFIGS_ERROR = "Config instances can not be received.";

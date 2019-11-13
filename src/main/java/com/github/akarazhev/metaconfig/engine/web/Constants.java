@@ -10,6 +10,8 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.engine.web;
 
+import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
+
 /**
  * Constants of the web client-server.
  */
@@ -19,7 +21,6 @@ public final class Constants {
         throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
     }
 
-    private static final String CREATE_CONSTANT_CLASS_ERROR = "Constant class can not be created.";
     public static final String CONTENT_TYPE = "Content-Type";
     public static final String APPLICATION_JSON = "application/json";
     public static final String ACCEPT = "Accept";

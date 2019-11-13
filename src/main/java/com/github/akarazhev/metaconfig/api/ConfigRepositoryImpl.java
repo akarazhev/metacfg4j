@@ -27,12 +27,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_CONFIG_TABLE_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_UTILS_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DB_CONNECTION_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DB_ROLLBACK_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DELETE_CONFIGS_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_ATTRIBUTES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_CONFIGS_ERROR;
-import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_CONFIG_ATTRIBUTE_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_CONFIG_PROPERTIES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_CONFIGS_ERROR;
@@ -102,10 +104,9 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     @Override
     public Stream<String> findNames() {
         try {
-            final String sql = "SELECT `NAME` FROM `CONFIGS`";
             try (final Connection connection = dataSource.getConnection();
                  final Statement statement = connection.createStatement();
-                 final ResultSet resultSet = statement.executeQuery(sql)) {
+                 final ResultSet resultSet = statement.executeQuery(SQL.SELECT.NAMES)) {
                 final Set<String> names = new HashSet<>();
                 while (resultSet.next()) {
                     names.add(resultSet.getString(1));
@@ -184,8 +185,8 @@ final class ConfigRepositoryImpl implements ConfigRepository {
 
     private Stream<Config> insert(final Connection connection, final Config[] configs) throws SQLException {
         final Config[] inserted = new Config[configs.length];
-        final String sql = "INSERT INTO `CONFIGS` (`NAME`, `DESCRIPTION`, `VERSION`, `UPDATED`) VALUES (?, ?, ?, ?)";
-        try (final PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (final PreparedStatement statement =
+                     connection.prepareStatement(SQL.INSERT.CONFIGS, Statement.RETURN_GENERATED_KEYS)) {
             for (final Config config : configs) {
                 JDBCUtils.setStatement(statement, config);
                 statement.addBatch();
@@ -201,7 +202,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                         // Create config attributes
                         config.getAttributes().ifPresent(map -> {
                             try {
-                                insert(connection, configId, map);
+                                insertAttributes(connection, SQL.INSERT.CONFIG_ATTRIBUTES, configId, map);
                             } catch (SQLException e) {
                                 exceptions.add(e);
                             }
@@ -212,7 +213,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                     }
 
                     if (exceptions.size() > 0) {
-                        throw new SQLException(INSERT_CONFIG_ATTRIBUTE_ERROR);
+                        throw new SQLException(INSERT_ATTRIBUTES_ERROR);
                     }
                 }
             } else {
@@ -225,23 +226,21 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         return Arrays.stream(inserted);
     }
 
-    private void insert(final Connection connection, final int configId, final Map<String, String> map)
-            throws SQLException {
-        final String sql = "INSERT INTO `CONFIG_ATTRIBUTES` (`CONFIG_ID`, `KEY`, `VALUE`) VALUES (?, ?, ?)";
+    private void insertAttributes(final Connection connection, final String sql, final int id,
+                                  final Map<String, String> map) throws SQLException {
         try (final PreparedStatement statement = connection.prepareStatement(sql)) {
-            JDBCUtils.setBatchStatement(statement, configId, map);
+            JDBCUtils.setBatchStatement(statement, id, map);
 
             if (statement.executeBatch().length != map.size()) {
-                throw new SQLException(INSERT_CONFIG_ATTRIBUTE_ERROR);
+                throw new SQLException(INSERT_ATTRIBUTES_ERROR);
             }
         }
     }
 
     private void insert(final Connection connection, final int configId, final Property[] properties)
             throws SQLException {
-        final String sql = "INSERT INTO `PROPERTIES` (`CONFIG_ID`, `NAME`, `CAPTION`, `DESCRIPTION`, `TYPE`, `VALUE`, " +
-                "`VERSION`) VALUES (?, ?, ?, ?, ?, ?, ?);";
-        try (final PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (final PreparedStatement statement =
+                     connection.prepareStatement(SQL.INSERT.PROPERTIES, Statement.RETURN_GENERATED_KEYS)) {
             for (final Property property : properties) {
                 JDBCUtils.setBatchStatement(statement, configId, property);
             }
@@ -252,9 +251,8 @@ final class ConfigRepositoryImpl implements ConfigRepository {
 
     private void insert(final Connection connection, final int configId, final int propertyId,
                         final Property[] properties) throws SQLException {
-        final String sql = "INSERT INTO `PROPERTIES` (`PROPERTY_ID`, `CONFIG_ID`, `NAME`, `CAPTION`, `DESCRIPTION`, " +
-                "`TYPE`, `VALUE`, `VERSION`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
-        try (final PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (final PreparedStatement statement =
+                     connection.prepareStatement(SQL.INSERT.SUB_PROPERTIES, Statement.RETURN_GENERATED_KEYS)) {
             for (final Property property : properties) {
                 JDBCUtils.setBatchStatement(statement, configId, propertyId, property);
             }
@@ -267,10 +265,25 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                         final Property[] properties) throws SQLException {
         if (statement.executeBatch().length == properties.length) {
             try (final ResultSet resultSet = statement.getGeneratedKeys()) {
+                final Set<SQLException> exceptions = new HashSet<>();
                 for (int i = 0; i < properties.length; i++) {
                     resultSet.absolute(i + 1);
-                    insert(connection, configId, resultSet.getInt(1),
-                            properties[i].getProperties().toArray(Property[]::new));
+                    final int propertyId = resultSet.getInt(1);
+                    // Create property attributes
+                    properties[i].getAttributes().ifPresent(map -> {
+
+                        try {
+                            insertAttributes(connection, SQL.INSERT.PROPERTY_ATTRIBUTES, propertyId, map);
+                        } catch (SQLException e) {
+                            exceptions.add(e);
+                        }
+                    });
+                    // Create property properties
+                    insert(connection, configId, propertyId, properties[i].getProperties().toArray(Property[]::new));
+                }
+
+                if (exceptions.size() > 0) {
+                    throw new SQLException(INSERT_ATTRIBUTES_ERROR);
                 }
             }
         } else {
@@ -279,9 +292,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     }
 
     private Stream<Config> update(final Connection connection, final Config[] configs) throws SQLException {
-        final String sql =
-                "UPDATE `CONFIGS` SET `NAME` = ?, `DESCRIPTION` = ?, `VERSION` = ?, `UPDATED` = ? WHERE `ID` = ?";
-        try (final PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (final PreparedStatement statement = connection.prepareStatement(SQL.UPDATE.CONFIGS)) {
             for (final Config config : configs) {
                 statement.setLong(5, config.getId());
                 JDBCUtils.setStatement(statement, config);
@@ -319,36 +330,10 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     private void createTables(final Connection connection) throws SQLException {
         try {
             try (final Statement statement = connection.createStatement()) {
-                statement.executeUpdate("CREATE TABLE IF NOT EXISTS `CONFIGS` " +
-                        "(`ID` IDENTITY NOT NULL, " +
-                        "`NAME` VARCHAR(255) NOT NULL, " +
-                        "`DESCRIPTION` VARCHAR(1024), " +
-                        "`VERSION` INT NOT NULL, " +
-                        "`UPDATED` BIGINT NOT NULL)");
-                statement.executeUpdate("CREATE TABLE IF NOT EXISTS `CONFIG_ATTRIBUTES` " +
-                        "(`ID` IDENTITY NOT NULL, " +
-                        "`CONFIG_ID` BIGINT NOT NULL, " +
-                        "`KEY` VARCHAR(255) NOT NULL, " +
-                        "`VALUE` VARCHAR(1024), " +
-                        "FOREIGN KEY(CONFIG_ID) REFERENCES CONFIGS(ID) ON DELETE CASCADE)");
-                statement.executeUpdate("CREATE TABLE IF NOT EXISTS `PROPERTIES` " +
-                        "(`ID` IDENTITY NOT NULL, " +
-                        "`PROPERTY_ID` BIGINT, " +
-                        "`CONFIG_ID` BIGINT NOT NULL, " +
-                        "`NAME` VARCHAR(255) NOT NULL, " +
-                        "`CAPTION` VARCHAR(255), " +
-                        "`DESCRIPTION` VARCHAR(1024), " +
-                        "`TYPE` ENUM ('BOOL', 'DOUBLE', 'LONG', 'STRING', 'STRING_ARRAY') NOT NULL, " +
-                        "`VALUE` VARCHAR(4096) NOT NULL, " +
-                        "`VERSION` INT NOT NULL, " +
-                        "FOREIGN KEY(CONFIG_ID) REFERENCES CONFIGS(ID) ON DELETE CASCADE," +
-                        "FOREIGN KEY(PROPERTY_ID) REFERENCES PROPERTIES(ID) ON DELETE CASCADE)");
-                statement.executeUpdate("CREATE TABLE IF NOT EXISTS `PROPERTY_ATTRIBUTES` " +
-                        "(`ID` IDENTITY NOT NULL, " +
-                        "`PROPERTY_ID` BIGINT NOT NULL, " +
-                        "`KEY` VARCHAR(255) NOT NULL, " +
-                        "`VALUE` VARCHAR(1024), " +
-                        "FOREIGN KEY(PROPERTY_ID) REFERENCES PROPERTIES(ID) ON DELETE CASCADE)");
+                statement.executeUpdate(SQL.CREATE_TABLE.CONFIGS);
+                statement.executeUpdate(SQL.CREATE_TABLE.CONFIG_ATTRIBUTES);
+                statement.executeUpdate(SQL.CREATE_TABLE.PROPERTIES);
+                statement.executeUpdate(SQL.CREATE_TABLE.PROPERTY_ATTRIBUTES);
                 connection.commit();
             }
         } catch (SQLException e) {
@@ -356,7 +341,97 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         }
     }
 
+    private final static class SQL {
+
+        private SQL() {
+            throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
+        }
+
+        final static class INSERT {
+
+            private INSERT() {
+                throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
+            }
+
+            static final String CONFIGS = "INSERT INTO `CONFIGS` (`NAME`, `DESCRIPTION`, `VERSION`, `UPDATED`) " +
+                    "VALUES (?, ?, ?, ?);";
+            static final String CONFIG_ATTRIBUTES = "INSERT INTO `CONFIG_ATTRIBUTES` (`CONFIG_ID`, `KEY`, `VALUE`) " +
+                    "VALUES (?, ?, ?);";
+            static final String PROPERTIES = "INSERT INTO `PROPERTIES` (`CONFIG_ID`, `NAME`, `CAPTION`, " +
+                    "`DESCRIPTION`, `TYPE`, `VALUE`, `VERSION`) VALUES (?, ?, ?, ?, ?, ?, ?);";
+            static final String PROPERTY_ATTRIBUTES = "INSERT INTO `PROPERTY_ATTRIBUTES` (`PROPERTY_ID`, `KEY`, " +
+                    "`VALUE`) VALUES (?, ?, ?);";
+            static final String SUB_PROPERTIES = "INSERT INTO `PROPERTIES` (`PROPERTY_ID`, `CONFIG_ID`, `NAME`, " +
+                    "`CAPTION`, `DESCRIPTION`, `TYPE`, `VALUE`, `VERSION`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+        }
+
+        final static class UPDATE {
+
+            private UPDATE() {
+                throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
+            }
+
+            static final String CONFIGS = "UPDATE `CONFIGS` SET `NAME` = ?, `DESCRIPTION` = ?, `VERSION` = ?, " +
+                    "`UPDATED` = ? WHERE `ID` = ?;";
+        }
+
+        final static class SELECT {
+
+            private SELECT() {
+                throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
+            }
+
+            static final String NAMES = "SELECT `NAME` FROM `CONFIGS`;";
+        }
+
+        final static class CREATE_TABLE {
+
+            private CREATE_TABLE() {
+                throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
+            }
+
+            static final String CONFIGS =
+                    "CREATE TABLE IF NOT EXISTS `CONFIGS` " +
+                    "(`ID` IDENTITY NOT NULL, " +
+                    "`NAME` VARCHAR(255) NOT NULL, " +
+                    "`DESCRIPTION` VARCHAR(1024), " +
+                    "`VERSION` INT NOT NULL, " +
+                    "`UPDATED` BIGINT NOT NULL);";
+            static final String CONFIG_ATTRIBUTES =
+                    "CREATE TABLE IF NOT EXISTS `CONFIG_ATTRIBUTES` " +
+                    "(`ID` IDENTITY NOT NULL, " +
+                    "`CONFIG_ID` BIGINT NOT NULL, " +
+                    "`KEY` VARCHAR(255) NOT NULL, " +
+                    "`VALUE` VARCHAR(1024), " +
+                    "FOREIGN KEY(CONFIG_ID) REFERENCES CONFIGS(ID) ON DELETE CASCADE)";
+            static final String PROPERTIES =
+                    "CREATE TABLE IF NOT EXISTS `PROPERTIES` " +
+                    "(`ID` IDENTITY NOT NULL, " +
+                    "`PROPERTY_ID` BIGINT, " +
+                    "`CONFIG_ID` BIGINT NOT NULL, " +
+                    "`NAME` VARCHAR(255) NOT NULL, " +
+                    "`CAPTION` VARCHAR(255), " +
+                    "`DESCRIPTION` VARCHAR(1024), " +
+                    "`TYPE` ENUM ('BOOL', 'DOUBLE', 'LONG', 'STRING', 'STRING_ARRAY') NOT NULL, " +
+                    "`VALUE` VARCHAR(4096) NOT NULL, " +
+                    "`VERSION` INT NOT NULL, " +
+                    "FOREIGN KEY(CONFIG_ID) REFERENCES CONFIGS(ID) ON DELETE CASCADE," +
+                    "FOREIGN KEY(PROPERTY_ID) REFERENCES PROPERTIES(ID) ON DELETE CASCADE)";
+            static final String PROPERTY_ATTRIBUTES =
+                    "CREATE TABLE IF NOT EXISTS `PROPERTY_ATTRIBUTES` " +
+                    "(`ID` IDENTITY NOT NULL, " +
+                    "`PROPERTY_ID` BIGINT NOT NULL, " +
+                    "`KEY` VARCHAR(255) NOT NULL, " +
+                    "`VALUE` VARCHAR(1024), " +
+                    "FOREIGN KEY(PROPERTY_ID) REFERENCES PROPERTIES(ID) ON DELETE CASCADE)";
+        }
+    }
+
     private static final class JDBCUtils {
+
+        private JDBCUtils() {
+            throw new AssertionError(CREATE_UTILS_CLASS_ERROR);
+        }
 
         private static Connection open(final DataSource dataSource) throws SQLException {
             final Connection connection = Objects.requireNonNull(dataSource).getConnection();
@@ -398,10 +473,10 @@ final class ConfigRepositoryImpl implements ConfigRepository {
             }
         }
 
-        private static void setBatchStatement(final PreparedStatement statement, final int configId,
+        private static void setBatchStatement(final PreparedStatement statement, final int id,
                                               final Map<String, String> map) throws SQLException {
             for (final String key : map.keySet()) {
-                statement.setInt(1, configId);
+                statement.setInt(1, id);
                 statement.setString(2, key);
                 statement.setString(3, map.get(key));
                 statement.addBatch();
