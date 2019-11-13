@@ -59,8 +59,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     @Override
     public Stream<Config> findByNames(final Stream<String> stream) {
         try {
-            final StringBuilder sql = new StringBuilder("SELECT C.ID, C.NAME, C.DESCRIPTION, C.VERSION, C.UPDATED, A.KEY, " +
-                    "A.VALUE FROM CONFIGS AS C LEFT JOIN CONFIG_ATTRIBUTES AS A ON C.ID = A.CONFIG_ID WHERE C.NAME = ?");
+            final StringBuilder sql = new StringBuilder(SQL.SELECT.CONFIGS);
             final String[] names = stream.toArray(String[]::new);
             if (names.length > 1) {
                 Arrays.stream(names).skip(1).forEach(name -> sql.append(" OR C.NAME = ?"));
@@ -392,7 +391,14 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                 throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
             }
 
-            static final String NAMES = "SELECT `NAME` FROM `CONFIGS`;";
+            static final String NAMES =
+                    "SELECT `NAME` FROM `CONFIGS`;";
+            static final String CONFIGS =
+                    "SELECT `C`.`ID`, `C`.`NAME`, `C`.`DESCRIPTION`, `C`.`VERSION`, `C`.`UPDATED`, `A`.`KEY`, " +
+                            "`A`.`VALUE` " +
+                            "FROM `CONFIGS` AS `C` " +
+                            "LEFT JOIN `CONFIG_ATTRIBUTES` AS `A` ON `C`.`ID` = `A`.`CONFIG_ID` " +
+                            "WHERE `C`.`NAME` = ?";
         }
 
         final static class CREATE_TABLE {
