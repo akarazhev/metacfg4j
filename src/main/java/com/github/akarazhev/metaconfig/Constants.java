@@ -55,6 +55,5 @@ public final class Constants {
         public static final String DELETE_CONFIGS_ERROR = "Configs can not be deleted.";
         public static final String DB_ROLLBACK_ERROR = "Database rollback error.";
         public static final String DB_CONNECTION_ERROR = "Database connection error.";
-        public static final String PREPARED_STATEMENT_ERROR = "PreparedStatement can not be set.";
     }
 }

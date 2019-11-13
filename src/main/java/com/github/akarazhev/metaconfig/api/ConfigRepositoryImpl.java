@@ -34,7 +34,6 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.DELETE_CONFIGS_
 import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_CONFIG_ATTRIBUTE_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_CONFIG_PROPERTIES_ERROR;
-import static com.github.akarazhev.metaconfig.Constants.Messages.PREPARED_STATEMENT_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_CONFIGS_ERROR;
 
@@ -76,7 +75,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                         final Config config = configs.get(id);
                         if (config == null) {
                             configs.put(id, new Config.Builder(resultSet.getString(2), Collections.emptyList()).
-                                    id(resultSet.getInt(1)).
+                                    id(id).
                                     description(resultSet.getString(3)).
                                     version(resultSet.getInt(4)).
                                     updated(resultSet.getLong(5)).
@@ -197,18 +196,18 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                     final Set<SQLException> exceptions = new HashSet<>();
                     for (int i = 0; i < configs.length; i++) {
                         resultSet.absolute(i + 1);
-                        final int id = resultSet.getInt(1);
-                        final Config config = new Config.Builder(configs[i]).id(id).build();
+                        final int configId = resultSet.getInt(1);
+                        final Config config = new Config.Builder(configs[i]).id(configId).build();
                         // Create config attributes
                         config.getAttributes().ifPresent(map -> {
                             try {
-                                insert(connection, id, map);
+                                insert(connection, configId, map);
                             } catch (SQLException e) {
                                 exceptions.add(e);
                             }
                         });
                         // Create config properties
-                        insert(connection, id, config.getProperties().toArray(Property[]::new));
+                        insert(connection, configId, config.getProperties().toArray(Property[]::new));
                         inserted[i] = config;
                     }
 
@@ -226,10 +225,11 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         return Arrays.stream(inserted);
     }
 
-    private void insert(final Connection connection, final int id, final Map<String, String> map) throws SQLException {
+    private void insert(final Connection connection, final int configId, final Map<String, String> map)
+            throws SQLException {
         final String sql = "INSERT INTO `CONFIG_ATTRIBUTES` (`CONFIG_ID`, `KEY`, `VALUE`) VALUES (?, ?, ?)";
         try (final PreparedStatement statement = connection.prepareStatement(sql)) {
-            JDBCUtils.setBatchStatement(statement, id, map);
+            JDBCUtils.setBatchStatement(statement, configId, map);
 
             if (statement.executeBatch().length != map.size()) {
                 throw new SQLException(INSERT_CONFIG_ATTRIBUTE_ERROR);
@@ -237,15 +237,44 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         }
     }
 
-    private void insert(final Connection connection, final int id, final Property[] properties) throws SQLException {
+    private void insert(final Connection connection, final int configId, final Property[] properties)
+            throws SQLException {
         final String sql = "INSERT INTO `PROPERTIES` (`CONFIG_ID`, `NAME`, `CAPTION`, `DESCRIPTION`, `TYPE`, `VALUE`, " +
                 "`VERSION`) VALUES (?, ?, ?, ?, ?, ?, ?);";
-        try (final PreparedStatement statement = connection.prepareStatement(sql)) {
-            JDBCUtils.setBatchStatement(statement, id, properties);
-
-            if (statement.executeBatch().length != properties.length) {
-                throw new SQLException(INSERT_CONFIG_PROPERTIES_ERROR);
+        try (final PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            for (final Property property : properties) {
+                JDBCUtils.setBatchStatement(statement, configId, property);
             }
+
+            insert(connection, statement, configId, properties);
+        }
+    }
+
+    private void insert(final Connection connection, final int configId, final int propertyId,
+                        final Property[] properties) throws SQLException {
+        final String sql = "INSERT INTO `PROPERTIES` (`PROPERTY_ID`, `CONFIG_ID`, `NAME`, `CAPTION`, `DESCRIPTION`, " +
+                "`TYPE`, `VALUE`, `VERSION`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+        try (final PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            for (final Property property : properties) {
+                JDBCUtils.setBatchStatement(statement, configId, propertyId, property);
+            }
+
+            insert(connection, statement, configId, properties);
+        }
+    }
+
+    private void insert(final Connection connection, final PreparedStatement statement, final int configId,
+                        final Property[] properties) throws SQLException {
+        if (statement.executeBatch().length == properties.length) {
+            try (final ResultSet resultSet = statement.getGeneratedKeys()) {
+                for (int i = 0; i < properties.length; i++) {
+                    resultSet.absolute(i + 1);
+                    insert(connection, configId, resultSet.getInt(1),
+                            properties[i].getProperties().toArray(Property[]::new));
+                }
+            }
+        } else {
+            throw new SQLException(INSERT_CONFIG_PROPERTIES_ERROR);
         }
     }
 
@@ -369,45 +398,59 @@ final class ConfigRepositoryImpl implements ConfigRepository {
             }
         }
 
-        private static void setBatchStatement(final PreparedStatement statement, final int id,
+        private static void setBatchStatement(final PreparedStatement statement, final int configId,
                                               final Map<String, String> map) throws SQLException {
             for (final String key : map.keySet()) {
-                statement.setInt(1, id);
+                statement.setInt(1, configId);
                 statement.setString(2, key);
                 statement.setString(3, map.get(key));
                 statement.addBatch();
             }
         }
 
-        private static void setBatchStatement(final PreparedStatement statement, final int id,
-                                              final Property[] properties) throws SQLException {
-            final Set<SQLException> exceptions = new HashSet<>();
-            for (final Property property : properties) {
-                statement.setInt(1, id);
-                statement.setString(2, property.getName());
-                property.getCaption().ifPresent(caption -> {
-                    try {
-                        statement.setString(3, caption);
-                    } catch (SQLException e) {
-                        exceptions.add(e);
-                    }
-                });
-                property.getDescription().ifPresent(description -> {
-                    try {
-                        statement.setString(4, description);
-                    } catch (SQLException e) {
-                        exceptions.add(e);
-                    }
-                });
-                statement.setString(5, property.getType());
-                statement.setString(6, property.getValue());
-                statement.setInt(7, property.getVersion());
-                statement.addBatch();
+        private static void setBatchStatement(final PreparedStatement statement, final int configId,
+                                              final Property property) throws SQLException {
+            statement.setInt(1, configId);
+            statement.setString(2, property.getName());
+            if (property.getCaption().isPresent()) {
+                statement.setString(3, property.getCaption().get());
+            } else {
+                statement.setString(3, null);
             }
 
-            if (exceptions.size() > 0) {
-                throw new SQLException(PREPARED_STATEMENT_ERROR);
+            if (property.getDescription().isPresent()) {
+                statement.setString(4, property.getDescription().get());
+            } else {
+                statement.setString(4, null);
             }
+
+            statement.setString(5, property.getType());
+            statement.setString(6, property.getValue());
+            statement.setInt(7, property.getVersion());
+            statement.addBatch();
+        }
+
+        private static void setBatchStatement(final PreparedStatement statement, final int configId,
+                                              final int propertyId, final Property property) throws SQLException {
+            statement.setInt(1, propertyId);
+            statement.setInt(2, configId);
+            statement.setString(3, property.getName());
+            if (property.getCaption().isPresent()) {
+                statement.setString(4, property.getCaption().get());
+            } else {
+                statement.setString(4, null);
+            }
+
+            if (property.getDescription().isPresent()) {
+                statement.setString(5, property.getDescription().get());
+            } else {
+                statement.setString(5, null);
+            }
+
+            statement.setString(6, property.getType());
+            statement.setString(7, property.getValue());
+            statement.setInt(8, property.getVersion());
+            statement.addBatch();
         }
     }
 
