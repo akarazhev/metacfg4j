@@ -149,6 +149,15 @@ public final class Property extends AbstractConfig {
     }
 
     /**
+     * Returns a type of the property.
+     *
+     * @return a property type.
+     */
+    public String getType() {
+        return type.name();
+    }
+
+    /**
      * Returns a version of the property.
      *
      * @return a version value.
