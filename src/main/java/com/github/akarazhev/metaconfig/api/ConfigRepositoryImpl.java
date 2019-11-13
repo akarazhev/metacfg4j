@@ -353,16 +353,25 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                 throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
             }
 
-            static final String CONFIGS = "INSERT INTO `CONFIGS` (`NAME`, `DESCRIPTION`, `VERSION`, `UPDATED`) " +
-                    "VALUES (?, ?, ?, ?);";
-            static final String CONFIG_ATTRIBUTES = "INSERT INTO `CONFIG_ATTRIBUTES` (`CONFIG_ID`, `KEY`, `VALUE`) " +
-                    "VALUES (?, ?, ?);";
-            static final String PROPERTIES = "INSERT INTO `PROPERTIES` (`CONFIG_ID`, `NAME`, `CAPTION`, " +
-                    "`DESCRIPTION`, `TYPE`, `VALUE`, `VERSION`) VALUES (?, ?, ?, ?, ?, ?, ?);";
-            static final String PROPERTY_ATTRIBUTES = "INSERT INTO `PROPERTY_ATTRIBUTES` (`PROPERTY_ID`, `KEY`, " +
-                    "`VALUE`) VALUES (?, ?, ?);";
-            static final String SUB_PROPERTIES = "INSERT INTO `PROPERTIES` (`PROPERTY_ID`, `CONFIG_ID`, `NAME`, " +
-                    "`CAPTION`, `DESCRIPTION`, `TYPE`, `VALUE`, `VERSION`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+            static final String CONFIGS =
+                    "INSERT INTO `CONFIGS` " +
+                            "(`NAME`, `DESCRIPTION`, `VERSION`, `UPDATED`) " +
+                            "VALUES (?, ?, ?, ?);";
+            static final String CONFIG_ATTRIBUTES =
+                    "INSERT INTO `CONFIG_ATTRIBUTES` (`CONFIG_ID`, `KEY`, `VALUE`) " +
+                            "VALUES (?, ?, ?);";
+            static final String PROPERTIES =
+                    "INSERT INTO `PROPERTIES` " +
+                            "(`CONFIG_ID`, `NAME`, `CAPTION`, `DESCRIPTION`, `TYPE`, `VALUE`, `VERSION`) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?);";
+            static final String PROPERTY_ATTRIBUTES =
+                    "INSERT INTO `PROPERTY_ATTRIBUTES` " +
+                            "(`PROPERTY_ID`, `KEY`, `VALUE`) " +
+                            "VALUES (?, ?, ?);";
+            static final String SUB_PROPERTIES =
+                    "INSERT INTO `PROPERTIES` " +
+                            "(`PROPERTY_ID`, `CONFIG_ID`, `NAME`, `CAPTION`, `DESCRIPTION`, `TYPE`, `VALUE`, `VERSION`) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
         }
 
         final static class UPDATE {
@@ -371,8 +380,10 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                 throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
             }
 
-            static final String CONFIGS = "UPDATE `CONFIGS` SET `NAME` = ?, `DESCRIPTION` = ?, `VERSION` = ?, " +
-                    "`UPDATED` = ? WHERE `ID` = ?;";
+            static final String CONFIGS =
+                    "UPDATE `CONFIGS` SET " +
+                            "`NAME` = ?, `DESCRIPTION` = ?, `VERSION` = ?, `UPDATED` = ? " +
+                            "WHERE `ID` = ?;";
         }
 
         final static class SELECT {
@@ -392,38 +403,38 @@ final class ConfigRepositoryImpl implements ConfigRepository {
 
             static final String CONFIGS =
                     "CREATE TABLE IF NOT EXISTS `CONFIGS` " +
-                    "(`ID` IDENTITY NOT NULL, " +
-                    "`NAME` VARCHAR(255) NOT NULL, " +
-                    "`DESCRIPTION` VARCHAR(1024), " +
-                    "`VERSION` INT NOT NULL, " +
-                    "`UPDATED` BIGINT NOT NULL);";
+                            "(`ID` IDENTITY NOT NULL, " +
+                            "`NAME` VARCHAR(255) NOT NULL, " +
+                            "`DESCRIPTION` VARCHAR(1024), " +
+                            "`VERSION` INT NOT NULL, " +
+                            "`UPDATED` BIGINT NOT NULL);";
             static final String CONFIG_ATTRIBUTES =
                     "CREATE TABLE IF NOT EXISTS `CONFIG_ATTRIBUTES` " +
-                    "(`ID` IDENTITY NOT NULL, " +
-                    "`CONFIG_ID` BIGINT NOT NULL, " +
-                    "`KEY` VARCHAR(255) NOT NULL, " +
-                    "`VALUE` VARCHAR(1024), " +
-                    "FOREIGN KEY(CONFIG_ID) REFERENCES CONFIGS(ID) ON DELETE CASCADE)";
+                            "(`ID` IDENTITY NOT NULL, " +
+                            "`CONFIG_ID` BIGINT NOT NULL, " +
+                            "`KEY` VARCHAR(255) NOT NULL, " +
+                            "`VALUE` VARCHAR(1024), " +
+                            "FOREIGN KEY(CONFIG_ID) REFERENCES CONFIGS(ID) ON DELETE CASCADE)";
             static final String PROPERTIES =
                     "CREATE TABLE IF NOT EXISTS `PROPERTIES` " +
-                    "(`ID` IDENTITY NOT NULL, " +
-                    "`PROPERTY_ID` BIGINT, " +
-                    "`CONFIG_ID` BIGINT NOT NULL, " +
-                    "`NAME` VARCHAR(255) NOT NULL, " +
-                    "`CAPTION` VARCHAR(255), " +
-                    "`DESCRIPTION` VARCHAR(1024), " +
-                    "`TYPE` ENUM ('BOOL', 'DOUBLE', 'LONG', 'STRING', 'STRING_ARRAY') NOT NULL, " +
-                    "`VALUE` VARCHAR(4096) NOT NULL, " +
-                    "`VERSION` INT NOT NULL, " +
-                    "FOREIGN KEY(CONFIG_ID) REFERENCES CONFIGS(ID) ON DELETE CASCADE," +
-                    "FOREIGN KEY(PROPERTY_ID) REFERENCES PROPERTIES(ID) ON DELETE CASCADE)";
+                            "(`ID` IDENTITY NOT NULL, " +
+                            "`PROPERTY_ID` BIGINT, " +
+                            "`CONFIG_ID` BIGINT NOT NULL, " +
+                            "`NAME` VARCHAR(255) NOT NULL, " +
+                            "`CAPTION` VARCHAR(255), " +
+                            "`DESCRIPTION` VARCHAR(1024), " +
+                            "`TYPE` ENUM ('BOOL', 'DOUBLE', 'LONG', 'STRING', 'STRING_ARRAY') NOT NULL, " +
+                            "`VALUE` VARCHAR(4096) NOT NULL, " +
+                            "`VERSION` INT NOT NULL, " +
+                            "FOREIGN KEY(CONFIG_ID) REFERENCES CONFIGS(ID) ON DELETE CASCADE," +
+                            "FOREIGN KEY(PROPERTY_ID) REFERENCES PROPERTIES(ID) ON DELETE CASCADE)";
             static final String PROPERTY_ATTRIBUTES =
                     "CREATE TABLE IF NOT EXISTS `PROPERTY_ATTRIBUTES` " +
-                    "(`ID` IDENTITY NOT NULL, " +
-                    "`PROPERTY_ID` BIGINT NOT NULL, " +
-                    "`KEY` VARCHAR(255) NOT NULL, " +
-                    "`VALUE` VARCHAR(1024), " +
-                    "FOREIGN KEY(PROPERTY_ID) REFERENCES PROPERTIES(ID) ON DELETE CASCADE)";
+                            "(`ID` IDENTITY NOT NULL, " +
+                            "`PROPERTY_ID` BIGINT NOT NULL, " +
+                            "`KEY` VARCHAR(255) NOT NULL, " +
+                            "`VALUE` VARCHAR(1024), " +
+                            "FOREIGN KEY(PROPERTY_ID) REFERENCES PROPERTIES(ID) ON DELETE CASCADE)";
         }
     }
 
