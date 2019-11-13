@@ -63,7 +63,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
 
             try (final Connection connection = dataSource.getConnection();
                  final PreparedStatement statement = connection.prepareStatement(sql.toString())) {
-                JDBCUtils.setParameters(statement, names);
+                JDBCUtils.setStatement(statement, names);
 
                 try (final ResultSet resultSet = statement.executeQuery()) {
                     final List<Config> configs = new LinkedList<>();
@@ -175,7 +175,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         final String sql = "INSERT INTO `CONFIGS` (`NAME`, `DESCRIPTION`, `VERSION`, `UPDATED`) VALUES (?, ?, ?, ?)";
         try (final PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             for (final Config config : configs) {
-                JDBCUtils.setParameters(statement, config);
+                JDBCUtils.setStatement(statement, config);
                 statement.addBatch();
             }
 
@@ -213,10 +213,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     private void insert(final Connection connection, final int id, final Map<String, String> map) throws SQLException {
         final String sql = "INSERT INTO `CONFIG_ATTRIBUTES` (`CONFIG_ID`, `KEY`, `VALUE`) VALUES (?, ?, ?)";
         try (final PreparedStatement statement = connection.prepareStatement(sql)) {
-            for (String key : map.keySet()) {
-                JDBCUtils.setParameters(statement, id, key, map.get(key));
-                statement.addBatch();
-            }
+            JDBCUtils.setBatchStatement(statement, id, map);
 
             if (statement.executeBatch().length != map.size()) {
                 throw new SQLException(INSERT_CONFIG_ATTRIBUTE_ERROR);
@@ -229,8 +226,8 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                 "UPDATE `CONFIGS` SET `NAME` = ?, `DESCRIPTION` = ?, `VERSION` = ?, `UPDATED` = ? WHERE `ID` = ?";
         try (final PreparedStatement statement = connection.prepareStatement(sql)) {
             for (final Config config : configs) {
-                JDBCUtils.setParameters(statement, config);
                 statement.setLong(5, config.getId());
+                JDBCUtils.setStatement(statement, config);
                 statement.addBatch();
             }
 
@@ -252,7 +249,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
             }
 
             try (final PreparedStatement statement = connection.prepareStatement(sql.toString())) {
-                JDBCUtils.setParameters(statement, names);
+                JDBCUtils.setStatement(statement, names);
                 final int deleted = statement.executeUpdate();
                 connection.commit();
                 return deleted;
@@ -284,7 +281,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                         "`NAME` VARCHAR(255) NOT NULL, " +
                         "`CAPTION` VARCHAR(255), " +
                         "`DESCRIPTION` VARCHAR(1024), " +
-                        "`TYPE` ENUM NOT NULL, " +
+                        "`TYPE` ENUM ('BOOL', 'DOUBLE', 'LONG', 'STRING', 'STRING_ARRAY') NOT NULL, " +
                         "`VALUE` VARCHAR(4096) NOT NULL, " +
                         "`VERSION` INT NOT NULL, " +
                         "FOREIGN KEY(CONFIG_ID) REFERENCES CONFIGS(ID) ON DELETE CASCADE," +
@@ -331,24 +328,27 @@ final class ConfigRepositoryImpl implements ConfigRepository {
             }
         }
 
-        private static void setParameters(final PreparedStatement statement, final Config config) throws SQLException {
+        private static void setStatement(final PreparedStatement statement, final Config config) throws SQLException {
             statement.setString(1, config.getName());
             statement.setString(2, config.getDescription());
             statement.setLong(3, config.getVersion());
             statement.setLong(4, config.getUpdated());
         }
 
-        private static void setParameters(final PreparedStatement statement, final String[] names) throws SQLException {
+        private static void setStatement(final PreparedStatement statement, final String[] names) throws SQLException {
             for (int i = 0; i < names.length; i++) {
                 statement.setString(i + 1, names[i]);
             }
         }
 
-        private static void setParameters(final PreparedStatement statement, final int id, final String key,
-                                          final String value) throws SQLException {
-            statement.setInt(1, id);
-            statement.setString(2, key);
-            statement.setString(3, value);
+        private static void setBatchStatement(final PreparedStatement statement, final int id,
+                                              final Map<String, String> map) throws SQLException {
+            for (final String key : map.keySet()) {
+                statement.setInt(1, id);
+                statement.setString(2, key);
+                statement.setString(3, map.get(key));
+                statement.addBatch();
+            }
         }
     }
 

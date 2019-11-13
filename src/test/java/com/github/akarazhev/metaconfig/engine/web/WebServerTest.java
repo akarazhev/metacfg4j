@@ -59,7 +59,7 @@ class WebServerTest {
             @Override
             public Stream<Config> update(final Stream<Config> stream, final boolean override) {
                 List<Config> list = stream.collect(Collectors.toList());
-                for (Config config : list) {
+                for (final Config config : list) {
                     map.put(config.getName(), config);
                 }
 
