@@ -92,5 +92,7 @@ class ConfigRepositoryTest {
         // Check test results
         assertTrue(config.isPresent());
         assertEquals(FIRST_CONFIG, config.get().getName());
+        assertTrue(config.get().getAttributes().isPresent());
+        assertEquals(3, config.get().getAttributes().get().size());
     }
 }

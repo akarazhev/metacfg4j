@@ -308,6 +308,18 @@ public final class Config extends AbstractConfig {
         }
 
         /**
+         * Constructs a configuration model with an attribute.
+         *
+         * @param key   a key of the attribute.
+         * @param value a value of the attribute.
+         * @return a builder of the configuration model.
+         */
+        public Builder attribute(final String key, final String value) {
+            this.attributes.put(Objects.requireNonNull(key), Objects.requireNonNull(value));
+            return this;
+        }
+
+        /**
          * Constructs a configuration model with attributes.
          *
          * @param attributes configuration attributes.
