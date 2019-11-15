@@ -17,16 +17,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static java.util.AbstractMap.SimpleEntry;
 import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_CONFIG_TABLE_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_UTILS_CLASS_ERROR;
@@ -47,8 +48,9 @@ final class ConfigRepositoryImpl implements ConfigRepository {
 
     private ConfigRepositoryImpl(final Builder builder) {
         // TODO: 1. implement sub-tables references
-        // TODO: 2. implement optimistic locking
-        // TODO: 3. refactor it
+        // TODO: 2. implement updating entities
+        // TODO: 3. implement the optimistic locking
+        // TODO: 4. refactor it
         this.dataSource = builder.dataSource;
         init(this.dataSource);
     }
@@ -70,25 +72,53 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                 JDBCUtils.setStatement(statement, names);
 
                 try (final ResultSet resultSet = statement.executeQuery()) {
+                    int previousConfigId = -1;
                     final Map<Integer, Config> configs = new HashMap<>();
+                    final Map<SimpleEntry<Integer, Integer>, Property> properties = new HashMap<>();
                     while (resultSet.next()) {
-                        final int id = resultSet.getInt(1);
-                        final Config config = configs.get(id);
+                        // Create configs
+                        final int configId = resultSet.getInt(1);
+                        final Config config = configs.get(configId);
                         if (config == null) {
-                            configs.put(id, new Config.Builder(resultSet.getString(2), Collections.emptyList()).
-                                    id(id).
+                            configs.put(configId, new Config.Builder(resultSet.getString(2), Collections.emptyList()).
+                                    id(configId).
                                     description(resultSet.getString(3)).
                                     version(resultSet.getInt(4)).
                                     updated(resultSet.getLong(5)).
                                     attribute(resultSet.getString(6), resultSet.getString(7)).
                                     build());
                         } else {
-                            configs.put(id, new Config.Builder(config).
+                            configs.put(configId, new Config.Builder(config).
                                     attribute(resultSet.getString(6), resultSet.getString(7)).
                                     build());
                         }
+                        // Create properties
+                        final SimpleEntry<Integer, Integer> propertyId =
+                                new SimpleEntry<>(resultSet.getInt(8), resultSet.getInt(9));
+                        final Property property = properties.get(propertyId);
+                        if (property == null) {
+                            properties.put(propertyId, new Property.Builder(resultSet.getString(10),
+                                    resultSet.getString(13),
+                                    resultSet.getString(14)).
+                                    caption(resultSet.getString(11)).
+                                    description(resultSet.getString(12)).
+                                    version(resultSet.getInt(15)).
+                                    build());
+                        } else {
+                            properties.put(propertyId, new Property.Builder(property).
+                                    attribute(resultSet.getString(16), resultSet.getString(17)).
+                                    build());
+                        }
+                        // Set properties to the config
+                        if (previousConfigId > -1 && configId != previousConfigId) {
+                            configs.put(previousConfigId, getConfig(configs.get(previousConfigId), properties));
+                            properties.clear();
+                        }
+
+                        previousConfigId = configId;
                     }
 
+                    configs.put(previousConfigId, getConfig(configs.get(previousConfigId), properties));
                     return configs.values().stream();
                 }
             }
@@ -168,8 +198,8 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     }
 
     private Stream<Config> saveAndFlush(final Connection connection, final Stream<Config> stream) throws SQLException {
-        final List<Config> toUpdate = new LinkedList<>();
-        final List<Config> toInsert = new LinkedList<>();
+        final Collection<Config> toUpdate = new LinkedList<>();
+        final Collection<Config> toInsert = new LinkedList<>();
         stream.forEach(config -> {
             if (config.getId() > 1) {
                 toUpdate.add(config);
@@ -340,6 +370,13 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         }
     }
 
+    private Config getConfig(final Config config, final Map<SimpleEntry<Integer, Integer>, Property> properties) {
+        final Collection<Property> configProperties = new LinkedList<>();
+        // todo
+        // todo
+        return new Config.Builder(config).properties(new String[0], configProperties).build();
+    }
+
     private final static class SQL {
 
         private SQL() {
@@ -394,11 +431,14 @@ final class ConfigRepositoryImpl implements ConfigRepository {
             static final String NAMES =
                     "SELECT `NAME` FROM `CONFIGS`;";
             static final String CONFIGS =
-                    "SELECT `C`.`ID`, `C`.`NAME`, `C`.`DESCRIPTION`, `C`.`VERSION`, `C`.`UPDATED`, `A`.`KEY`, " +
-                            "`A`.`VALUE` " +
+                    "SELECT `C`.`ID`, `C`.`NAME`, `C`.`DESCRIPTION`, `C`.`VERSION`, `C`.`UPDATED`, `CA`.`KEY`, " +
+                            "`CA`.`VALUE`, `P`.`ID`, `P`.`PROPERTY_ID`, `P`.`NAME` , `P`.`CAPTION`, " +
+                            "`P`.`DESCRIPTION`, `P`.`TYPE`, `P`.`VALUE` , `P`.`VERSION`, `PA`.`KEY`, `PA`.`VALUE` " +
                             "FROM `CONFIGS` AS `C` " +
-                            "LEFT JOIN `CONFIG_ATTRIBUTES` AS `A` ON `C`.`ID` = `A`.`CONFIG_ID` " +
-                            "WHERE `C`.`NAME` = ?";
+                            "LEFT JOIN `PROPERTIES` AS `P` ON `C`.`ID` = `P`.`CONFIG_ID` " +
+                            "LEFT JOIN `CONFIG_ATTRIBUTES` AS `CA` ON `C`.`ID` = `CA`.`CONFIG_ID` " +
+                            "LEFT JOIN `PROPERTY_ATTRIBUTES` AS `PA` ON `P`.`ID` = `PA`.`PROPERTY_ID` " +
+                            "WHERE `C`.`NAME` = ?;";
         }
 
         final static class CREATE_TABLE {

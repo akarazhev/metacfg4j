@@ -265,6 +265,17 @@ public final class Config extends AbstractConfig {
         }
 
         /**
+         * Constructs a configuration model with the description parameter.
+         *
+         * @param description a configuration description.
+         * @return a builder of the configuration model.
+         */
+        public Builder description(final String description) {
+            this.description = description;
+            return this;
+        }
+
+        /**
          * Constructs a configuration model with the version parameter.
          *
          * @param version a configuration version.
@@ -293,17 +304,6 @@ public final class Config extends AbstractConfig {
                 throw new IllegalArgumentException(WRONG_UPDATED_VALUE);
             }
 
-            return this;
-        }
-
-        /**
-         * Constructs a configuration model with the description parameter.
-         *
-         * @param description a configuration description.
-         * @return a builder of the configuration model.
-         */
-        public Builder description(final String description) {
-            this.description = description;
             return this;
         }
 

@@ -26,6 +26,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_VERSION_VALUE;
+
 /**
  * The property model that contains parameters, attributes and properties.
  */
@@ -273,7 +275,24 @@ public final class Property extends AbstractConfig {
         private String description;
         private final Type type;
         private final String value;
-        private final int version;
+        private int version;
+
+        /**
+         * Constructs a property model based on the property object.
+         *
+         * @param property a property model.
+         */
+        public Builder(final Property property) {
+            final Property prototype = Objects.requireNonNull(property);
+            this.name = prototype.name;
+            this.caption = prototype.caption;
+            this.description = prototype.description;
+            this.type = prototype.type;
+            this.value = prototype.value;
+            this.version = prototype.version;
+            this.attributes.putAll(prototype.attributes);
+            this.properties.addAll(prototype.properties);
+        }
 
         /**
          * Constructs a property model based on the json object.
@@ -300,6 +319,20 @@ public final class Property extends AbstractConfig {
         public Builder(final String name, final String value) {
             this.name = Objects.requireNonNull(name);
             this.type = Type.STRING;
+            this.value = Objects.requireNonNull(value);
+            this.version = 1;
+        }
+
+        /**
+         * Constructs a property model with required parameters.
+         *
+         * @param name  a property name.
+         * @param type  a property type.
+         * @param value a property value.
+         */
+        public Builder(final String name, final String type, final String value) {
+            this.name = Objects.requireNonNull(name);
+            this.type = Type.valueOf(Objects.requireNonNull(type));
             this.value = Objects.requireNonNull(value);
             this.version = 1;
         }
@@ -363,7 +396,7 @@ public final class Property extends AbstractConfig {
          * @return a builder of the property model.
          */
         public Builder caption(final String caption) {
-            this.caption = Objects.requireNonNull(caption);
+            this.caption = caption;
             return this;
         }
 
@@ -374,7 +407,35 @@ public final class Property extends AbstractConfig {
          * @return a builder of the property model.
          */
         public Builder description(final String description) {
-            this.description = Objects.requireNonNull(description);
+            this.description = description;
+            return this;
+        }
+
+        /**
+         * Constructs a property model with the version parameter.
+         *
+         * @param version a property version.
+         * @return a builder of the property model.
+         */
+        public Builder version(final int version) {
+            if (version > 0) {
+                this.version = version;
+            } else {
+                throw new IllegalArgumentException(WRONG_VERSION_VALUE);
+            }
+
+            return this;
+        }
+
+        /**
+         * Constructs a property model with an attribute.
+         *
+         * @param key   a key of the attribute.
+         * @param value a value of the attribute.
+         * @return a builder of the property model.
+         */
+        public Builder attribute(final String key, final String value) {
+            this.attributes.put(Objects.requireNonNull(key), Objects.requireNonNull(value));
             return this;
         }
 
