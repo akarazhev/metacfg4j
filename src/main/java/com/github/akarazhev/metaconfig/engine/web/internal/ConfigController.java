@@ -25,7 +25,6 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -62,14 +61,15 @@ final class ConfigController extends AbstractController {
             final OperationResponse response = getRequestParam(uri.getQuery(), REQ_PARAM_NAMES).
                     map(param -> {
                         try {
-                            final List<Config> configs = configService.get(getValues(param)).collect(Collectors.toList());
+                            final Collection<Config> configs =
+                                    configService.get(getValues(param)).collect(Collectors.toList());
                             return new OperationResponse.Builder<>().result(configs).build();
                         } catch (final Exception e) {
                             return new OperationResponse.Builder<>().error(STRING_TO_JSON_ERROR).build();
                         }
                     }).
                     orElseGet(() -> {
-                        final List<Config> configs = configService.get().collect(Collectors.toList());
+                        final Collection<Config> configs = configService.get().collect(Collectors.toList());
                         return new OperationResponse.Builder<>().result(configs).build();
                     });
             writeResponse(httpExchange, response);

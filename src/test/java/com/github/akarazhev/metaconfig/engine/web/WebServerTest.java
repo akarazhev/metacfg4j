@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -78,7 +79,7 @@ class WebServerTest {
 
             @Override
             public Stream<Config> get(final Stream<String> stream) {
-                final List<Config> configs = new LinkedList<>();
+                final Collection<Config> configs = new LinkedList<>();
                 stream.forEach(name -> configs.add(map.get(name)));
                 return configs.stream();
             }
@@ -112,7 +113,7 @@ class WebServerTest {
 
     @Test
     void acceptConfig() throws Exception {
-        final List<Property> properties = new ArrayList<>(2);
+        final Collection<Property> properties = new ArrayList<>(2);
         properties.add(new Property.Builder(URL, "http://localhost:8000/api/metacfg/accept_config/name").build());
         properties.add(new Property.Builder(METHOD, POST).build());
 
@@ -126,7 +127,7 @@ class WebServerTest {
 
     @Test
     void getConfigNames() throws Exception {
-        final List<Property> properties = new ArrayList<>(2);
+        final Collection<Property> properties = new ArrayList<>(2);
         properties.add(new Property.Builder(URL, "http://localhost:8000/api/metacfg/config_names").build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
@@ -140,7 +141,7 @@ class WebServerTest {
 
     @Test
     void getConfigSections() throws Exception {
-        final List<Property> properties = new ArrayList<>(2);
+        final Collection<Property> properties = new ArrayList<>(2);
         properties.add(new Property.Builder(URL, "http://localhost:8000/api/metacfg/configs?names=" +
                 new String(Base64.getEncoder().encode("[\"name_1\", \"name_2\", \"name_3\"]".getBytes()))).build());
         properties.add(new Property.Builder(METHOD, GET).build());
@@ -155,7 +156,7 @@ class WebServerTest {
 
     @Test
     void getConfigSection() throws Exception {
-        final List<Property> properties = new ArrayList<>(2);
+        final Collection<Property> properties = new ArrayList<>(2);
         properties.add(new Property.Builder(URL, "http://localhost:8000/api/metacfg/config/name").build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
@@ -170,7 +171,7 @@ class WebServerTest {
 
     @Test
     void updateConfigSection() throws Exception {
-        List<Property> properties = new ArrayList<>(2);
+        Collection<Property> properties = new ArrayList<>(2);
         properties.add(new Property.Builder("Property_1", "Value_1").build());
         properties.add(new Property.Builder("Property_2", "Value_2").build());
         Config config = new Config.Builder("Meta Config", properties).attributes(Collections.singletonMap("key", "value")).build();
@@ -193,7 +194,7 @@ class WebServerTest {
 
     @Test
     void deleteConfigSection() throws Exception {
-        final List<Property> properties = new ArrayList<>(2);
+        final Collection<Property> properties = new ArrayList<>(2);
         properties.add(new Property.Builder(URL, "http://localhost:8000/api/metacfg/config/" +
                 new String(Base64.getEncoder().encode("[\"name\"]".getBytes()))).build());
         properties.add(new Property.Builder(METHOD, DELETE).build());

@@ -139,10 +139,10 @@ public final class WebClient {
     }
 
     private String readContent(final InputStream inputStream) throws IOException {
-        try (final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             final StringBuilder content = new StringBuilder();
             String inputLine;
-            while ((inputLine = bufferedReader.readLine()) != null) {
+            while ((inputLine = reader.readLine()) != null) {
                 content.append(inputLine);
             }
 
