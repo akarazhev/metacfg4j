@@ -372,8 +372,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
 
     private Config getConfig(final Config config, final Map<SimpleEntry<Integer, Integer>, Property> properties) {
         final Collection<Property> configProperties = new LinkedList<>();
-        // todo
-        // todo
+        // todo set properties
         return new Config.Builder(config).properties(new String[0], configProperties).build();
     }
 
