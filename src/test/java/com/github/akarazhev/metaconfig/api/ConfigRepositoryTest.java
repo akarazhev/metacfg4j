@@ -69,25 +69,25 @@ class ConfigRepositoryTest {
 
     @BeforeEach
     void beforeEach() {
-        final Map<String, String> attributes = new HashMap<>();
-        attributes.put("key_1", "value_1");
-        attributes.put("key_2", "value_2");
-        attributes.put("key_3", "value_3");
-
         final Property firstSubProperty = new Property.Builder("Sub-Property-1", "Sub-Value-1").
-                attributes(attributes).build();
+                attribute("key_1", "value_1").build();
         final Property secondSubProperty = new Property.Builder("Sub-Property-2", "Sub-Value-2").
-                attributes(attributes).build();
+                attribute("key_2", "value_2").build();
         final Property thirdSubProperty = new Property.Builder("Sub-Property-3", "Sub-Value-3").
-                attributes(attributes).build();
+                attribute("key_3", "value_3").build();
         final Property property = new Property.Builder("Property", "Value").
                 caption("Caption").
                 description("Description").
-                attributes(attributes).
+                attribute("key", "value").
                 property(new String[0], firstSubProperty).
                 property(new String[]{"Sub-Property-1"}, secondSubProperty).
                 property(new String[]{"Sub-Property-1", "Sub-Property-2"}, thirdSubProperty).
                 build();
+
+        final Map<String, String> attributes = new HashMap<>();
+        attributes.put("key_1", "value_1");
+        attributes.put("key_2", "value_2");
+        attributes.put("key_3", "value_3");
 
         configRepository.saveAndFlush(
                 Stream.of(new Config.Builder(FIRST_CONFIG, Collections.singletonList(property)).attributes(attributes).build()));

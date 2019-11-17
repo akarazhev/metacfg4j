@@ -19,12 +19,15 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.AbstractMap.SimpleEntry;
@@ -61,21 +64,38 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     @Override
     public Stream<Config> findByNames(final Stream<String> stream) {
         try {
-            final StringBuilder sql = new StringBuilder(SQL.SELECT.CONFIGS);
             final String[] names = stream.toArray(String[]::new);
-            if (names.length > 1) {
-                Arrays.stream(names).skip(1).forEach(name -> sql.append(" OR C.NAME = ?"));
-            }
-
             try (final Connection connection = dataSource.getConnection();
-                 final PreparedStatement statement = connection.prepareStatement(sql.toString())) {
+                 final PreparedStatement statement = connection.prepareStatement(getConfigsSql(names))) {
                 JDBCUtils.setStatement(statement, names);
 
                 try (final ResultSet resultSet = statement.executeQuery()) {
-                    int previousConfigId = -1;
+                    int prevConfigId = -1;
                     final Map<Integer, Config> configs = new HashMap<>();
-                    final Map<SimpleEntry<Integer, Integer>, Property> properties = new HashMap<>();
+                    final Map<Integer, Property> properties = new HashMap<>();
+                    final Comparator<SimpleEntry<Integer, Integer>> comparing =
+                            Comparator.comparing(SimpleEntry::getValue);
+                    final Set<SimpleEntry<Integer, Integer>> links = new TreeSet<>(comparing.reversed());
                     while (resultSet.next()) {
+                        // Create properties
+                        final int propertyId = resultSet.getInt(8);
+                        final Property property = properties.get(propertyId);
+                        if (property == null) {
+                            properties.put(propertyId, new Property.Builder(resultSet.getString(10),
+                                    resultSet.getString(13),
+                                    resultSet.getString(14)).
+                                    caption(resultSet.getString(11)).
+                                    description(resultSet.getString(12)).
+                                    version(resultSet.getInt(15)).
+                                    attribute(resultSet.getString(16), resultSet.getString(17)).
+                                    build());
+                        } else {
+                            properties.put(propertyId, new Property.Builder(property).
+                                    attribute(resultSet.getString(16), resultSet.getString(17)).
+                                    build());
+                        }
+                        // Create links
+                        links.add(new SimpleEntry<>(propertyId, resultSet.getInt(9)));
                         // Create configs
                         final int configId = resultSet.getInt(1);
                         final Config config = configs.get(configId);
@@ -92,33 +112,17 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                                     attribute(resultSet.getString(6), resultSet.getString(7)).
                                     build());
                         }
-                        // Create properties
-                        final SimpleEntry<Integer, Integer> propertyId =
-                                new SimpleEntry<>(resultSet.getInt(8), resultSet.getInt(9));
-                        final Property property = properties.get(propertyId);
-                        if (property == null) {
-                            properties.put(propertyId, new Property.Builder(resultSet.getString(10),
-                                    resultSet.getString(13),
-                                    resultSet.getString(14)).
-                                    caption(resultSet.getString(11)).
-                                    description(resultSet.getString(12)).
-                                    version(resultSet.getInt(15)).
-                                    build());
-                        } else {
-                            properties.put(propertyId, new Property.Builder(property).
-                                    attribute(resultSet.getString(16), resultSet.getString(17)).
-                                    build());
-                        }
                         // Set properties to the config
-                        if (previousConfigId > -1 && configId != previousConfigId) {
-                            configs.put(previousConfigId, getConfig(configs.get(previousConfigId), properties));
-                            properties.clear();
+                        if (prevConfigId > -1 && configId != prevConfigId) {
+                            configs.put(prevConfigId, getConfig(configs.get(prevConfigId),
+                                    getLinkedProps(properties, links.stream())));
                         }
 
-                        previousConfigId = configId;
+                        prevConfigId = configId;
                     }
 
-                    configs.put(previousConfigId, getConfig(configs.get(previousConfigId), properties));
+                    configs.put(prevConfigId, getConfig(configs.get(prevConfigId),
+                            getLinkedProps(properties, links.stream())));
                     return configs.values().stream();
                 }
             }
@@ -370,10 +374,32 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         }
     }
 
-    private Config getConfig(final Config config, final Map<SimpleEntry<Integer, Integer>, Property> properties) {
-        final Collection<Property> configProperties = new LinkedList<>();
-        // todo set properties
-        return new Config.Builder(config).properties(new String[0], configProperties).build();
+    private String getConfigsSql(final String[] names) {
+        final StringBuilder sql = new StringBuilder(SQL.SELECT.CONFIGS);
+        if (names.length > 1) {
+            Arrays.stream(names).skip(1).forEach(name -> sql.append(" OR C.NAME = ?"));
+        }
+
+        return sql.append(";").toString();
+    }
+
+    private Config getConfig(final Config config, final Stream<Property> properties) {
+        return new Config.Builder(config).properties(new String[0], properties.collect(Collectors.toList())).build();
+    }
+
+    private Stream<Property> getLinkedProps(final Map<Integer, Property> properties,
+                                            final Stream<SimpleEntry<Integer, Integer>> links) {
+        links.forEach(link -> {
+            final Property childProp = properties.get(link.getKey());
+            final Property parentProp = properties.get(link.getValue());
+            if (childProp != null && parentProp != null) {
+                properties.put(link.getValue(),
+                        new Property.Builder(parentProp).property(new String[0], childProp).build());
+                properties.remove(link.getKey());
+            }
+        });
+
+        return properties.values().stream();
     }
 
     private final static class SQL {
@@ -437,7 +463,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                             "LEFT JOIN `PROPERTIES` AS `P` ON `C`.`ID` = `P`.`CONFIG_ID` " +
                             "LEFT JOIN `CONFIG_ATTRIBUTES` AS `CA` ON `C`.`ID` = `CA`.`CONFIG_ID` " +
                             "LEFT JOIN `PROPERTY_ATTRIBUTES` AS `PA` ON `P`.`ID` = `PA`.`PROPERTY_ID` " +
-                            "WHERE `C`.`NAME` = ?;";
+                            "WHERE `C`.`NAME` = ?";
         }
 
         final static class CREATE_TABLE {
