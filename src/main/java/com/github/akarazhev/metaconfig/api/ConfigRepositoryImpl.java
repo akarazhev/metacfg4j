@@ -217,80 +217,90 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     }
 
     private Stream<Config> insert(final Connection connection, final Config[] configs) throws SQLException {
-        final Config[] inserted = new Config[configs.length];
-        try (final PreparedStatement statement =
-                     connection.prepareStatement(SQL.INSERT.CONFIGS, Statement.RETURN_GENERATED_KEYS)) {
-            for (final Config config : configs) {
-                JDBCUtils.setStatement(statement, config);
-                statement.addBatch();
-            }
-
-            if (statement.executeBatch().length == configs.length) {
-                try (final ResultSet resultSet = statement.getGeneratedKeys()) {
-                    final Set<SQLException> exceptions = new HashSet<>();
-                    for (int i = 0; i < configs.length; i++) {
-                        resultSet.absolute(i + 1);
-                        final int configId = resultSet.getInt(1);
-                        final Config config = new Config.Builder(configs[i]).id(configId).build();
-                        // Create config attributes
-                        config.getAttributes().ifPresent(map -> {
-                            try {
-                                insertAttributes(connection, SQL.INSERT.CONFIG_ATTRIBUTES, configId, map);
-                            } catch (SQLException e) {
-                                exceptions.add(e);
-                            }
-                        });
-                        // Create config properties
-                        insert(connection, configId, config.getProperties().toArray(Property[]::new));
-                        inserted[i] = config;
-                    }
-
-                    if (exceptions.size() > 0) {
-                        throw new SQLException(INSERT_ATTRIBUTES_ERROR);
-                    }
+        if (configs.length > 0) {
+            final Config[] inserted = new Config[configs.length];
+            try (final PreparedStatement statement =
+                         connection.prepareStatement(SQL.INSERT.CONFIGS, Statement.RETURN_GENERATED_KEYS)) {
+                for (final Config config : configs) {
+                    JDBCUtils.setStatement(statement, config);
+                    statement.addBatch();
                 }
-            } else {
-                throw new SQLException(INSERT_CONFIGS_ERROR);
+
+                if (statement.executeBatch().length == configs.length) {
+                    try (final ResultSet resultSet = statement.getGeneratedKeys()) {
+                        final Set<SQLException> exceptions = new HashSet<>();
+                        for (int i = 0; i < configs.length; i++) {
+                            resultSet.absolute(i + 1);
+                            final int configId = resultSet.getInt(1);
+                            final Config config = new Config.Builder(configs[i]).id(configId).build();
+                            // Create config attributes
+                            config.getAttributes().ifPresent(map -> {
+                                try {
+                                    insertAttributes(connection, SQL.INSERT.CONFIG_ATTRIBUTES, configId, map);
+                                } catch (SQLException e) {
+                                    exceptions.add(e);
+                                }
+                            });
+                            // Create config properties
+                            insert(connection, configId, config.getProperties().toArray(Property[]::new));
+                            inserted[i] = config;
+                        }
+
+                        if (exceptions.size() > 0) {
+                            throw new SQLException(INSERT_ATTRIBUTES_ERROR);
+                        }
+                    }
+                } else {
+                    throw new SQLException(INSERT_CONFIGS_ERROR);
+                }
+
+                connection.commit();
             }
 
-            connection.commit();
+            return Arrays.stream(inserted);
         }
 
-        return Arrays.stream(inserted);
+        return Stream.empty();
     }
 
     private void insertAttributes(final Connection connection, final String sql, final int id,
                                   final Map<String, String> map) throws SQLException {
-        try (final PreparedStatement statement = connection.prepareStatement(sql)) {
-            JDBCUtils.setBatchStatement(statement, id, map);
+        if (map.size() > 0) {
+            try (final PreparedStatement statement = connection.prepareStatement(sql)) {
+                JDBCUtils.setBatchStatement(statement, id, map);
 
-            if (statement.executeBatch().length != map.size()) {
-                throw new SQLException(INSERT_ATTRIBUTES_ERROR);
+                if (statement.executeBatch().length != map.size()) {
+                    throw new SQLException(INSERT_ATTRIBUTES_ERROR);
+                }
             }
         }
     }
 
     private void insert(final Connection connection, final int configId, final Property[] properties)
             throws SQLException {
-        try (final PreparedStatement statement =
-                     connection.prepareStatement(SQL.INSERT.PROPERTIES, Statement.RETURN_GENERATED_KEYS)) {
-            for (final Property property : properties) {
-                JDBCUtils.setBatchStatement(statement, configId, property);
-            }
+        if (properties.length > 0) {
+            try (final PreparedStatement statement =
+                         connection.prepareStatement(SQL.INSERT.PROPERTIES, Statement.RETURN_GENERATED_KEYS)) {
+                for (final Property property : properties) {
+                    JDBCUtils.setBatchStatement(statement, configId, property);
+                }
 
-            insert(connection, statement, configId, properties);
+                insert(connection, statement, configId, properties);
+            }
         }
     }
 
     private void insert(final Connection connection, final int configId, final int propertyId,
                         final Property[] properties) throws SQLException {
-        try (final PreparedStatement statement =
-                     connection.prepareStatement(SQL.INSERT.SUB_PROPERTIES, Statement.RETURN_GENERATED_KEYS)) {
-            for (final Property property : properties) {
-                JDBCUtils.setBatchStatement(statement, configId, propertyId, property);
-            }
+        if (properties.length > 0) {
+            try (final PreparedStatement statement =
+                         connection.prepareStatement(SQL.INSERT.SUB_PROPERTIES, Statement.RETURN_GENERATED_KEYS)) {
+                for (final Property property : properties) {
+                    JDBCUtils.setBatchStatement(statement, configId, propertyId, property);
+                }
 
-            insert(connection, statement, configId, properties);
+                insert(connection, statement, configId, properties);
+            }
         }
     }
 
@@ -304,7 +314,6 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                     final int propertyId = resultSet.getInt(1);
                     // Create property attributes
                     properties[i].getAttributes().ifPresent(map -> {
-
                         try {
                             insertAttributes(connection, SQL.INSERT.PROPERTY_ATTRIBUTES, propertyId, map);
                         } catch (SQLException e) {
@@ -325,39 +334,47 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     }
 
     private Stream<Config> update(final Connection connection, final Config[] configs) throws SQLException {
-        try (final PreparedStatement statement = connection.prepareStatement(SQL.UPDATE.CONFIGS)) {
-            for (final Config config : configs) {
-                statement.setLong(5, config.getId());
-                JDBCUtils.setStatement(statement, config);
-                statement.addBatch();
+        if (configs.length > 0) {
+            try (final PreparedStatement statement = connection.prepareStatement(SQL.UPDATE.CONFIGS)) {
+                for (final Config config : configs) {
+                    statement.setLong(5, config.getId());
+                    JDBCUtils.setStatement(statement, config);
+                    statement.addBatch();
+                }
+
+                if (statement.executeBatch().length != configs.length) {
+                    throw new SQLException(UPDATE_CONFIGS_ERROR);
+                }
+
+                connection.commit();
             }
 
-            if (statement.executeBatch().length != configs.length) {
-                throw new SQLException(UPDATE_CONFIGS_ERROR);
-            }
-
-            connection.commit();
+            return Arrays.stream(configs);
         }
 
-        return Arrays.stream(configs);
+        return Stream.empty();
     }
 
     private int delete(final Connection connection, final String[] names) throws SQLException {
-        try {
-            final StringBuilder sql = new StringBuilder("DELETE FROM `CONFIGS` WHERE `NAME` = ?");
-            if (names.length > 1) {
-                Arrays.stream(names).skip(1).forEach(name -> sql.append(" OR `NAME` = ?"));
-            }
+        if (names.length > 0) {
+            try {
+                final StringBuilder sql = new StringBuilder("DELETE FROM `CONFIGS` WHERE `NAME` = ?");
+                if (names.length > 1) {
+                    Arrays.stream(names).skip(1).forEach(name -> sql.append(" OR `NAME` = ?"));
+                }
 
-            try (final PreparedStatement statement = connection.prepareStatement(sql.toString())) {
-                JDBCUtils.setStatement(statement, names);
-                final int deleted = statement.executeUpdate();
-                connection.commit();
-                return deleted;
+                try (final PreparedStatement statement = connection.prepareStatement(sql.toString())) {
+                    JDBCUtils.setStatement(statement, names);
+                    final int deleted = statement.executeUpdate();
+                    connection.commit();
+                    return deleted;
+                }
+            } catch (final SQLException e) {
+                throw new SQLException(DELETE_CONFIGS_ERROR, e);
             }
-        } catch (final SQLException e) {
-            throw new SQLException(DELETE_CONFIGS_ERROR, e);
         }
+
+        return 0;
     }
 
     private void createTables(final Connection connection) throws SQLException {

@@ -30,8 +30,9 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ConfigRepositoryTest {
+final class ConfigRepositoryTest {
     private static final String FIRST_CONFIG = "The First Config";
+    private static final String SECOND_CONFIG = "The Second Config";
 
     private static ConnectionPool connectionPool;
     private static ConfigRepository configRepository;
@@ -69,6 +70,41 @@ class ConfigRepositoryTest {
 
     @BeforeEach
     void beforeEach() {
+        configRepository.saveAndFlush(Stream.of(getFirstConfig(), getSecondConfig()));
+    }
+
+    @AfterEach
+    void afterEach() {
+        configRepository.delete(Stream.of(FIRST_CONFIG, SECOND_CONFIG));
+    }
+
+    @Test
+    void findFirstConfigByName() {
+        final Optional<Config> firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
+        // Check test results
+        assertTrue(firstConfig.isPresent());
+        final Config actualConfig = firstConfig.get();
+        final Config expectedConfig = new Config.Builder(getFirstConfig()).
+                id(actualConfig.getId()).
+                updated(actualConfig.getUpdated()).
+                build();
+        assertEquals(expectedConfig, actualConfig);
+    }
+
+    @Test
+    void findSecondConfigByName() {
+        final Optional<Config> secondConfig = configRepository.findByNames(Stream.of(SECOND_CONFIG)).findFirst();
+        // Check test results
+        assertTrue(secondConfig.isPresent());
+        final Config actualConfig = secondConfig.get();
+        final Config expectedConfig = new Config.Builder(getSecondConfig()).
+                id(actualConfig.getId()).
+                updated(actualConfig.getUpdated()).
+                build();
+        assertEquals(expectedConfig, actualConfig);
+    }
+
+    private Config getFirstConfig() {
         final Property firstSubProperty = new Property.Builder("Sub-Property-1", "Sub-Value-1").
                 attribute("key_1", "value_1").build();
         final Property secondSubProperty = new Property.Builder("Sub-Property-2", "Sub-Value-2").
@@ -89,22 +125,30 @@ class ConfigRepositoryTest {
         attributes.put("key_2", "value_2");
         attributes.put("key_3", "value_3");
 
-        configRepository.saveAndFlush(
-                Stream.of(new Config.Builder(FIRST_CONFIG, Collections.singletonList(property)).attributes(attributes).build()));
+        return new Config.Builder(FIRST_CONFIG, Collections.singletonList(property)).attributes(attributes).build();
     }
 
-    @AfterEach
-    void afterEach() {
-        configRepository.delete(Stream.of(FIRST_CONFIG));
-    }
+    private Config getSecondConfig() {
+        final Property firstProperty = new Property.Builder("Property-1", "Value-1").
+                attribute("key_1", "value_1").build();
+        final Property secondProperty = new Property.Builder("Property-2", "Value-2").
+                attribute("key_2", "value_2").build();
+        final Property thirdProperty = new Property.Builder("Property-3", "Value-3").
+                attribute("key_3", "value_3").build();
+        final Property property = new Property.Builder("Property", "Value").
+                caption("Caption").
+                description("Description").
+                attribute("key", "value").
+                property(new String[0], firstProperty).
+                property(new String[0], secondProperty).
+                property(new String[0], thirdProperty).
+                build();
 
-    @Test
-    void findConfigByName() {
-        final Optional<Config> config = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
-        // Check test results
-        assertTrue(config.isPresent());
-        assertEquals(FIRST_CONFIG, config.get().getName());
-        assertTrue(config.get().getAttributes().isPresent());
-        assertEquals(3, config.get().getAttributes().get().size());
+        final Map<String, String> attributes = new HashMap<>();
+        attributes.put("key_1", "value_1");
+        attributes.put("key_2", "value_2");
+        attributes.put("key_3", "value_3");
+
+        return new Config.Builder(SECOND_CONFIG, Collections.singletonList(property)).attributes(attributes).build();
     }
 }
