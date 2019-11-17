@@ -19,7 +19,7 @@ import java.sql.DriverManager;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class DbServerTest {
+final class DbServerTest {
     private static DbServer dbServer;
 
     @BeforeAll

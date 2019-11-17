@@ -45,7 +45,7 @@ import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.POST;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.PUT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class WebServerTest {
+final class WebServerTest {
     private static WebServer webServer;
 
     @BeforeAll
