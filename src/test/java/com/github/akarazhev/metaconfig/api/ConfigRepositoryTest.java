@@ -82,11 +82,14 @@ final class ConfigRepositoryTest {
         // Check test results
         assertTrue(firstConfig.isPresent());
         final Config actualConfig = firstConfig.get();
-        final Config expectedConfig = new Config.Builder(getFirstConfig()).
-                id(actualConfig.getId()).
-                updated(actualConfig.getUpdated()).
-                build();
-        assertEquals(expectedConfig, actualConfig);
+        final Config expectedConfig = getFirstConfig();
+        assertConfig(expectedConfig, actualConfig);
+
+        final Optional<Property> expected = expectedConfig.getProperty("Property");
+        assertTrue(expected.isPresent());
+        final Optional<Property> actual = actualConfig.getProperty("Property");
+        assertTrue(actual.isPresent());
+        assertProperty(expected.get(), actual.get());
     }
 
     @Test
@@ -95,11 +98,31 @@ final class ConfigRepositoryTest {
         // Check test results
         assertTrue(secondConfig.isPresent());
         final Config actualConfig = secondConfig.get();
-        final Config expectedConfig = new Config.Builder(getSecondConfig()).
-                id(actualConfig.getId()).
-                updated(actualConfig.getUpdated()).
-                build();
-        assertEquals(expectedConfig, actualConfig);
+        final Config expectedConfig = getSecondConfig();
+        assertConfig(expectedConfig, actualConfig);
+    }
+
+    private void assertConfig(final Config expected, final Config actual) {
+        assertEquals(expected.getName(), actual.getName());
+        assertEquals(expected.getDescription(), actual.getDescription());
+        assertEquals(expected.getVersion(), actual.getVersion());
+
+        assertTrue(actual.getAttributes().isPresent());
+        assertTrue(expected.getAttributes().isPresent());
+        assertEquals(expected.getAttributes(), actual.getAttributes());
+    }
+
+    private void assertProperty(final Property expected, final Property actual) {
+        assertEquals(expected.getName(), actual.getName());
+        assertEquals(expected.getCaption(), actual.getCaption());
+        assertEquals(expected.getDescription(), actual.getDescription());
+        assertEquals(expected.getType(), actual.getType());
+        assertEquals(expected.getValue(), actual.getValue());
+        assertEquals(expected.getVersion(), actual.getVersion());
+
+        assertTrue(actual.getAttributes().isPresent());
+        assertTrue(expected.getAttributes().isPresent());
+        assertEquals(expected.getAttributes(), actual.getAttributes());
     }
 
     private Config getFirstConfig() {

@@ -80,6 +80,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                             properties.put(propertyId, new Property.Builder(resultSet.getString(10),
                                     resultSet.getString(13),
                                     resultSet.getString(14)).
+                                    id(propertyId).
                                     caption(resultSet.getString(11)).
                                     description(resultSet.getString(12)).
                                     version(resultSet.getInt(15)).
@@ -87,6 +88,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                                     build());
                         } else {
                             properties.put(propertyId, new Property.Builder(property).
+                                    id(propertyId).
                                     attribute(resultSet.getString(16), resultSet.getString(17)).
                                     build());
                         }
