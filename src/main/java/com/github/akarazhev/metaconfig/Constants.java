@@ -57,4 +57,18 @@ public final class Constants {
         public static final String DB_ROLLBACK_ERROR = "Database rollback error.";
         public static final String DB_CONNECTION_ERROR = "Database connection error.";
     }
+
+    /**
+     * DB constants for the library.
+     */
+    public final static class DB {
+
+        private DB() {
+            throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
+        }
+
+        public static final String URL = "jdbc:h2:./data/metacfg4j";
+        public static final String USER = "sa";
+        public static final String PASSWORD = "sa";
+    }
 }

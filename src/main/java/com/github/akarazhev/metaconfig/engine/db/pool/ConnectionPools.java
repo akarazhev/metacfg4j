@@ -16,6 +16,9 @@ import org.h2.jdbcx.JdbcConnectionPool;
 import javax.sql.DataSource;
 import java.io.IOException;
 
+import static com.github.akarazhev.metaconfig.Constants.DB.PASSWORD;
+import static com.github.akarazhev.metaconfig.Constants.DB.URL;
+import static com.github.akarazhev.metaconfig.Constants.DB.USER;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_FACTORY_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.IMPLEMENTATION_NOT_PROVIDED;
 
@@ -35,8 +38,7 @@ public final class ConnectionPools {
      */
     public static ConnectionPool newPool() {
         return new ConnectionPool() {
-            private final JdbcConnectionPool cp =
-                    JdbcConnectionPool.create("jdbc:h2:./data/metacfg4j", "sa", "sa");
+            private final JdbcConnectionPool cp = JdbcConnectionPool.create(URL, USER, PASSWORD);
 
             @Override
             public DataSource getDataSource() {

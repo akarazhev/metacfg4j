@@ -16,6 +16,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,8 +27,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.AbstractMap.SimpleEntry;
@@ -50,10 +49,9 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     private final DataSource dataSource;
 
     private ConfigRepositoryImpl(final Builder builder) {
-        // TODO: 1. implement sub-tables references
-        // TODO: 2. implement updating entities
-        // TODO: 3. implement the optimistic locking
-        // TODO: 4. refactor it
+        // TODO: 1. implement updating entities
+        // TODO: 2. implement the optimistic locking
+        // TODO: 3. refactor it
         this.dataSource = builder.dataSource;
         init(this.dataSource);
     }
@@ -73,9 +71,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                     int prevConfigId = -1;
                     final Map<Integer, Config> configs = new HashMap<>();
                     final Map<Integer, Property> properties = new HashMap<>();
-                    final Comparator<SimpleEntry<Integer, Integer>> comparing =
-                            Comparator.comparing(SimpleEntry::getValue);
-                    final Set<SimpleEntry<Integer, Integer>> links = new TreeSet<>(comparing.reversed());
+                    final Collection<SimpleEntry<Integer, Integer>> links = new LinkedList<>();
                     while (resultSet.next()) {
                         // Create properties
                         final int propertyId = resultSet.getInt(8);
@@ -114,15 +110,17 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                         }
                         // Set properties to the config
                         if (prevConfigId > -1 && configId != prevConfigId) {
-                            configs.put(prevConfigId, getConfig(configs.get(prevConfigId),
-                                    getLinkedProps(properties, links.stream())));
+                            configs.put(prevConfigId, new Config.Builder(configs.get(prevConfigId)).
+                                    properties(new String[0], getLinkedProps(properties, links)).build());
+                            links.clear();
+                            properties.clear();
                         }
 
                         prevConfigId = configId;
                     }
 
-                    configs.put(prevConfigId, getConfig(configs.get(prevConfigId),
-                            getLinkedProps(properties, links.stream())));
+                    configs.put(prevConfigId, new Config.Builder(configs.get(prevConfigId)).
+                            properties(new String[0], getLinkedProps(properties, links)).build());
                     return configs.values().stream();
                 }
             }
@@ -400,23 +398,25 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         return sql.append(";").toString();
     }
 
-    private Config getConfig(final Config config, final Stream<Property> properties) {
-        return new Config.Builder(config).properties(new String[0], properties.collect(Collectors.toList())).build();
-    }
+    private Collection<Property> getLinkedProps(final Map<Integer, Property> properties,
+                                                final Collection<SimpleEntry<Integer, Integer>> links) {
+        final Comparator<SimpleEntry<Integer, Integer>> comparing =
+                Comparator.comparing(SimpleEntry::getValue);
+        final Map<Integer, Property> linkedProps = new HashMap<>(properties);
+        final Collection<SimpleEntry<Integer, Integer>> sortedLinks = new ArrayList<>(links);
+        sortedLinks.stream().
+                sorted(comparing.reversed()).
+                forEach(link -> {
+                    final Property childProp = linkedProps.get(link.getKey());
+                    final Property parentProp = linkedProps.get(link.getValue());
+                    if (childProp != null && parentProp != null) {
+                        linkedProps.put(link.getValue(),
+                                new Property.Builder(parentProp).property(new String[0], childProp).build());
+                        linkedProps.remove(link.getKey());
+                    }
+                });
 
-    private Stream<Property> getLinkedProps(final Map<Integer, Property> properties,
-                                            final Stream<SimpleEntry<Integer, Integer>> links) {
-        links.forEach(link -> {
-            final Property childProp = properties.get(link.getKey());
-            final Property parentProp = properties.get(link.getValue());
-            if (childProp != null && parentProp != null) {
-                properties.put(link.getValue(),
-                        new Property.Builder(parentProp).property(new String[0], childProp).build());
-                properties.remove(link.getKey());
-            }
-        });
-
-        return properties.values().stream();
+        return linkedProps.values();
     }
 
     private final static class SQL {

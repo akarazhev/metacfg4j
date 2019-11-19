@@ -64,8 +64,6 @@ final class ConfigRepositoryTest {
             dbServer.stop();
             dbServer = null;
         }
-
-//        Files.deleteIfExists(Paths.get("data"));
     }
 
     @BeforeEach
