@@ -193,11 +193,11 @@ public final class Config extends AbstractConfig {
      * Wraps and builds the instance of the configuration model.
      */
     public final static class Builder extends ConfigBuilder {
-        private int id;
+        private int id = 0;
         private final String name;
         private String description;
-        private int version;
-        private long updated;
+        private int version = 1;
+        private long updated = Clock.systemDefaultZone().millis();
 
         /**
          * Constructs a configuration model based on the config object.
@@ -223,13 +223,19 @@ public final class Config extends AbstractConfig {
         public Builder(final JsonObject jsonObject) {
             final JsonObject prototype = Objects.requireNonNull(jsonObject);
             final Object id = prototype.get("id");
-            this.id = id != null ? ((BigDecimal) id).intValue() : 0;
+            if (id != null) {
+                this.id = ((BigDecimal) id).intValue();
+            }
             this.name = Objects.requireNonNull((String) prototype.get("name"));
             this.description = (String) prototype.get("description");
             final Object version = prototype.get("version");
-            this.version = version != null ? ((BigDecimal) version).intValue() : 1;
+            if (version != null) {
+                this.version = ((BigDecimal) version).intValue();
+            }
             final Object updated = prototype.get("updated");
-            this.updated = updated != null ? ((BigDecimal) updated).longValue() : Clock.systemDefaultZone().millis();
+            if (updated != null) {
+                this.updated = ((BigDecimal) updated).longValue();
+            }
             getAttributes(prototype).ifPresent(this.attributes::putAll);
             this.properties.addAll(getProperties(prototype).collect(Collectors.toList()));
         }
@@ -241,10 +247,7 @@ public final class Config extends AbstractConfig {
          * @param properties configuration properties.
          */
         public Builder(final String name, final Collection<Property> properties) {
-            this.id = 0;
             this.name = Objects.requireNonNull(name);
-            this.version = 1;
-            this.updated = Clock.systemDefaultZone().millis();
             this.properties.addAll(Objects.requireNonNull(properties));
         }
 
