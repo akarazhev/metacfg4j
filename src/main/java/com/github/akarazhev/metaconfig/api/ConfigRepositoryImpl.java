@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.AbstractMap.SimpleEntry;
+import static com.github.akarazhev.metaconfig.Constants.Messages.DELETE_ENTITIES_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_ATTRIBUTES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_CONFIG_TABLE_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_UTILS_CLASS_ERROR;
@@ -49,9 +51,8 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     private final DataSource dataSource;
 
     private ConfigRepositoryImpl(final Builder builder) {
-        // TODO: 1. implement updating entities
-        // TODO: 2. implement the optimistic locking
-        // TODO: 3. refactor it
+        // TODO: 1. implement the optimistic locking
+        // TODO: 2. refactor it
         this.dataSource = builder.dataSource;
         init(this.dataSource);
     }
@@ -64,7 +65,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         try {
             final String[] names = stream.toArray(String[]::new);
             try (final Connection connection = dataSource.getConnection();
-                 final PreparedStatement statement = connection.prepareStatement(getConfigsSql(names))) {
+                 final PreparedStatement statement = connection.prepareStatement(getSql(SQL.SELECT.CONFIGS, names))) {
                 JDBCUtils.setStatement(statement, names);
 
                 try (final ResultSet resultSet = statement.executeQuery()) {
@@ -80,16 +81,13 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                             properties.put(propertyId, new Property.Builder(resultSet.getString(10),
                                     resultSet.getString(13),
                                     resultSet.getString(14)).
-                                    id(propertyId).
                                     caption(resultSet.getString(11)).
                                     description(resultSet.getString(12)).
-                                    version(resultSet.getInt(15)).
-                                    attribute(resultSet.getString(16), resultSet.getString(17)).
+                                    attribute(resultSet.getString(15), resultSet.getString(16)).
                                     build());
                         } else {
                             properties.put(propertyId, new Property.Builder(property).
-                                    id(propertyId).
-                                    attribute(resultSet.getString(16), resultSet.getString(17)).
+                                    attribute(resultSet.getString(15), resultSet.getString(16)).
                                     build());
                         }
                         // Create links
@@ -233,16 +231,17 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                             resultSet.absolute(i + 1);
                             final int configId = resultSet.getInt(1);
                             final Config config = new Config.Builder(configs[i]).id(configId).build();
+                            final Property[] properties = config.getProperties().toArray(Property[]::new);
                             // Create config attributes
                             config.getAttributes().ifPresent(map -> {
                                 try {
-                                    insertAttributes(connection, SQL.INSERT.CONFIG_ATTRIBUTES, configId, map);
+                                    insert(connection, SQL.INSERT.CONFIG_ATTRIBUTES, configId, map);
                                 } catch (SQLException e) {
                                     exceptions.add(e);
                                 }
                             });
                             // Create config properties
-                            insert(connection, configId, config.getProperties().toArray(Property[]::new));
+                            insert(connection, configId, properties);
                             inserted[i] = config;
                         }
 
@@ -263,8 +262,8 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         return Stream.empty();
     }
 
-    private void insertAttributes(final Connection connection, final String sql, final int id,
-                                  final Map<String, String> map) throws SQLException {
+    private void insert(final Connection connection, final String sql, final int id, final Map<String, String> map)
+            throws SQLException {
         if (map.size() > 0) {
             try (final PreparedStatement statement = connection.prepareStatement(sql)) {
                 JDBCUtils.setBatchStatement(statement, id, map);
@@ -315,7 +314,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                     // Create property attributes
                     properties[i].getAttributes().ifPresent(map -> {
                         try {
-                            insertAttributes(connection, SQL.INSERT.PROPERTY_ATTRIBUTES, propertyId, map);
+                            insert(connection, SQL.INSERT.PROPERTY_ATTRIBUTES, propertyId, map);
                         } catch (SQLException e) {
                             exceptions.add(e);
                         }
@@ -336,13 +335,31 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     private Stream<Config> update(final Connection connection, final Config[] configs) throws SQLException {
         if (configs.length > 0) {
             try (final PreparedStatement statement = connection.prepareStatement(SQL.UPDATE.CONFIGS)) {
+                final Set<SQLException> exceptions = new HashSet<>();
                 for (final Config config : configs) {
                     statement.setLong(5, config.getId());
                     JDBCUtils.setStatement(statement, config);
                     statement.addBatch();
+                    // Update config attributes
+                    final Property[] properties = config.getProperties().toArray(Property[]::new);
+                    config.getAttributes().ifPresent(map -> {
+                        try {
+                            delete(connection, SQL.DELETE.CONFIG_ATTRIBUTES, config.getId());
+                            insert(connection, SQL.INSERT.CONFIG_ATTRIBUTES, config.getId(), map);
+                        } catch (SQLException e) {
+                            exceptions.add(e);
+                        }
+                    });
+                    // Update config properties
+                    delete(connection, SQL.DELETE.PROPERTIES, config.getId());
+                    insert(connection, config.getId(), properties);
                 }
 
-                if (statement.executeBatch().length != configs.length) {
+                if (statement.executeBatch().length == configs.length) {
+                    if (exceptions.size() > 0) {
+                        throw new SQLException(UPDATE_ATTRIBUTES_ERROR);
+                    }
+                } else {
                     throw new SQLException(UPDATE_CONFIGS_ERROR);
                 }
 
@@ -358,12 +375,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     private int delete(final Connection connection, final String[] names) throws SQLException {
         if (names.length > 0) {
             try {
-                final StringBuilder sql = new StringBuilder("DELETE FROM `CONFIGS` WHERE `NAME` = ?");
-                if (names.length > 1) {
-                    Arrays.stream(names).skip(1).forEach(name -> sql.append(" OR `NAME` = ?"));
-                }
-
-                try (final PreparedStatement statement = connection.prepareStatement(sql.toString())) {
+                try (final PreparedStatement statement = connection.prepareStatement(getSql(SQL.DELETE.CONFIGS, names))) {
                     JDBCUtils.setStatement(statement, names);
                     final int deleted = statement.executeUpdate();
                     connection.commit();
@@ -375,6 +387,16 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         }
 
         return 0;
+    }
+
+    private void delete(final Connection connection, final String sql, final int id) throws SQLException {
+        try (final PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, id);
+
+            if (statement.executeBatch().length == 0) {
+                throw new SQLException(DELETE_ENTITIES_ERROR);
+            }
+        }
     }
 
     private void createTables(final Connection connection) throws SQLException {
@@ -391,8 +413,8 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         }
     }
 
-    private String getConfigsSql(final String[] names) {
-        final StringBuilder sql = new StringBuilder(SQL.SELECT.CONFIGS);
+    private String getSql(final String query, final String[] names) {
+        final StringBuilder sql = new StringBuilder(query);
         if (names.length > 1) {
             Arrays.stream(names).skip(1).forEach(name -> sql.append(" OR C.NAME = ?"));
         }
@@ -434,24 +456,17 @@ final class ConfigRepositoryImpl implements ConfigRepository {
             }
 
             static final String CONFIGS =
-                    "INSERT INTO `CONFIGS` " +
-                            "(`NAME`, `DESCRIPTION`, `VERSION`, `UPDATED`) " +
-                            "VALUES (?, ?, ?, ?);";
+                    "INSERT INTO `CONFIGS` (`NAME`, `DESCRIPTION`, `VERSION`, `UPDATED`) VALUES (?, ?, ?, ?);";
             static final String CONFIG_ATTRIBUTES =
-                    "INSERT INTO `CONFIG_ATTRIBUTES` (`CONFIG_ID`, `KEY`, `VALUE`) " +
-                            "VALUES (?, ?, ?);";
+                    "INSERT INTO `CONFIG_ATTRIBUTES` (`CONFIG_ID`, `KEY`, `VALUE`) VALUES (?, ?, ?);";
             static final String PROPERTIES =
-                    "INSERT INTO `PROPERTIES` " +
-                            "(`CONFIG_ID`, `NAME`, `CAPTION`, `DESCRIPTION`, `TYPE`, `VALUE`, `VERSION`) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?);";
+                    "INSERT INTO `PROPERTIES` (`CONFIG_ID`, `NAME`, `CAPTION`, `DESCRIPTION`, `TYPE`, `VALUE`) " +
+                            "VALUES (?, ?, ?, ?, ?, ?);";
             static final String PROPERTY_ATTRIBUTES =
-                    "INSERT INTO `PROPERTY_ATTRIBUTES` " +
-                            "(`PROPERTY_ID`, `KEY`, `VALUE`) " +
-                            "VALUES (?, ?, ?);";
+                    "INSERT INTO `PROPERTY_ATTRIBUTES` (`PROPERTY_ID`, `KEY`, `VALUE`) VALUES (?, ?, ?);";
             static final String SUB_PROPERTIES =
-                    "INSERT INTO `PROPERTIES` " +
-                            "(`PROPERTY_ID`, `CONFIG_ID`, `NAME`, `CAPTION`, `DESCRIPTION`, `TYPE`, `VALUE`, `VERSION`) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+                    "INSERT INTO `PROPERTIES` (`PROPERTY_ID`, `CONFIG_ID`, `NAME`, `CAPTION`, `DESCRIPTION`, `TYPE`, `VALUE`) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?);";
         }
 
         final static class UPDATE {
@@ -461,9 +476,21 @@ final class ConfigRepositoryImpl implements ConfigRepository {
             }
 
             static final String CONFIGS =
-                    "UPDATE `CONFIGS` SET " +
-                            "`NAME` = ?, `DESCRIPTION` = ?, `VERSION` = ?, `UPDATED` = ? " +
-                            "WHERE `ID` = ?;";
+                    "UPDATE `CONFIGS` SET `NAME` = ?, `DESCRIPTION` = ?, `VERSION` = ?, `UPDATED` = ? WHERE `ID` = ?;";
+        }
+
+        final static class DELETE {
+
+            private DELETE() {
+                throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
+            }
+
+            static final String CONFIGS =
+                    "DELETE FROM `CONFIGS` AS `C` WHERE `C`.`NAME` = ?";
+            static final String CONFIG_ATTRIBUTES =
+                    "DELETE FROM `CONFIG_ATTRIBUTES` AS `CA` WHERE `CA`.`CONFIG_ID` = ?";
+            static final String PROPERTIES =
+                    "DELETE FROM `PROPERTIES` AS `P` WHERE `P`.`CONFIG_ID` = ?";
         }
 
         final static class SELECT {
@@ -472,12 +499,11 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                 throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
             }
 
-            static final String NAMES =
-                    "SELECT `NAME` FROM `CONFIGS`;";
+            static final String NAMES = "SELECT `NAME` FROM `CONFIGS`;";
             static final String CONFIGS =
                     "SELECT `C`.`ID`, `C`.`NAME`, `C`.`DESCRIPTION`, `C`.`VERSION`, `C`.`UPDATED`, `CA`.`KEY`, " +
                             "`CA`.`VALUE`, `P`.`ID`, `P`.`PROPERTY_ID`, `P`.`NAME` , `P`.`CAPTION`, " +
-                            "`P`.`DESCRIPTION`, `P`.`TYPE`, `P`.`VALUE` , `P`.`VERSION`, `PA`.`KEY`, `PA`.`VALUE` " +
+                            "`P`.`DESCRIPTION`, `P`.`TYPE`, `P`.`VALUE`, `PA`.`KEY`, `PA`.`VALUE` " +
                             "FROM `CONFIGS` AS `C` " +
                             "LEFT JOIN `PROPERTIES` AS `P` ON `C`.`ID` = `P`.`CONFIG_ID` " +
                             "LEFT JOIN `CONFIG_ATTRIBUTES` AS `CA` ON `C`.`ID` = `CA`.`CONFIG_ID` " +
@@ -515,7 +541,6 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                             "`DESCRIPTION` VARCHAR(1024), " +
                             "`TYPE` ENUM ('BOOL', 'DOUBLE', 'LONG', 'STRING', 'STRING_ARRAY') NOT NULL, " +
                             "`VALUE` VARCHAR(4096) NOT NULL, " +
-                            "`VERSION` INT NOT NULL, " +
                             "FOREIGN KEY(CONFIG_ID) REFERENCES CONFIGS(ID) ON DELETE CASCADE," +
                             "FOREIGN KEY(PROPERTY_ID) REFERENCES PROPERTIES(ID) ON DELETE CASCADE)";
             static final String PROPERTY_ATTRIBUTES =
@@ -602,7 +627,6 @@ final class ConfigRepositoryImpl implements ConfigRepository {
 
             statement.setString(5, property.getType());
             statement.setString(6, property.getValue());
-            statement.setInt(7, property.getVersion());
             statement.addBatch();
         }
 
@@ -625,7 +649,6 @@ final class ConfigRepositoryImpl implements ConfigRepository {
 
             statement.setString(6, property.getType());
             statement.setString(7, property.getValue());
-            statement.setInt(8, property.getVersion());
             statement.addBatch();
         }
     }

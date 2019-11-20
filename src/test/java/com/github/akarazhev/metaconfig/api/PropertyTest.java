@@ -34,7 +34,6 @@ final class PropertyTest {
         assertThrows(ClassCastException.class, property::asDouble);
         assertThrows(ClassCastException.class, property::asLong);
         assertThrows(ClassCastException.class, property::asArray);
-        assertEquals(1, property.getVersion());
         assertFalse(property.getCaption().isPresent());
         assertFalse(property.getDescription().isPresent());
         assertTrue(property.getAttributes().isPresent());
@@ -60,7 +59,6 @@ final class PropertyTest {
         // Check test results
         assertEquals("Property", property.getName());
         assertEquals("Value", property.getValue());
-        assertEquals(1, property.getVersion());
         assertTrue(property.getCaption().isPresent());
         assertEquals("Caption", property.getCaption().get());
         assertTrue(property.getDescription().isPresent());

@@ -1,5 +1,5 @@
 SELECT `C`.`ID`, `C`.`NAME`, `C`.`DESCRIPTION`, `C`.`VERSION`, `C`.`UPDATED`, `CA`.`KEY`, `CA`.`VALUE`, `P`.`ID`,
-       `P`.`PROPERTY_ID`, `P`.`NAME` , `P`.`CAPTION`, `P`.`DESCRIPTION`, `P`.`TYPE`, `P`.`VALUE` , `P`.`VERSION`,
+       `P`.`PROPERTY_ID`, `P`.`NAME` , `P`.`CAPTION`, `P`.`DESCRIPTION`, `P`.`TYPE`, `P`.`VALUE`,
        `PA`.`KEY`, `PA`.`VALUE` FROM `CONFIGS` AS `C`
          LEFT JOIN `PROPERTIES` AS `P` ON `C`.`ID` = `P`.`CONFIG_ID`
          LEFT JOIN `CONFIG_ATTRIBUTES` AS `CA` ON `C`.`ID` = `CA`.`CONFIG_ID`

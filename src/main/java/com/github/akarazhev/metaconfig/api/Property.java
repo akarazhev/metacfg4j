@@ -16,7 +16,6 @@ import com.github.cliftonlabs.json_simple.Jsoner;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,20 +25,15 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_ID_VALUE;
-import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_VERSION_VALUE;
-
 /**
  * The property model that contains parameters, attributes and properties.
  */
 public final class Property extends AbstractConfig {
-    private final int id;
     private final String name;
     private final String caption;
     private final String description;
     private final Type type;
     private final String value;
-    private final int version;
     private final Map<String, String> attributes;
     private final Collection<Property> properties;
 
@@ -52,24 +46,13 @@ public final class Property extends AbstractConfig {
     }
 
     private Property(final Builder builder) {
-        this.id = builder.id;
         this.name = builder.name;
         this.caption = builder.caption;
         this.description = builder.description;
         this.type = builder.type;
         this.value = builder.value;
-        this.version = builder.version;
         this.attributes = builder.attributes;
         this.properties = builder.properties;
-    }
-
-    /**
-     * Returns an id of the property.
-     *
-     * @return a property id.
-     */
-    public int getId() {
-        return id;
     }
 
     /**
@@ -172,15 +155,6 @@ public final class Property extends AbstractConfig {
     }
 
     /**
-     * Returns a version of the property.
-     *
-     * @return a version value.
-     */
-    public int getVersion() {
-        return version;
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
@@ -226,13 +200,11 @@ public final class Property extends AbstractConfig {
     @Override
     public void toJson(final Writer writer) throws IOException {
         final JsonObject json = new JsonObject();
-        json.put("id", id);
         json.put("name", name);
         json.put("caption", caption);
         json.put("description", description);
         json.put("type", type.name());
         json.put("value", value);
-        json.put("version", version);
         json.put("attributes", attributes);
         json.put("properties", properties);
         json.toJson(writer);
@@ -246,13 +218,11 @@ public final class Property extends AbstractConfig {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final Property property = (Property) o;
-        return id == property.id &&
-                name.equals(property.name) &&
+        return name.equals(property.name) &&
                 Objects.equals(caption, property.caption) &&
                 Objects.equals(description, property.description) &&
                 type == property.type &&
                 value.equals(property.value) &&
-                version == property.version &&
                 Objects.equals(attributes, property.attributes) &&
                 Objects.equals(properties, property.properties);
     }
@@ -262,7 +232,7 @@ public final class Property extends AbstractConfig {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, caption, description, type, value, version, attributes, properties);
+        return Objects.hash(name, caption, description, type, value, attributes, properties);
     }
 
     /**
@@ -271,13 +241,11 @@ public final class Property extends AbstractConfig {
     @Override
     public String toString() {
         return "Property{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
+                "name='" + name + '\'' +
                 ", caption='" + caption + '\'' +
                 ", description='" + description + '\'' +
                 ", type=" + type +
                 ", value='" + value + '\'' +
-                ", version=" + version +
                 '}';
     }
 
@@ -285,13 +253,11 @@ public final class Property extends AbstractConfig {
      * Wraps and builds the instance of the property model.
      */
     public final static class Builder extends ConfigBuilder {
-        private int id = 0;
         private final String name;
         private String caption;
         private String description;
         private final Type type;
         private final String value;
-        private int version = 1;
 
         /**
          * Constructs a property model based on the property object.
@@ -300,13 +266,11 @@ public final class Property extends AbstractConfig {
          */
         public Builder(final Property property) {
             final Property prototype = Objects.requireNonNull(property);
-            this.id = prototype.id;
             this.name = prototype.name;
             this.caption = prototype.caption;
             this.description = prototype.description;
             this.type = prototype.type;
             this.value = prototype.value;
-            this.version = prototype.version;
             this.attributes.putAll(prototype.attributes);
             this.properties.addAll(prototype.properties);
         }
@@ -317,19 +281,11 @@ public final class Property extends AbstractConfig {
          * @param jsonObject a json object with the property model.
          */
         public Builder(final JsonObject jsonObject) {
-            final Object id = jsonObject.get("id");
-            if (id != null) {
-                this.id = ((BigDecimal) id).intValue();
-            }
             this.name = Objects.requireNonNull((String) jsonObject.get("name"));
             this.caption = (String) jsonObject.get("caption");
             this.description = (String) jsonObject.get("description");
             this.type = Type.valueOf(Objects.requireNonNull((String) jsonObject.get("type")));
             this.value = Objects.requireNonNull((String) jsonObject.get("value"));
-            final Object version = jsonObject.get("version");
-            if (version != null) {
-                this.version = ((BigDecimal) version).intValue();
-            }
             getAttributes(jsonObject).ifPresent(this.attributes::putAll);
             this.properties.addAll(getProperties(jsonObject).collect(Collectors.toList()));
         }
@@ -408,22 +364,6 @@ public final class Property extends AbstractConfig {
         }
 
         /**
-         * Constructs a property model with the id parameter.
-         *
-         * @param id a property id.
-         * @return a builder of the property model.
-         */
-        public Builder id(final int id) {
-            if (id > 0) {
-                this.id = id;
-            } else {
-                throw new IllegalArgumentException(WRONG_ID_VALUE);
-            }
-
-            return this;
-        }
-
-        /**
          * Constructs a property model with the caption parameter.
          *
          * @param caption a property caption.
@@ -442,22 +382,6 @@ public final class Property extends AbstractConfig {
          */
         public Builder description(final String description) {
             this.description = description;
-            return this;
-        }
-
-        /**
-         * Constructs a property model with the version parameter.
-         *
-         * @param version a property version.
-         * @return a builder of the property model.
-         */
-        public Builder version(final int version) {
-            if (version > 0) {
-                this.version = version;
-            } else {
-                throw new IllegalArgumentException(WRONG_VERSION_VALUE);
-            }
-
             return this;
         }
 
