@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -158,7 +159,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         Connection connection = null;
         try {
             connection = JDBCUtils.open(dataSource);
-            return saveAndFlush(connection, stream);
+            return Arrays.stream(saveAndFlush(connection, stream.toArray(Config[]::new)));
         } catch (final SQLException e) {
             JDBCUtils.rollback(connection, e);
         } finally {
@@ -199,22 +200,33 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         }
     }
 
-    private Stream<Config> saveAndFlush(final Connection connection, final Stream<Config> stream) throws SQLException {
-        final Collection<Config> toUpdate = new LinkedList<>();
-        final Collection<Config> toInsert = new LinkedList<>();
-        stream.forEach(config -> {
+    private Config[] saveAndFlush(final Connection connection, final Config[] configs) throws SQLException {
+        final List<Config> toUpdate = new LinkedList<>();
+        final List<Config> toInsert = new LinkedList<>();
+        for (Config config : configs) {
             if (config.getId() > 1) {
                 toUpdate.add(config);
             } else {
                 toInsert.add(config);
             }
-        });
+        }
 
-        return Stream.concat(update(connection, toUpdate.toArray(new Config[0])),
-                insert(connection, toInsert.toArray(new Config[0])));
+        final Config[] savedConfigs = new Config[toUpdate.size() + toInsert.size()];
+        if (toUpdate.size() > 0) {
+            final Config[] updated = update(connection, toUpdate.toArray(new Config[0]));
+            System.arraycopy(updated, 0, savedConfigs, 0, updated.length);
+        }
+
+        if (toInsert.size() > 0) {
+            int pos = toUpdate.size() == 0 ? 0 : toUpdate.size() + 1;
+            final Config[] inserted = insert(connection, toInsert.toArray(new Config[0]));
+            System.arraycopy(inserted, 0, savedConfigs, pos, inserted.length);
+        }
+
+        return savedConfigs;
     }
 
-    private Stream<Config> insert(final Connection connection, final Config[] configs) throws SQLException {
+    private Config[] insert(final Connection connection, final Config[] configs) throws SQLException {
         if (configs.length > 0) {
             final Config[] inserted = new Config[configs.length];
             try (final PreparedStatement statement =
@@ -256,10 +268,10 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                 connection.commit();
             }
 
-            return Arrays.stream(inserted);
+            return inserted;
         }
 
-        return Stream.empty();
+        return new Config[0];
     }
 
     private void insert(final Connection connection, final String sql, final int id, final Map<String, String> map)
@@ -332,7 +344,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         }
     }
 
-    private Stream<Config> update(final Connection connection, final Config[] configs) throws SQLException {
+    private Config[] update(final Connection connection, final Config[] configs) throws SQLException {
         if (configs.length > 0) {
             try (final PreparedStatement statement = connection.prepareStatement(SQL.UPDATE.CONFIGS)) {
                 final Set<SQLException> exceptions = new HashSet<>();
@@ -366,10 +378,10 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                 connection.commit();
             }
 
-            return Arrays.stream(configs);
+            return configs;
         }
 
-        return Stream.empty();
+        return new Config[0];
     }
 
     private int delete(final Connection connection, final String[] names) throws SQLException {
