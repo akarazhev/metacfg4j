@@ -55,9 +55,9 @@ public final class Constants {
         public static final String UPDATE_CONFIGS_ERROR = "Configs instances can not be updated.";
         public static final String RECEIVED_CONFIGS_ERROR = "Config instances can not be received.";
         public static final String DELETE_CONFIGS_ERROR = "Configs can not be deleted.";
+        public static final String DB_ERROR = "Database error.";
         public static final String DB_ROLLBACK_ERROR = "Database rollback error.";
         public static final String DB_CONNECTION_ERROR = "Database connection error.";
-        public static final String DELETE_ENTITIES_ERROR = "Entities can not be deleted.";
     }
 
     /**

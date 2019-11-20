@@ -93,6 +93,18 @@ final class ConfigRepositoryTest {
     }
 
     @Test
+    void updateFirstConfigById() {
+        final Optional<Config> firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
+        // Check test results
+        assertTrue(firstConfig.isPresent());
+        final Config newConfig = new Config.Builder("New Config", Collections.emptyList()).
+                id(firstConfig.get().getId()).
+                build();
+        Optional<Config> updatedConfig = configRepository.saveAndFlush(Stream.of(newConfig)).findFirst();
+        assertTrue(updatedConfig.isPresent());
+    }
+
+    @Test
     void findSecondConfigByName() {
         final Optional<Config> secondConfig = configRepository.findByNames(Stream.of(SECOND_CONFIG)).findFirst();
         // Check test results
