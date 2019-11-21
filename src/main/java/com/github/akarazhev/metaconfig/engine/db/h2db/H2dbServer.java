@@ -78,8 +78,8 @@ public final class H2dbServer implements DbServer {
         // Validate the config
         final Config h2DbConfig = Validator.of(config).
                 validate(c -> Settings.CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
-                validate(c -> c.getProperty(Settings.TYPE).isPresent(), "Type is not present.").
-                validate(c -> c.getProperty(Settings.ARGS).isPresent(), "Args is not present.").
+                validate(c -> c.getProperty(Settings.TYPE).isPresent(), "Type is not presented.").
+                validate(c -> c.getProperty(Settings.ARGS).isPresent(), "Args is not presented.").
                 get();
         // Get the args
         final String[] args = h2DbConfig.getProperty(Settings.ARGS).

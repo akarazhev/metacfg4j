@@ -37,7 +37,7 @@ public final class Property extends AbstractConfig {
     private final Map<String, String> attributes;
     private final Collection<Property> properties;
 
-    private enum Type {
+    public enum Type {
         BOOL,
         DOUBLE,
         LONG,
@@ -150,8 +150,8 @@ public final class Property extends AbstractConfig {
      *
      * @return a property type.
      */
-    public String getType() {
-        return type.name();
+    public Type getType() {
+        return type;
     }
 
     /**

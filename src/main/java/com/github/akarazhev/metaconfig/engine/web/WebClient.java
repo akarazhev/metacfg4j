@@ -171,8 +171,8 @@ public final class WebClient {
             // Validate the config
             this.config = Validator.of(config).
                     validate(c -> Settings.CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
-                    validate(c -> c.getProperty(Settings.METHOD).isPresent(), "Method is not present.").
-                    validate(c -> c.getProperty(Settings.URL).isPresent(), "URL is not present").
+                    validate(c -> c.getProperty(Settings.METHOD).isPresent(), "Method is not presented.").
+                    validate(c -> c.getProperty(Settings.URL).isPresent(), "URL is not presented").
                     get();
         }
 

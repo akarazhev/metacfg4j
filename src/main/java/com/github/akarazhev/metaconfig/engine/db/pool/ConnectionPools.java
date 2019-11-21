@@ -77,9 +77,9 @@ public final class ConnectionPools {
         // Validate the config
         final Config poolConfig = Validator.of(config).
                 validate(c -> Settings.CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
-                validate(c -> c.getProperty(Settings.URL).isPresent(), "URL is not present.").
-                validate(c -> c.getProperty(Settings.USER).isPresent(), "User is not present.").
-                validate(c -> c.getProperty(Settings.PASSWORD).isPresent(), "Password is not present.").
+                validate(c -> c.getProperty(Settings.URL).isPresent(), "URL is not presented.").
+                validate(c -> c.getProperty(Settings.USER).isPresent(), "User is not presented.").
+                validate(c -> c.getProperty(Settings.PASSWORD).isPresent(), "Password is not presented.").
                 get();
         // Get the url
         final String url = poolConfig.getProperty(Settings.URL).

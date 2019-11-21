@@ -77,8 +77,8 @@ public final class ConfigServer implements WebServer {
         // Validate the config
         final Config serverConfig = Validator.of(config).
                 validate(c -> Settings.CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
-                validate(c -> c.getProperty(Settings.PORT).isPresent(), "Port is not present.").
-                validate(c -> c.getProperty(Settings.BACKLOG).isPresent(), "Backlog is not present.").
+                validate(c -> c.getProperty(Settings.PORT).isPresent(), "Port is not presented.").
+                validate(c -> c.getProperty(Settings.BACKLOG).isPresent(), "Backlog is not presented.").
                 get();
         // Get the port
         final int port = serverConfig.getProperty(Settings.PORT).

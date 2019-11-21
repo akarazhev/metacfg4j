@@ -10,9 +10,14 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
+import com.github.cliftonlabs.json_simple.JsonException;
+import com.github.cliftonlabs.json_simple.JsonObject;
+import com.github.cliftonlabs.json_simple.Jsoner;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -24,12 +29,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class PropertyTest {
 
     @Test
-    @DisplayName("Create a simple property")
-    void createSimpleProperty() {
-        final Property property = new Property.Builder("Simple Property", "Simple Value").build();
+    @DisplayName("Create a property")
+    void createProperty() {
+        final Property property = new Property.Builder("Property", "Value").build();
         // Check test results
-        assertEquals("Simple Property", property.getName());
-        assertEquals("Simple Value", property.getValue());
+        assertEquals("Property", property.getName());
+        assertEquals(Property.Type.STRING, property.getType());
+        assertEquals("Value", property.getValue());
         assertThrows(ClassCastException.class, property::asBool);
         assertThrows(ClassCastException.class, property::asDouble);
         assertThrows(ClassCastException.class, property::asLong);
@@ -58,6 +64,7 @@ final class PropertyTest {
                 build();
         // Check test results
         assertEquals("Property", property.getName());
+        assertEquals(Property.Type.STRING, property.getType());
         assertEquals("Value", property.getValue());
         assertTrue(property.getCaption().isPresent());
         assertEquals("Caption", property.getCaption().get());
@@ -74,27 +81,29 @@ final class PropertyTest {
     }
 
     @Test
-    @DisplayName("Create a simple property with property by the empty path")
-    void createSimplePropertyWithPropertyByEmptyPath() {
-        final Property property = new Property.Builder("Simple Property", "Simple Value").
+    @DisplayName("Create a property with property by the empty path")
+    void createPropertyWithPropertyByEmptyPath() {
+        final Property property = new Property.Builder("Property", "Value").
                 property(new String[0], new Property.Builder("Sub-property", "Sub-value").build()).build();
         // Check test results
-        assertEquals("Simple Property", property.getName());
-        assertEquals("Simple Value", property.getValue());
+        assertEquals("Property", property.getName());
+        assertEquals(Property.Type.STRING, property.getType());
+        assertEquals("Value", property.getValue());
         final Optional<Property> subProperty = property.getProperty("Sub-property");
         assertTrue(subProperty.isPresent());
         assertEquals("Sub-property", subProperty.get().getName());
     }
 
     @Test
-    @DisplayName("Create a simple property with property by the single path")
-    void createSimplePropertyWithPropertyBySinglePath() {
-        final Property property = new Property.Builder("Simple Property", "Simple Value").
+    @DisplayName("Create a property with property by the single path")
+    void createPropertyWithPropertyBySinglePath() {
+        final Property property = new Property.Builder("Property", "Value").
                 property(new String[]{"Sub-property-1"},
                         new Property.Builder("Sub-property-2", "Sub-value-2").build()).build();
         // Check test results
-        assertEquals("Simple Property", property.getName());
-        assertEquals("Simple Value", property.getValue());
+        assertEquals("Property", property.getName());
+        assertEquals(Property.Type.STRING, property.getType());
+        assertEquals("Value", property.getValue());
         // Check Sub-property-1
         final Optional<Property> firstSubProperty = property.getProperty("Sub-property-1");
         assertTrue(firstSubProperty.isPresent());
@@ -106,14 +115,15 @@ final class PropertyTest {
     }
 
     @Test
-    @DisplayName("Create a simple property with property by the multiple path")
-    void createSimplePropertyWithPropertyByMultiplePath() {
-        final Property property = new Property.Builder("Simple Property", "Simple Value").
+    @DisplayName("Create a property with property by the multiple path")
+    void createPropertyWithPropertyByMultiplePath() {
+        final Property property = new Property.Builder("Property", "Value").
                 property(new String[]{"Sub-property-1", "Sub-property-2"},
                         new Property.Builder("Sub-property-3", "Sub-value-3").build()).build();
         // Check test results
-        assertEquals("Simple Property", property.getName());
-        assertEquals("Simple Value", property.getValue());
+        assertEquals("Property", property.getName());
+        assertEquals(Property.Type.STRING, property.getType());
+        assertEquals("Value", property.getValue());
         // Check Sub-property-1
         final Optional<Property> firstSubProperty = property.getProperty("Sub-property-1");
         assertTrue(firstSubProperty.isPresent());
@@ -129,42 +139,56 @@ final class PropertyTest {
     }
 
     @Test
-    @DisplayName("Create a simple bool property")
-    void createSimpleBoolProperty() {
-        final Property property = new Property.Builder("Simple Property", true).build();
+    @DisplayName("Create a custom property")
+    void createCustomProperty() {
+        final Property property =
+                new Property.Builder("Property", Property.Type.STRING.name(), "Value").build();
         // Check test results
+        assertEquals(Property.Type.STRING, property.getType());
+        assertEquals("Value", property.getValue());
+    }
+
+    @Test
+    @DisplayName("Create a bool property")
+    void createBoolProperty() {
+        final Property property = new Property.Builder("Property", true).build();
+        // Check test results
+        assertEquals(Property.Type.BOOL, property.getType());
         assertTrue(property.asBool());
     }
 
     @Test
-    @DisplayName("Create a simple double property")
-    void createSimpleDoubleProperty() {
-        final Property property = new Property.Builder("Simple Property", 0.0).build();
+    @DisplayName("Create a double property")
+    void createDoubleProperty() {
+        final Property property = new Property.Builder("Property", 0.0).build();
         // Check test results
+        assertEquals(Property.Type.DOUBLE, property.getType());
         assertEquals(0.0, property.asDouble());
     }
 
     @Test
-    @DisplayName("Create a simple long property")
-    void createSimpleLongProperty() {
-        final Property property = new Property.Builder("Simple Property", 0L).build();
+    @DisplayName("Create a long property")
+    void createLongProperty() {
+        final Property property = new Property.Builder("Property", 0L).build();
         // Check test results
+        assertEquals(Property.Type.LONG, property.getType());
         assertEquals(0L, property.asLong());
     }
 
     @Test
-    @DisplayName("Create a simple array property")
-    void createSimpleArrayProperty() {
-        final Property property = new Property.Builder("Simple Property", new String[]{"Simple Value"}).build();
+    @DisplayName("Create a array property")
+    void createArrayProperty() {
+        final Property property = new Property.Builder("Property", new String[]{"Value"}).build();
         // Check test results
-        assertEquals(new String[]{"Simple Value"}[0], property.asArray()[0]);
+        assertEquals(Property.Type.STRING_ARRAY, property.getType());
+        assertEquals(new String[]{"Value"}[0], property.asArray()[0]);
     }
 
     @Test
     @DisplayName("Compare two properties")
     void compareTwoProperties() {
-        final Property firstProperty = new Property.Builder("Simple Property", new String[]{"Simple Value"}).build();
-        final Property secondProperty = new Property.Builder("Simple Property", new String[]{"Simple Value"}).build();
+        final Property firstProperty = new Property.Builder("Property", new String[]{"Value"}).build();
+        final Property secondProperty = new Property.Builder("Property", new String[]{"Value"}).build();
         // Check test results
         assertEquals(firstProperty, secondProperty);
     }
@@ -172,8 +196,8 @@ final class PropertyTest {
     @Test
     @DisplayName("Check hash codes of two properties")
     void checkHashCodesOfTwoProperties() {
-        final Property firstProperty = new Property.Builder("Simple Property", new String[]{"Simple Value"}).build();
-        final Property secondProperty = new Property.Builder("Simple Property", new String[]{"Simple Value"}).build();
+        final Property firstProperty = new Property.Builder("Property", new String[]{"Value"}).build();
+        final Property secondProperty = new Property.Builder("Property", new String[]{"Value"}).build();
         // Check test results
         assertEquals(firstProperty.hashCode(), secondProperty.hashCode());
     }
@@ -181,9 +205,47 @@ final class PropertyTest {
     @Test
     @DisplayName("Check toString() of two properties")
     void checkToStringOfTwoProperties() {
-        final Property firstProperty = new Property.Builder("Simple Property", new String[]{"Simple Value"}).build();
-        final Property secondProperty = new Property.Builder("Simple Property", new String[]{"Simple Value"}).build();
+        final Property firstProperty = new Property.Builder("Property", new String[]{"Value"}).build();
+        final Property secondProperty = new Property.Builder("Property", new String[]{"Value"}).build();
         // Check test results
         assertEquals(firstProperty.toString(), secondProperty.toString());
+    }
+
+    @Test
+    @DisplayName("Create a property via the builder")
+    void createPropertyViaBuilder() {
+        final Property firstProperty = getProperty();
+        final Property secondProperty = new Property.Builder(firstProperty).build();
+        // Check test results
+        assertEquals(firstProperty, secondProperty);
+    }
+
+    @Test
+    @DisplayName("Create a property via the json builder")
+    void createPropertyViaJsonBuilder() throws JsonException {
+        final Property firstProperty = getProperty();
+        final Property secondProperty =
+                new Property.Builder((JsonObject) Jsoner.deserialize(firstProperty.toJson())).build();
+        // Check test results
+        assertEquals(firstProperty, secondProperty);
+    }
+
+    @Test
+    @DisplayName("Convert to a json")
+    void convertToJson() throws IOException {
+        final Property property = getProperty();
+        final StringWriter writer = new StringWriter();
+        property.toJson(writer);
+        // Check test results
+        assertEquals(writer.toString(), property.toJson());
+    }
+
+    private Property getProperty() {
+        return new Property.Builder("Property", "Value").
+                caption("Caption").
+                description("Description").
+                attribute("key", "value").
+                property(new String[0], new Property.Builder("Sub-property-1", "Sub-value-1").build()).
+                build();
     }
 }

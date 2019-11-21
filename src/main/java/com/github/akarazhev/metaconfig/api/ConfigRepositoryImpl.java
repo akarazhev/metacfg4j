@@ -667,7 +667,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                 statement.setString(4, null);
             }
 
-            statement.setString(5, property.getType());
+            statement.setString(5, property.getType().name());
             statement.setString(6, property.getValue());
             statement.addBatch();
         }
@@ -690,7 +690,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                 statement.setString(5, null);
             }
 
-            statement.setString(6, property.getType());
+            statement.setString(6, property.getType().name());
             statement.setString(7, property.getValue());
             statement.addBatch();
         }

@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
-import static com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPools.Settings;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class DbServerTest {
@@ -40,8 +39,7 @@ final class DbServerTest {
 
     @Test
     void getPublicSchema() throws Exception {
-        Connection connection = DriverManager.getConnection(Settings.URL_VALUE, Settings.USER_VALUE,
-                Settings.PASSWORD_VALUE);
+        Connection connection = DriverManager.getConnection("jdbc:h2:./data/metacfg4j", "sa", "sa");
         // add application code here
         assertEquals("PUBLIC", connection.getSchema());
         connection.close();

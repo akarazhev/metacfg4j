@@ -42,8 +42,8 @@ public final class Constants {
         public static final String SERVER_STARTED = "Server started.";
         public static final String SERVER_STOPPED = "Server stopped.";
         public static final String METHOD_NOT_ALLOWED = "Method not allowed.";
-        public static final String PATH_PARAM_NOT_PRESENT = "Path param is not present.";
-        public static final String REQUEST_PARAM_NOT_PRESENT = "Request param is not present.";
+        public static final String PATH_PARAM_NOT_PRESENT = "Path param is not presented.";
+        public static final String REQUEST_PARAM_NOT_PRESENT = "Request param is not presented.";
         public static final String JSON_TO_CONFIG_ERROR = "JSON can not be parsed to config.";
         public static final String CONFIG_ACCEPTED = "Accepted '%s' config.";
         public static final String CREATE_CONFIG_TABLE_ERROR = "'Configs' table can not be created.";
