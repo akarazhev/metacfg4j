@@ -12,17 +12,21 @@ package com.github.akarazhev.metaconfig.engine.web.internal;
 
 import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.ConfigService;
+import com.github.akarazhev.metaconfig.api.Property;
 import com.github.akarazhev.metaconfig.engine.web.WebServer;
+import com.github.akarazhev.metaconfig.extension.Validator;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.github.akarazhev.metaconfig.Constants.Messages.IMPLEMENTATION_NOT_PROVIDED;
+import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STARTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STOPPED;
+import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_CONFIG_NAME;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.API.ACCEPT_CONFIG;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG_NAMES;
@@ -31,9 +35,24 @@ import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG_NA
  * The internal implementation of the web server.
  */
 public final class ConfigServer implements WebServer {
-    private final static Logger logger = Logger.getLogger(ConfigServer.class.getSimpleName());
+    private final static Logger LOGGER = Logger.getLogger(ConfigServer.class.getSimpleName());
     private HttpServer httpServer;
+    /**
+     * Settings constants for the web server.
+     */
+    final static class Settings {
 
+        private Settings() {
+            throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
+        }
+
+        // The configuration name
+        static final String CONFIG_NAME = "config-server";
+        // The port key
+        static final String PORT = "port";
+        // The backlog key
+        static final String BACKLOG = "backlog";
+    }
     /**
      * Constructs a default web server.
      *
@@ -41,11 +60,11 @@ public final class ConfigServer implements WebServer {
      * @throws IOException when a web server encounters a problem.
      */
     public ConfigServer(final ConfigService configService) throws IOException {
-        httpServer = HttpServer.create(new InetSocketAddress(8000), 0);
-        httpServer.createContext(ACCEPT_CONFIG, new AcceptConfigController.Builder(configService).build()::handle);
-        httpServer.createContext(CONFIG_NAMES, new ConfigNamesController.Builder(configService).build()::handle);
-        httpServer.createContext(CONFIG, new ConfigController.Builder(configService).build()::handle);
-        httpServer.setExecutor(null);
+        // Set the default config
+        this(new Config.Builder(Settings.CONFIG_NAME, Arrays.asList(
+                new Property.Builder(Settings.PORT, 8000).build(),
+                new Property.Builder(Settings.BACKLOG, 0).build())
+        ).build(), configService);
     }
 
     /**
@@ -56,7 +75,26 @@ public final class ConfigServer implements WebServer {
      * @throws IOException when a web server encounters a problem.
      */
     public ConfigServer(final Config config, final ConfigService configService) throws IOException {
-        throw new RuntimeException(IMPLEMENTATION_NOT_PROVIDED);
+        // Validate the config
+        final Config serverConfig = Validator.of(config).
+                validate(c -> Settings.CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
+                validate(c -> c.getProperty(Settings.PORT).isPresent(), "Port is not present.").
+                validate(c -> c.getProperty(Settings.BACKLOG).isPresent(), "Backlog is not present.").
+                get();
+        // Get the port
+        final int port = serverConfig.getProperty(Settings.PORT).
+                map(property -> (int) property.asLong()).
+                orElse(8000);
+        // Get the backlog
+        final int backlog = serverConfig.getProperty(Settings.BACKLOG).
+                map(property -> (int) property.asLong()).
+                orElse(0);
+        // Init the server
+        httpServer = HttpServer.create(new InetSocketAddress(port), backlog);
+        httpServer.createContext(ACCEPT_CONFIG, new AcceptConfigController.Builder(configService).build()::handle);
+        httpServer.createContext(CONFIG_NAMES, new ConfigNamesController.Builder(configService).build()::handle);
+        httpServer.createContext(CONFIG, new ConfigController.Builder(configService).build()::handle);
+        httpServer.setExecutor(null);
     }
 
     /**
@@ -65,7 +103,7 @@ public final class ConfigServer implements WebServer {
     @Override
     public WebServer start() {
         httpServer.start();
-        logger.log(Level.INFO, SERVER_STARTED);
+        LOGGER.log(Level.INFO, SERVER_STARTED);
         return this;
     }
 
@@ -75,6 +113,6 @@ public final class ConfigServer implements WebServer {
     @Override
     public void stop() {
         httpServer.stop(0);
-        logger.log(Level.INFO, SERVER_STOPPED);
+        LOGGER.log(Level.INFO, SERVER_STOPPED);
     }
 }

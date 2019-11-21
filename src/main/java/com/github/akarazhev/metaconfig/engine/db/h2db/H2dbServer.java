@@ -44,7 +44,7 @@ public final class H2dbServer implements DbServer {
      * @throws SQLException when a db server encounters a problem.
      */
     public H2dbServer(final Config config) throws SQLException {
-        throw new RuntimeException(IMPLEMENTATION_NOT_PROVIDED);
+        throw new RuntimeException(IMPLEMENTATION_NOT_PROVIDED); // TODO: implement it
     }
 
     /**

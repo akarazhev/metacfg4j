@@ -12,6 +12,7 @@ package com.github.akarazhev.metaconfig.engine.web;
 
 import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.Property;
+import com.github.akarazhev.metaconfig.extension.Validator;
 import com.github.cliftonlabs.json_simple.JsonException;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
@@ -24,7 +25,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 import java.util.Optional;
 
 import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
@@ -63,7 +63,6 @@ public final class WebClient {
         // The content key
         static final String CONTENT = "content";
     }
-
     // Status code
     private int statusCode;
     // Content
@@ -169,10 +168,12 @@ public final class WebClient {
          * @param config a configuration of a web client.
          */
         public Builder(final Config config) {
-            this.config = Objects.requireNonNull(config);
-            if (!Settings.CONFIG_NAME.equals(this.config.getName())) {
-                throw new RuntimeException(WRONG_CONFIG_NAME);
-            }
+            // Validate the config
+            this.config = Validator.of(config).
+                    validate(c -> Settings.CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
+                    validate(c -> c.getProperty(Settings.METHOD).isPresent(), "Method is not present.").
+                    validate(c -> c.getProperty(Settings.URL).isPresent(), "URL is not present").
+                    get();
         }
 
         /**

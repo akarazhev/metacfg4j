@@ -32,7 +32,7 @@ public final class Constants {
 
         public static final String CREATE_FACTORY_CLASS_ERROR = "Factory class can not be created.";
         public static final String CREATE_UTILS_CLASS_ERROR = "Utils class can not be created.";
-        public static final String IMPLEMENTATION_NOT_PROVIDED = "The library does not provide implementation.";
+        public static final String IMPLEMENTATION_NOT_PROVIDED = "The library does not provide implementation."; // TODO: remove it
         public static final String META_CONFIG_ERROR = "MetaConfig can not be instantiated.";
         public static final String STRING_TO_JSON_ERROR = "String can not be parsed to JSON.";
         public static final String WRONG_ID_VALUE = "Id value must be grater zero.";

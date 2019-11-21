@@ -354,7 +354,7 @@ public final class Config extends AbstractConfig {
         public Builder properties(final String[] paths, final Collection<Property> properties) {
             final String[] propertyPaths = Objects.requireNonNull(paths);
             if (propertyPaths.length > 0) {
-                // todo implement additing properties
+                // TODO: implement addition properties
 //                addAll(paths, 0, this.properties, properties);
             } else {
                 this.properties.addAll(Objects.requireNonNull(properties));

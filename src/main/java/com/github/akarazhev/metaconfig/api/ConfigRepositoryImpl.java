@@ -252,7 +252,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
 
                 if (statement.executeBatch().length == configs.length) {
                     try (final ResultSet resultSet = statement.getGeneratedKeys()) {
-                        final Set<SQLException> exceptions = new HashSet<>();
+                        final List<Throwable> exceptions = new LinkedList<>();
                         for (int i = 0; i < configs.length; i++) {
                             resultSet.absolute(i + 1);
                             final int configId = resultSet.getInt(1);
@@ -333,7 +333,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                         final Property[] properties) throws SQLException {
         if (statement.executeBatch().length == properties.length) {
             try (final ResultSet resultSet = statement.getGeneratedKeys()) {
-                final Set<SQLException> exceptions = new HashSet<>();
+                final List<Throwable> exceptions = new LinkedList<>();
                 for (int i = 0; i < properties.length; i++) {
                     resultSet.absolute(i + 1);
                     final int propertyId = resultSet.getInt(1);
@@ -364,7 +364,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
             final Config[] updated = new Config[configs.length];
             try (final PreparedStatement statement = connection.prepareStatement(SQL.UPDATE.CONFIGS)) {
                 final Map<Integer, Integer> idVersion = new HashMap<>();
-                final Set<SQLException> exceptions = new HashSet<>();
+                final List<Throwable> exceptions = new LinkedList<>();
                 for (final Config config : configs) {
                     final int version = getVersion(connection, config.getId()) + 1;
                     statement.setInt(5, config.getId());

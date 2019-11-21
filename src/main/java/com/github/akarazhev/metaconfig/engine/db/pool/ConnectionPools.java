@@ -58,6 +58,6 @@ public final class ConnectionPools {
      * @return a connection pool.
      */
     public static ConnectionPool newPool(final Config config) {
-        throw new RuntimeException(IMPLEMENTATION_NOT_PROVIDED);
+        throw new RuntimeException(IMPLEMENTATION_NOT_PROVIDED); // TODO: implement it
     }
 }
