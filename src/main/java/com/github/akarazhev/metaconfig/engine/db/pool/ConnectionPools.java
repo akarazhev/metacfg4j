@@ -11,16 +11,16 @@
 package com.github.akarazhev.metaconfig.engine.db.pool;
 
 import com.github.akarazhev.metaconfig.api.Config;
+import com.github.akarazhev.metaconfig.api.Property;
+import com.github.akarazhev.metaconfig.extension.Validator;
 import org.h2.jdbcx.JdbcConnectionPool;
 
 import javax.sql.DataSource;
-import java.io.IOException;
+import java.util.Arrays;
 
-import static com.github.akarazhev.metaconfig.Constants.DB.PASSWORD;
-import static com.github.akarazhev.metaconfig.Constants.DB.URL;
-import static com.github.akarazhev.metaconfig.Constants.DB.USER;
+import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_FACTORY_CLASS_ERROR;
-import static com.github.akarazhev.metaconfig.Constants.Messages.IMPLEMENTATION_NOT_PROVIDED;
+import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_CONFIG_NAME;
 
 /**
  * Provides factory methods to create a connection pool.
@@ -32,24 +32,40 @@ public final class ConnectionPools {
     }
 
     /**
+     * Settings constants for the connection pool.
+     */
+    public final static class Settings {
+
+        private Settings() {
+            throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
+        }
+
+        // The configuration name
+        static final String CONFIG_NAME = "connection-pool";
+        // The url key
+        static final String URL = "url";
+        // The url value
+        public static final String URL_VALUE = "jdbc:h2:./data/metacfg4j";
+        // The user key
+        static final String USER = "user";
+        // The user value
+        public static final String USER_VALUE = "sa";
+        // The password key
+        static final String PASSWORD = "password";
+        // The password value
+        public static final String PASSWORD_VALUE = "sa";
+    }
+
+    /**
      * Returns a default connection pool.
      *
      * @return a connection pool.
      */
     public static ConnectionPool newPool() {
-        return new ConnectionPool() {
-            private final JdbcConnectionPool cp = JdbcConnectionPool.create(URL, USER, PASSWORD);
-
-            @Override
-            public DataSource getDataSource() {
-                return cp;
-            }
-
-            @Override
-            public void close() throws IOException {
-                cp.dispose();
-            }
-        };
+        return newPool(new Config.Builder(Settings.CONFIG_NAME, Arrays.asList(
+                new Property.Builder(Settings.URL, Settings.URL_VALUE).build(),
+                new Property.Builder(Settings.USER, Settings.USER_VALUE).build(),
+                new Property.Builder(Settings.PASSWORD, Settings.PASSWORD_VALUE).build())).build());
     }
 
     /**
@@ -58,6 +74,38 @@ public final class ConnectionPools {
      * @return a connection pool.
      */
     public static ConnectionPool newPool(final Config config) {
-        throw new RuntimeException(IMPLEMENTATION_NOT_PROVIDED); // TODO: implement it
+        // Validate the config
+        final Config poolConfig = Validator.of(config).
+                validate(c -> Settings.CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
+                validate(c -> c.getProperty(Settings.URL).isPresent(), "URL is not present.").
+                validate(c -> c.getProperty(Settings.USER).isPresent(), "User is not present.").
+                validate(c -> c.getProperty(Settings.PASSWORD).isPresent(), "Password is not present.").
+                get();
+        // Get the url
+        final String url = poolConfig.getProperty(Settings.URL).
+                map(Property::getValue).
+                orElse(Settings.URL_VALUE);
+        // Get the user
+        final String user = poolConfig.getProperty(Settings.USER).
+                map(Property::getValue).
+                orElse(Settings.USER_VALUE);
+        // Get the password
+        final String password = poolConfig.getProperty(Settings.PASSWORD).
+                map(Property::getValue).
+                orElse(Settings.PASSWORD_VALUE);
+        // Create the connection pool
+        return new ConnectionPool() {
+            private final JdbcConnectionPool connectionPool = JdbcConnectionPool.create(url, user, password);
+
+            @Override
+            public void close() {
+                connectionPool.dispose();
+            }
+
+            @Override
+            public DataSource getDataSource() {
+                return connectionPool;
+            }
+        };
     }
 }

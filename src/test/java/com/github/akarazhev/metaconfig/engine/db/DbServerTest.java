@@ -17,9 +17,7 @@ import org.junit.jupiter.api.Test;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
-import static com.github.akarazhev.metaconfig.Constants.DB.PASSWORD;
-import static com.github.akarazhev.metaconfig.Constants.DB.URL;
-import static com.github.akarazhev.metaconfig.Constants.DB.USER;
+import static com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPools.Settings;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class DbServerTest {
@@ -42,7 +40,8 @@ final class DbServerTest {
 
     @Test
     void getPublicSchema() throws Exception {
-        Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
+        Connection connection = DriverManager.getConnection(Settings.URL_VALUE, Settings.USER_VALUE,
+                Settings.PASSWORD_VALUE);
         // add application code here
         assertEquals("PUBLIC", connection.getSchema());
         connection.close();
