@@ -11,40 +11,93 @@
 package com.github.akarazhev.metaconfig.engine.db.h2db;
 
 import com.github.akarazhev.metaconfig.api.Config;
+import com.github.akarazhev.metaconfig.api.Property;
 import com.github.akarazhev.metaconfig.engine.db.DbServer;
+import com.github.akarazhev.metaconfig.extension.Validator;
 import org.h2.tools.Server;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.github.akarazhev.metaconfig.Constants.Messages.IMPLEMENTATION_NOT_PROVIDED;
+import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STARTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STOPPED;
+import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_CONFIG_NAME;
 
 /**
- * The internal implementation of the db server.
+ * The internal implementation of the h2db server.
  */
 public final class H2dbServer implements DbServer {
-    private final static Logger logger = Logger.getLogger(H2dbServer.class.getSimpleName());
+    private final static Logger LOGGER = Logger.getLogger(H2dbServer.class.getSimpleName());
     private Server dbServer;
+    /**
+     * Settings constants for the h2db server.
+     */
+    final static class Settings {
+
+        private Settings() {
+            throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
+        }
+
+        // The configuration name
+        static final String CONFIG_NAME = "db-server";
+        // The type key
+        static final String TYPE = "type";
+        // The type tcp value
+        static final String TYPE_TCP = "tcp";
+        // The type pg value
+        static final String TYPE_PG = "pg";
+        // The type web value
+        static final String TYPE_WEB = "web";
+        // The args key
+        static final String ARGS = "args";
+    }
 
     /**
-     * Constructs a default db server.
+     * Constructs a default h2db server.
      *
-     * @throws SQLException when a db server encounters a problem.
+     * @throws SQLException when a h2db server encounters a problem.
      */
     public H2dbServer() throws SQLException {
-        dbServer = Server.createTcpServer("-tcp", "-tcpPort", "8043"); }
+        this(new Config.Builder(Settings.CONFIG_NAME, Arrays.asList(
+                new Property.Builder(Settings.TYPE, Settings.TYPE_TCP).build(),
+                new Property.Builder(Settings.ARGS, "-tcp", "-tcpPort", "8043").build())).build());
+    }
 
     /**
-     * Constructs a db server based on the configuration.
+     * Constructs a h2db server based on the configuration.
      *
-     * @param config config a configuration of a db server.
-     * @throws SQLException when a db server encounters a problem.
+     * @param config config a configuration of a h2db server.
+     * @throws SQLException when a h2db server encounters a problem.
      */
     public H2dbServer(final Config config) throws SQLException {
-        throw new RuntimeException(IMPLEMENTATION_NOT_PROVIDED); // TODO: implement it
+        // Validate the config
+        final Config h2DbConfig = Validator.of(config).
+                validate(c -> Settings.CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
+                validate(c -> c.getProperty(Settings.TYPE).isPresent(), "Type is not present.").
+                validate(c -> c.getProperty(Settings.ARGS).isPresent(), "Args is not present.").
+                get();
+        // Get the args
+        final String[] args = h2DbConfig.getProperty(Settings.ARGS).
+                map(Property::asArray).
+                orElse(new String[0]);
+        // Get the type
+        final String type = h2DbConfig.getProperty(Settings.TYPE).
+                map(Property::getValue).
+                orElse(Settings.TYPE_TCP);
+        switch (type) {
+            case Settings.TYPE_WEB:
+                dbServer = Server.createWebServer(args);
+                break;
+            case Settings.TYPE_PG:
+                dbServer = Server.createPgServer(args);
+                break;
+            case Settings.TYPE_TCP:
+                dbServer = Server.createTcpServer(args);
+                break;
+        }
     }
 
     /**
@@ -54,7 +107,7 @@ public final class H2dbServer implements DbServer {
     public DbServer start() throws SQLException {
         if (!dbServer.isRunning(true)) {
             dbServer.start();
-            logger.log(Level.INFO, SERVER_STARTED);
+            LOGGER.log(Level.INFO, SERVER_STARTED);
         }
 
         return this;
@@ -67,7 +120,7 @@ public final class H2dbServer implements DbServer {
     public void stop() {
         if (dbServer.isRunning(true)) {
             dbServer.stop();
-            logger.log(Level.INFO, SERVER_STOPPED);
+            LOGGER.log(Level.INFO, SERVER_STOPPED);
         }
     }
 }

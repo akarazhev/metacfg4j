@@ -37,7 +37,7 @@ import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.OK
  * Provides a basic functionality for all controllers.
  */
 abstract class AbstractController {
-    private final static Logger logger = Logger.getLogger(ConfigServer.class.getSimpleName());
+    private final static Logger LOGGER = Logger.getLogger(AbstractController.class.getSimpleName());
     final static String REQ_PARAM_NAMES = "names";
     final static String REQ_PARAM_OVERRIDE = "override";
     final ConfigService configService;
@@ -135,14 +135,14 @@ abstract class AbstractController {
 
     private void handle(final HttpExchange httpExchange, final Throwable throwable) {
         try {
-            logger.log(Level.WARNING, throwable.getMessage());
+            LOGGER.log(Level.WARNING, throwable.getMessage());
             throwable.printStackTrace();
 
             final OutputStream responseBody = httpExchange.getResponseBody();
             responseBody.write(getErrorResponse(throwable, httpExchange).toJson().getBytes());
             responseBody.close();
         } catch (final Exception e) {
-            logger.log(Level.SEVERE, throwable.getMessage());
+            LOGGER.log(Level.SEVERE, throwable.getMessage());
             e.printStackTrace();
         }
     }

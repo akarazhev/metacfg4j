@@ -63,8 +63,7 @@ public final class ConfigServer implements WebServer {
         // Set the default config
         this(new Config.Builder(Settings.CONFIG_NAME, Arrays.asList(
                 new Property.Builder(Settings.PORT, 8000).build(),
-                new Property.Builder(Settings.BACKLOG, 0).build())
-        ).build(), configService);
+                new Property.Builder(Settings.BACKLOG, 0).build())).build(), configService);
     }
 
     /**
