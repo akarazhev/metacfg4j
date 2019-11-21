@@ -40,18 +40,18 @@ public final class ConfigServer implements WebServer {
     /**
      * Settings constants for the web server.
      */
-    final static class Settings {
+    public final static class Settings {
 
         private Settings() {
             throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
         }
 
         // The configuration name
-        static final String CONFIG_NAME = "config-server";
+        public static final String CONFIG_NAME = "config-server";
         // The port key
-        static final String PORT = "port";
+        public static final String PORT = "port";
         // The backlog key
-        static final String BACKLOG = "backlog";
+        public static final String BACKLOG = "backlog";
     }
     /**
      * Constructs a default web server.

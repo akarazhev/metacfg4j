@@ -35,24 +35,26 @@ public final class H2dbServer implements DbServer {
     /**
      * Settings constants for the h2db server.
      */
-    final static class Settings {
+    public final static class Settings {
 
         private Settings() {
             throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
         }
 
         // The configuration name
-        static final String CONFIG_NAME = "db-server";
+        public static final String CONFIG_NAME = "db-server";
         // The type key
-        static final String TYPE = "type";
+        public static final String TYPE = "type";
         // The type tcp value
-        static final String TYPE_TCP = "tcp";
+        public static final String TYPE_TCP = "tcp";
         // The type pg value
-        static final String TYPE_PG = "pg";
+        public static final String TYPE_PG = "pg";
         // The type web value
-        static final String TYPE_WEB = "web";
+        public static final String TYPE_WEB = "web";
         // The args key
-        static final String ARGS = "args";
+        public static final String ARGS = "args";
+        // The args value
+        static final String[] ARGS_VALUE = new String[]{"-tcp", "-tcpPort", "8043"};
     }
 
     /**
@@ -63,7 +65,7 @@ public final class H2dbServer implements DbServer {
     public H2dbServer() throws SQLException {
         this(new Config.Builder(Settings.CONFIG_NAME, Arrays.asList(
                 new Property.Builder(Settings.TYPE, Settings.TYPE_TCP).build(),
-                new Property.Builder(Settings.ARGS, "-tcp", "-tcpPort", "8043").build())).build());
+                new Property.Builder(Settings.ARGS, Settings.ARGS_VALUE).build())).build());
     }
 
     /**

@@ -25,14 +25,44 @@ Add a maven dependency into your project:
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
-Instantiate a meta configuration class in your project:
+Instantiate a meta configuration class in your project with the default configuration:
 ```java
 @Bean(destroyMethod = "close")
 public MetaConfig metaConfig() {
     return new MetaConfig.Builder().build();
 }
 ```
-Documentation is in the progress.
+Or:
+```java
+@Bean(destroyMethod = "close")
+public MetaConfig metaConfig() {
+    // Set the DB server
+    final Config dbServer = new Config.Builder(H2dbServer.Settings.CONFIG_NAME,
+        Arrays.asList(
+                new Property.Builder(H2dbServer.Settings.TYPE, H2dbServer.Settings.TYPE_TCP).build(),
+                new Property.Builder(H2dbServer.Settings.ARGS, "-tcp", "-tcpPort", "8043").build())).
+        build();
+    // Set the connection pool
+    final Config connectionPool = new Config.Builder(ConnectionPools.Settings.CONFIG_NAME,
+        Arrays.asList(
+                new Property.Builder(ConnectionPools.Settings.URL, "jdbc:h2:./data/metacfg4j").build(),
+                new Property.Builder(ConnectionPools.Settings.USER, "sa").build(),
+                new Property.Builder(ConnectionPools.Settings.PASSWORD, "sa").build())).
+        build();
+    // Set the web server
+    final Config webServer = new Config.Builder(ConfigServer.Settings.CONFIG_NAME,
+        Arrays.asList(
+                new Property.Builder(ConfigServer.Settings.PORT, 8000).build(),
+                new Property.Builder(ConfigServer.Settings.BACKLOG, 0).build()))
+        .build();
+    // Create the meta configuration
+    return new MetaConfig.Builder().
+        dbServer(dbServer).
+        connectionPool(connectionPool).
+        webServer(webServer).
+        build();
+    }
+```
 
 ### Advanced Usage
 

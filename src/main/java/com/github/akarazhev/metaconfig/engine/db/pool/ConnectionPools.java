@@ -41,19 +41,19 @@ public final class ConnectionPools {
         }
 
         // The configuration name
-        static final String CONFIG_NAME = "connection-pool";
+        public static final String CONFIG_NAME = "connection-pool";
         // The url key
-        static final String URL = "url";
+        public static final String URL = "url";
         // The url value
-        public static final String URL_VALUE = "jdbc:h2:./data/metacfg4j";
+        static final String URL_VALUE = "jdbc:h2:./data/metacfg4j";
         // The user key
-        static final String USER = "user";
+        public static final String USER = "user";
         // The user value
-        public static final String USER_VALUE = "sa";
+        static final String USER_VALUE = "sa";
         // The password key
-        static final String PASSWORD = "password";
+        public static final String PASSWORD = "password";
         // The password value
-        public static final String PASSWORD_VALUE = "sa";
+        static final String PASSWORD_VALUE = "sa";
     }
 
     /**
