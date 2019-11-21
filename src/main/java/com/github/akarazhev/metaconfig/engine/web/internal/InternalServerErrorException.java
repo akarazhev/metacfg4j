@@ -20,7 +20,7 @@ final class InternalServerErrorException extends ConfigException {
      * @param code a code.
      * @param message a message.
      */
-    InternalServerErrorException(int code, String message) {
+    InternalServerErrorException(final int code, final String message) {
         super(code, message);
     }
 }

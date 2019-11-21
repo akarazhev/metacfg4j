@@ -20,7 +20,7 @@ final class InvalidRequestException extends ConfigException {
      * @param code a code.
      * @param message a message.
      */
-    InvalidRequestException(int code, String message) {
+    InvalidRequestException(final int code, final String message) {
         super(code, message);
     }
 }

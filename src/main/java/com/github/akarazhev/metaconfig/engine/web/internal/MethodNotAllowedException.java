@@ -20,7 +20,7 @@ final class MethodNotAllowedException extends ConfigException {
      * @param code a code.
      * @param message a message.
      */
-    MethodNotAllowedException(int code, String message) {
+    MethodNotAllowedException(final int code, final String message) {
         super(code, message);
     }
 }

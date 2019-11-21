@@ -24,7 +24,7 @@ class ConfigException extends IOException {
      * @param code a code.
      * @param message a message.
      */
-    ConfigException(int code, String message) {
+    ConfigException(final int code, final String message) {
         super(message);
         this.code = code;
     }

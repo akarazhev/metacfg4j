@@ -20,7 +20,7 @@ final class ResourceNotFoundException extends ConfigException {
      * @param code a code.
      * @param message a message.
      */
-    ResourceNotFoundException(int code, String message) {
+    ResourceNotFoundException(final int code, final String message) {
         super(code, message);
     }
 }

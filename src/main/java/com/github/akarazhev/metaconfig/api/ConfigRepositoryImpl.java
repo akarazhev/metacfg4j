@@ -52,10 +52,8 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     private final DataSource dataSource;
 
     private ConfigRepositoryImpl(final Builder builder) {
-        // TODO: 1. check and refactor it
-        // TODO: 2. write more tests
         this.dataSource = builder.dataSource;
-        init(this.dataSource);
+        createDataBase(this.dataSource);
     }
 
     /**
@@ -188,7 +186,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         return 0;
     }
 
-    private void init(final DataSource dataSource) {
+    private void createDataBase(final DataSource dataSource) {
         Connection connection = null;
         try {
             connection = JDBCUtils.open(dataSource);
@@ -200,18 +198,48 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         }
     }
 
-    private int getVersion(final Connection connection, final int id) throws SQLException {
-        try (final PreparedStatement statement = connection.prepareStatement(SQL.SELECT.VERSION)) {
-            statement.setInt(1, id);
-
-            try (final ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getInt(1);
-                }
+    private void createTables(final Connection connection) throws SQLException {
+        try {
+            try (final Statement statement = connection.createStatement()) {
+                statement.executeUpdate(SQL.CREATE_TABLE.CONFIGS);
+                statement.executeUpdate(SQL.CREATE_TABLE.CONFIG_ATTRIBUTES);
+                statement.executeUpdate(SQL.CREATE_TABLE.PROPERTIES);
+                statement.executeUpdate(SQL.CREATE_TABLE.PROPERTY_ATTRIBUTES);
+                connection.commit();
             }
+        } catch (SQLException e) {
+            throw new SQLException(CREATE_CONFIG_TABLE_ERROR, e);
+        }
+    }
+
+    private String getSql(final String query, final String[] names) {
+        final StringBuilder sql = new StringBuilder(query);
+        if (names.length > 1) {
+            Arrays.stream(names).skip(1).forEach(name -> sql.append(" OR C.NAME = ?"));
         }
 
-        return 0;
+        return sql.append(";").toString();
+    }
+
+    private Collection<Property> getLinkedProps(final Map<Integer, Property> properties,
+                                                final Collection<SimpleEntry<Integer, Integer>> links) {
+        final Comparator<SimpleEntry<Integer, Integer>> comparing =
+                Comparator.comparing(SimpleEntry::getValue);
+        final Map<Integer, Property> linkedProps = new HashMap<>(properties);
+        final Collection<SimpleEntry<Integer, Integer>> sortedLinks = new ArrayList<>(links);
+        sortedLinks.stream().
+                sorted(comparing.reversed()).
+                forEach(link -> {
+                    final Property childProp = linkedProps.get(link.getKey());
+                    final Property parentProp = linkedProps.get(link.getValue());
+                    if (childProp != null && parentProp != null) {
+                        linkedProps.put(link.getValue(),
+                                new Property.Builder(parentProp).property(new String[0], childProp).build());
+                        linkedProps.remove(link.getKey());
+                    }
+                });
+
+        return linkedProps.values();
     }
 
     private Config[] saveAndFlush(final Connection connection, final Config[] configs) throws SQLException {
@@ -232,7 +260,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         }
 
         if (toInsert.size() > 0) {
-            int pos = toUpdate.size() == 0 ? 0 : toUpdate.size() + 1;
+            final int pos = toUpdate.size() == 0 ? 0 : toUpdate.size() + 1;
             final Config[] inserted = insert(connection, toInsert.toArray(new Config[0]));
             System.arraycopy(inserted, 0, savedConfigs, pos, inserted.length);
         }
@@ -414,6 +442,20 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         return new Config[0];
     }
 
+    private int getVersion(final Connection connection, final int id) throws SQLException {
+        try (final PreparedStatement statement = connection.prepareStatement(SQL.SELECT.VERSION)) {
+            statement.setInt(1, id);
+
+            try (final ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt(1);
+                }
+            }
+        }
+
+        return 0;
+    }
+
     private int delete(final Connection connection, final String[] names) throws SQLException {
         if (names.length > 0) {
             try {
@@ -436,50 +478,6 @@ final class ConfigRepositoryImpl implements ConfigRepository {
             statement.setInt(1, id);
             statement.executeUpdate();
         }
-    }
-
-    private void createTables(final Connection connection) throws SQLException {
-        try {
-            try (final Statement statement = connection.createStatement()) {
-                statement.executeUpdate(SQL.CREATE_TABLE.CONFIGS);
-                statement.executeUpdate(SQL.CREATE_TABLE.CONFIG_ATTRIBUTES);
-                statement.executeUpdate(SQL.CREATE_TABLE.PROPERTIES);
-                statement.executeUpdate(SQL.CREATE_TABLE.PROPERTY_ATTRIBUTES);
-                connection.commit();
-            }
-        } catch (SQLException e) {
-            throw new SQLException(CREATE_CONFIG_TABLE_ERROR, e);
-        }
-    }
-
-    private String getSql(final String query, final String[] names) {
-        final StringBuilder sql = new StringBuilder(query);
-        if (names.length > 1) {
-            Arrays.stream(names).skip(1).forEach(name -> sql.append(" OR C.NAME = ?"));
-        }
-
-        return sql.append(";").toString();
-    }
-
-    private Collection<Property> getLinkedProps(final Map<Integer, Property> properties,
-                                                final Collection<SimpleEntry<Integer, Integer>> links) {
-        final Comparator<SimpleEntry<Integer, Integer>> comparing =
-                Comparator.comparing(SimpleEntry::getValue);
-        final Map<Integer, Property> linkedProps = new HashMap<>(properties);
-        final Collection<SimpleEntry<Integer, Integer>> sortedLinks = new ArrayList<>(links);
-        sortedLinks.stream().
-                sorted(comparing.reversed()).
-                forEach(link -> {
-                    final Property childProp = linkedProps.get(link.getKey());
-                    final Property parentProp = linkedProps.get(link.getValue());
-                    if (childProp != null && parentProp != null) {
-                        linkedProps.put(link.getValue(),
-                                new Property.Builder(parentProp).property(new String[0], childProp).build());
-                        linkedProps.remove(link.getKey());
-                    }
-                });
-
-        return linkedProps.values();
     }
 
     private final static class SQL {
