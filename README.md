@@ -32,24 +32,24 @@ public MetaConfig metaConfig() {
     return new MetaConfig.Builder().build();
 }
 ```
-Or:
+Or with the custom one:
 ```java
 @Bean(destroyMethod = "close")
 public MetaConfig metaConfig() {
-    // Set the DB server
+    // Create the DB server config
     final Config dbServer = new Config.Builder(H2dbServer.Settings.CONFIG_NAME,
         Arrays.asList(
                 new Property.Builder(H2dbServer.Settings.TYPE, H2dbServer.Settings.TYPE_TCP).build(),
                 new Property.Builder(H2dbServer.Settings.ARGS, "-tcp", "-tcpPort", "8043").build())).
         build();
-    // Set the connection pool
+    // Create the connection pool config
     final Config connectionPool = new Config.Builder(ConnectionPools.Settings.CONFIG_NAME,
         Arrays.asList(
                 new Property.Builder(ConnectionPools.Settings.URL, "jdbc:h2:./data/metacfg4j").build(),
                 new Property.Builder(ConnectionPools.Settings.USER, "sa").build(),
                 new Property.Builder(ConnectionPools.Settings.PASSWORD, "sa").build())).
         build();
-    // Set the web server
+    // Create the web server config
     final Config webServer = new Config.Builder(ConfigServer.Settings.CONFIG_NAME,
         Arrays.asList(
                 new Property.Builder(ConfigServer.Settings.PORT, 8000).build(),
