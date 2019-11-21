@@ -74,14 +74,12 @@ final class ConfigController extends AbstractController {
                     });
             writeResponse(httpExchange, response);
         } else if (PUT.equals(method)) {
-            final boolean override = getRequestParam(uri.getQuery(), REQ_PARAM_OVERRIDE).
-                    map(Boolean::valueOf).orElse(false);
             try (final BufferedReader bufferedReader =
                          new BufferedReader(new InputStreamReader(httpExchange.getRequestBody(), StandardCharsets.UTF_8))) {
                 final JsonArray jsonConfigs = (JsonArray) Jsoner.deserialize(bufferedReader);
                 final Stream<Config> stream = jsonConfigs.stream().
                         map(config -> new Config.Builder((JsonObject) config).build());
-                final Collection<Config> updatedConfigs = configService.update(stream, override).
+                final Collection<Config> updatedConfigs = configService.update(stream).
                         collect(Collectors.toList());
                 writeResponse(httpExchange, new OperationResponse.Builder<>().result(updatedConfigs).build());
             } catch (final JsonException e) {

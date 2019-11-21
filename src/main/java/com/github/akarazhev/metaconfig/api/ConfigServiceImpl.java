@@ -28,8 +28,7 @@ final class ConfigServiceImpl implements ConfigService {
      * {@inheritDoc}
      */
     @Override
-    public Stream<Config> update(final Stream<Config> stream, final boolean override) {
-        // TODO: Ignore override at this moment (remove it)
+    public Stream<Config> update(final Stream<Config> stream) {
         return configRepository.saveAndFlush(stream);
     }
 

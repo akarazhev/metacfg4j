@@ -39,7 +39,6 @@ import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.OK
 abstract class AbstractController {
     private final static Logger LOGGER = Logger.getLogger(AbstractController.class.getSimpleName());
     final static String REQ_PARAM_NAMES = "names";
-    final static String REQ_PARAM_OVERRIDE = "override";
     final ConfigService configService;
 
     AbstractController(final AbstractBuilder abstractBuilder) {

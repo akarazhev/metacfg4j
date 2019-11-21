@@ -21,10 +21,9 @@ public interface ConfigService {
      * Updates configuration models.
      *
      * @param stream   a stream of configuration models.
-     * @param override indicates if the existed configuration model should be override or not.
      * @return a stream of updated configuration models.
      */
-    Stream<Config> update(final Stream<Config> stream, final boolean override);
+    Stream<Config> update(final Stream<Config> stream);
 
     /**
      * Returns all configuration names.
