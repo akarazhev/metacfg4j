@@ -558,21 +558,21 @@ final class ConfigRepositoryImpl implements ConfigRepository {
 
             static final String CONFIGS =
                     "CREATE TABLE IF NOT EXISTS `CONFIGS` " +
-                            "(`ID` IDENTITY NOT NULL, " +
+                            "(`ID` BIGINT AUTO_INCREMENT NOT NULL, " +
                             "`NAME` VARCHAR(255) NOT NULL, " +
                             "`DESCRIPTION` VARCHAR(1024), " +
                             "`VERSION` INT NOT NULL, " +
                             "`UPDATED` BIGINT NOT NULL);";
             static final String CONFIG_ATTRIBUTES =
                     "CREATE TABLE IF NOT EXISTS `CONFIG_ATTRIBUTES` " +
-                            "(`ID` IDENTITY NOT NULL, " +
+                            "(`ID` BIGINT AUTO_INCREMENT NOT NULL, " +
                             "`CONFIG_ID` BIGINT NOT NULL, " +
                             "`KEY` VARCHAR(255) NOT NULL, " +
                             "`VALUE` VARCHAR(1024), " +
                             "FOREIGN KEY(CONFIG_ID) REFERENCES CONFIGS(ID) ON DELETE CASCADE)";
             static final String PROPERTIES =
                     "CREATE TABLE IF NOT EXISTS `PROPERTIES` " +
-                            "(`ID` IDENTITY NOT NULL, " +
+                            "(`ID` BIGINT AUTO_INCREMENT NOT NULL, " +
                             "`PROPERTY_ID` BIGINT, " +
                             "`CONFIG_ID` BIGINT NOT NULL, " +
                             "`NAME` VARCHAR(255) NOT NULL, " +
@@ -584,7 +584,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                             "FOREIGN KEY(PROPERTY_ID) REFERENCES PROPERTIES(ID) ON DELETE CASCADE)";
             static final String PROPERTY_ATTRIBUTES =
                     "CREATE TABLE IF NOT EXISTS `PROPERTY_ATTRIBUTES` " +
-                            "(`ID` IDENTITY NOT NULL, " +
+                            "(`ID` BIGINT AUTO_INCREMENT NOT NULL, " +
                             "`PROPERTY_ID` BIGINT NOT NULL, " +
                             "`KEY` VARCHAR(255) NOT NULL, " +
                             "`VALUE` VARCHAR(1024), " +
