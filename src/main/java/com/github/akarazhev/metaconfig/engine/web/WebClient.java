@@ -82,8 +82,7 @@ public final class WebClient {
         try {
             Optional<Property> property = config.getProperty(Settings.URL);
             if (property.isPresent()) {
-                //
-                setInsecure();
+                acceptAllHosts(); // todo
                 // Open a connection
                 final HttpsURLConnection connection = (HttpsURLConnection) new URL(property.get().getValue()).openConnection();
                 property = config.getProperty(Settings.METHOD);
@@ -167,7 +166,7 @@ public final class WebClient {
         }
     }
 
-    private void setInsecure() throws NoSuchAlgorithmException, KeyManagementException {
+    private void acceptAllHosts() throws Exception {
         // Create a trust manager that does not validate certificate chains
         TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
             public X509Certificate[] getAcceptedIssuers() {
