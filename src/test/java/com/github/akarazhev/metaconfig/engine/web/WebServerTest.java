@@ -46,6 +46,7 @@ import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.PUT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class WebServerTest {
+    private static String API_URL = "http://localhost:8000/api/metacfg";
     private static WebServer webServer;
 
     @BeforeAll
@@ -114,7 +115,7 @@ final class WebServerTest {
     @Test
     void acceptConfig() throws Exception {
         final Collection<Property> properties = new ArrayList<>(2);
-        properties.add(new Property.Builder(URL, "http://localhost:8000/api/metacfg/accept_config/name").build());
+        properties.add(new Property.Builder(URL, API_URL + "/accept_config/name").build());
         properties.add(new Property.Builder(METHOD, POST).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
@@ -128,7 +129,7 @@ final class WebServerTest {
     @Test
     void getConfigNames() throws Exception {
         final Collection<Property> properties = new ArrayList<>(2);
-        properties.add(new Property.Builder(URL, "http://localhost:8000/api/metacfg/config_names").build());
+        properties.add(new Property.Builder(URL, API_URL + "/config_names").build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
@@ -142,7 +143,7 @@ final class WebServerTest {
     @Test
     void getConfigSections() throws Exception {
         final Collection<Property> properties = new ArrayList<>(2);
-        properties.add(new Property.Builder(URL, "http://localhost:8000/api/metacfg/configs?names=" +
+        properties.add(new Property.Builder(URL, API_URL + "/configs?names=" +
                 new String(Base64.getEncoder().encode("[\"name_1\", \"name_2\", \"name_3\"]".getBytes()))).build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
@@ -157,7 +158,7 @@ final class WebServerTest {
     @Test
     void getConfigSection() throws Exception {
         final Collection<Property> properties = new ArrayList<>(2);
-        properties.add(new Property.Builder(URL, "http://localhost:8000/api/metacfg/config/name").build());
+        properties.add(new Property.Builder(URL, API_URL + "/config/name").build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
@@ -176,8 +177,7 @@ final class WebServerTest {
         properties.add(new Property.Builder("Property_2", "Value_2").build());
         Config config = new Config.Builder("Meta Config", properties).attributes(Collections.singletonMap("key", "value")).build();
 
-        properties.add(new Property.Builder(URL,
-                "http://localhost:8000/api/metacfg/config").build());
+        properties.add(new Property.Builder(URL, API_URL + "/config").build());
         properties.add(new Property.Builder(METHOD, PUT).build());
         properties.add(new Property.Builder(ACCEPT, APPLICATION_JSON).build());
         properties.add(new Property.Builder(CONTENT_TYPE, APPLICATION_JSON).build());
@@ -195,7 +195,7 @@ final class WebServerTest {
     @Test
     void deleteConfigSection() throws Exception {
         final Collection<Property> properties = new ArrayList<>(2);
-        properties.add(new Property.Builder(URL, "http://localhost:8000/api/metacfg/config/" +
+        properties.add(new Property.Builder(URL, API_URL + "/config/" +
                 new String(Base64.getEncoder().encode("[\"name\"]".getBytes()))).build());
         properties.add(new Property.Builder(METHOD, DELETE).build());
 

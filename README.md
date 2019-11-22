@@ -39,7 +39,10 @@ public MetaConfig metaConfig() {
     return new MetaConfig.Builder().dataSource(ds).build();
 }
 ```
-Or you can instantiate the meta configuration with the custom configuration:
+
+### Advanced Usage
+
+You can instantiate the meta configuration with the custom configuration:
 ```java
 @Bean(destroyMethod = "close")
 public MetaConfig metaConfig() {
@@ -59,8 +62,12 @@ public MetaConfig metaConfig() {
     // Create the web server config
     final Config webServer = new Config.Builder(ConfigServer.Settings.CONFIG_NAME,
         Arrays.asList(
-                new Property.Builder(ConfigServer.Settings.PORT, 8000).build(),
-                new Property.Builder(ConfigServer.Settings.BACKLOG, 0).build()))
+                new Property.Builder(Settings.PORT, 8000).build(),
+                new Property.Builder(Settings.BACKLOG, 0).build(),
+                new Property.Builder(Settings.KEY_STORE_FILE, "./cert/metacfg4j.keystore").build(),
+                new Property.Builder(Settings.ALIAS, "alias").build(),
+                new Property.Builder(Settings.STORE_PASSWORD, "password").build(),
+                new Property.Builder(Settings.KEY_PASSWORD, "password").build()))
         .build();
     // Create the meta configuration
     return new MetaConfig.Builder().
@@ -71,9 +78,15 @@ public MetaConfig metaConfig() {
     }
 ```
 
-### Advanced Usage
+### Certificate generation
 
-Documentation is in the progress.
+To generate a certificate, you need open a command line and and enter:
+```bash
+keytool -genkey -alias alias -keypass password -keystore metacfg4j.keystore -storepass password
+```
+If you have certificate that's signed by CA (Certificate Authority), please use it.
+
+### Settings
 
 ## Build Requirements
 

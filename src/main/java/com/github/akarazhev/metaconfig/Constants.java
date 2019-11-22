@@ -57,5 +57,8 @@ public final class Constants {
         public static final String DB_ERROR = "Database error.";
         public static final String DB_ROLLBACK_ERROR = "Database rollback error.";
         public static final String DB_CONNECTION_ERROR = "Database connection error.";
+        public static final String SERVER_CREATE_ERROR = "Failed to create HTTPS server.";
+        public static final String CERTIFICATE_LOAD_ERROR = "Failed to load the certificate.";
+        public static final String CERTIFICATE_LOADED = "Loaded the '%s' certificate";
     }
 }

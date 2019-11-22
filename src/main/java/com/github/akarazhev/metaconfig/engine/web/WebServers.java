@@ -14,8 +14,6 @@ import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.ConfigService;
 import com.github.akarazhev.metaconfig.engine.web.internal.ConfigServer;
 
-import java.io.IOException;
-
 /**
  * Provides factory methods to create a web server.
  */
@@ -30,9 +28,9 @@ public final class WebServers {
      *
      * @param configService a configuration service.
      * @return a web server.
-     * @throws IOException when a web server encounters a problem.
+     * @throws Exception when a web server encounters a problem.
      */
-    public static WebServer newServer(final ConfigService configService) throws IOException {
+    public static WebServer newServer(final ConfigService configService) throws Exception {
         return new ConfigServer(configService);
     }
 
@@ -42,9 +40,9 @@ public final class WebServers {
      * @param config        config a configuration of a web server.
      * @param configService a configuration service.
      * @return a web server.
-     * @throws IOException when a web server encounters a problem.
+     * @throws Exception when a web server encounters a problem.
      */
-    public static WebServer newServer(final Config config, final ConfigService configService) throws IOException {
+    public static WebServer newServer(final Config config, final ConfigService configService) throws Exception {
         return new ConfigServer(config, configService);
     }
 }

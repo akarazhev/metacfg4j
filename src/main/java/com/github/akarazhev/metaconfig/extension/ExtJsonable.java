@@ -35,7 +35,6 @@ public interface ExtJsonable extends Jsonable {
         try {
             toJson(writable);
         } catch (final IOException e) {
-            e.printStackTrace();
             throw new RuntimeException(STRING_TO_JSON_ERROR, e);
         }
 
