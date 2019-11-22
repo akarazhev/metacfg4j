@@ -46,7 +46,7 @@ import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.PUT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class WebServerTest {
-    private static String API_URL = "http://localhost:8000/api/metacfg";
+    private static String API_URL = "https://localhost:8000/api/metacfg";
     private static WebServer webServer;
 
     @BeforeAll

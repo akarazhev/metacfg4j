@@ -31,7 +31,6 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -41,7 +40,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
-import static com.github.akarazhev.metaconfig.Constants.Messages.CERTIFICATE_LOADED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CERTIFICATE_LOAD_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_CREATE_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STARTED;
@@ -80,7 +78,7 @@ public final class ConfigServer implements WebServer {
         // The keyStoreFile key
         public static final String KEY_STORE_FILE = "keyStoreFile";
         // The keyStoreFile value
-        static final String KEY_STORE_FILE_VALUE = "./cert/metacfg4j.keystore";
+        static final String KEY_STORE_FILE_VALUE = "./data/metacfg4j.keystore";
         // The alias key
         public static final String ALIAS = "alias";
         // The alias value
@@ -202,8 +200,7 @@ public final class ConfigServer implements WebServer {
 
         serverConfig.getProperty(Settings.ALIAS).ifPresent(property -> {
             try {
-                final Certificate certificate = keyStore.getCertificate(property.getValue());
-                LOGGER.log(Level.INFO, String.format(CERTIFICATE_LOADED, certificate.toString()));
+                LOGGER.log(Level.INFO, keyStore.getCertificate(property.getValue()).toString());
             } catch (KeyStoreException e) {
                 exceptions.add(e);
             }

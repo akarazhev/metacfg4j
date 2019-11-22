@@ -64,7 +64,7 @@ public MetaConfig metaConfig() {
         Arrays.asList(
                 new Property.Builder(Settings.PORT, 8000).build(),
                 new Property.Builder(Settings.BACKLOG, 0).build(),
-                new Property.Builder(Settings.KEY_STORE_FILE, "./cert/metacfg4j.keystore").build(),
+                new Property.Builder(Settings.KEY_STORE_FILE, "./data/metacfg4j.keystore").build(),
                 new Property.Builder(Settings.ALIAS, "alias").build(),
                 new Property.Builder(Settings.STORE_PASSWORD, "password").build(),
                 new Property.Builder(Settings.KEY_PASSWORD, "password").build()))

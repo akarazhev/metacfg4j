@@ -17,14 +17,22 @@ import com.github.cliftonlabs.json_simple.JsonException;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.security.KeyManagementException;
+import java.security.cert.X509Certificate;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
 import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
@@ -63,6 +71,7 @@ public final class WebClient {
         // The content key
         static final String CONTENT = "content";
     }
+
     // Status code
     private int statusCode;
     // Content
@@ -73,8 +82,10 @@ public final class WebClient {
         try {
             Optional<Property> property = config.getProperty(Settings.URL);
             if (property.isPresent()) {
+                //
+                setInsecure();
                 // Open a connection
-                final HttpURLConnection connection = (HttpURLConnection) new URL(property.get().getValue()).openConnection();
+                final HttpsURLConnection connection = (HttpsURLConnection) new URL(property.get().getValue()).openConnection();
                 property = config.getProperty(Settings.METHOD);
                 if (property.isPresent()) {
                     // Set a method
@@ -149,11 +160,39 @@ public final class WebClient {
         }
     }
 
-    private void writeContent(final HttpURLConnection connection, final String content) throws IOException {
+    private void writeContent(final HttpsURLConnection connection, final String content) throws IOException {
         try (final OutputStream outputStream = connection.getOutputStream()) {
             final byte[] input = content.getBytes(StandardCharsets.UTF_8);
             outputStream.write(input, 0, input.length);
         }
+    }
+
+    private void setInsecure() throws NoSuchAlgorithmException, KeyManagementException {
+        // Create a trust manager that does not validate certificate chains
+        TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
+            public X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+
+            public void checkClientTrusted(X509Certificate[] certs, String authType) {
+            }
+
+            public void checkServerTrusted(X509Certificate[] certs, String authType) {
+            }
+        }
+        };
+        // Install the all-trusting trust manager
+        SSLContext sc = SSLContext.getInstance("SSL");
+        sc.init(null, trustAllCerts, new java.security.SecureRandom());
+        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+        // Create all-trusting host name verifier
+        HostnameVerifier allHostsValid = new HostnameVerifier() {
+            public boolean verify(String hostname, SSLSession session) {
+                return true;
+            }
+        };
+        // Install the all-trusting host verifier
+        HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
     }
 
     /**
