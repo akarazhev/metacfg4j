@@ -25,14 +25,21 @@ Add a maven dependency into your project:
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
-Instantiate a meta configuration class in your project with the default configuration:
+Instantiate the meta configuration class in your project with the default configuration:
 ```java
 @Bean(destroyMethod = "close")
 public MetaConfig metaConfig() {
     return new MetaConfig.Builder().build();
 }
 ```
-Or with the custom one:
+If you have the configured data source, you can use it:
+```java
+@Bean(destroyMethod = "close")
+public MetaConfig metaConfig() {
+    return new MetaConfig.Builder().dataSource(ds).build();
+}
+```
+Or you can instantiate the meta configuration with the custom configuration:
 ```java
 @Bean(destroyMethod = "close")
 public MetaConfig metaConfig() {
