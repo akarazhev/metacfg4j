@@ -17,8 +17,10 @@ import com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPools;
 import com.github.akarazhev.metaconfig.engine.web.WebServer;
 import com.github.akarazhev.metaconfig.engine.web.WebServers;
 
+import javax.sql.DataSource;
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -32,10 +34,9 @@ public final class MetaConfig implements ConfigService, Closeable {
     private final WebServer webServer;
     private final ConnectionPool connectionPool;
     private final ConfigService configService;
-    // TODO: Set the datasource and integrate it with mariadb
 
-    private MetaConfig(final DbServer dbServer, final WebServer webServer,
-                       final ConnectionPool connectionPool, final ConfigService configService) {
+    private MetaConfig(final DbServer dbServer, final WebServer webServer, final ConnectionPool connectionPool,
+                       final ConfigService configService) {
         this.dbServer = dbServer;
         this.webServer = webServer;
         this.connectionPool = connectionPool;
@@ -123,6 +124,7 @@ public final class MetaConfig implements ConfigService, Closeable {
     public final static class Builder {
         private Config dbConfig;
         private Config webConfig;
+        private DataSource dataSource;
         private Config poolConfig;
 
         /**
@@ -138,7 +140,7 @@ public final class MetaConfig implements ConfigService, Closeable {
          * @return a builder of the core configuration class.
          */
         public Builder dbServer(final Config config) {
-            this.dbConfig = config;
+            this.dbConfig = Objects.requireNonNull(config);
             return this;
         }
 
@@ -149,7 +151,7 @@ public final class MetaConfig implements ConfigService, Closeable {
          * @return a builder of the core configuration class.
          */
         public Builder webServer(final Config config) {
-            this.webConfig = config;
+            this.webConfig = Objects.requireNonNull(config);
             return this;
         }
 
@@ -160,7 +162,18 @@ public final class MetaConfig implements ConfigService, Closeable {
          * @return a builder of the core configuration class.
          */
         public Builder connectionPool(final Config config) {
-            this.poolConfig = config;
+            this.poolConfig = Objects.requireNonNull(config);
+            return this;
+        }
+
+        /**
+         * Constructs the core configuration class with an existed data source.
+         *
+         * @param dataSource a data source.
+         * @return a builder of the core configuration class.
+         */
+        public Builder dataSource(final DataSource dataSource) {
+            this.dataSource = Objects.requireNonNull(dataSource);
             return this;
         }
 
@@ -170,26 +183,27 @@ public final class MetaConfig implements ConfigService, Closeable {
          * @return a builder of the core configuration class.
          */
         public MetaConfig build() {
-            DbServer dbServer;
-            ConnectionPool connectionPool;
-            WebServer webServer;
-            ConfigService configService;
             try {
-                // DB Server
-                dbServer = dbConfig == null ? DbServers.newServer().start() : DbServers.newServer(dbConfig).start();
-                // Connection pool
-                connectionPool = poolConfig == null ? ConnectionPools.newPool() : ConnectionPools.newPool(poolConfig);
-                // Config Repository
-                final ConfigRepository configRepository =
-                        new ConfigRepositoryImpl.Builder(connectionPool.getDataSource()).build();
-                // Config service
-                configService = new ConfigServiceImpl.Builder(configRepository).build();
-                // Web server
-                if (webConfig != null) {
-                    webServer = WebServers.newServer(webConfig, configService).start();
-                } else {
-                    webServer = WebServers.newServer(configService).start();
+                // Init the DB server
+                final DbServer dbServer = dbConfig == null ?
+                        DbServers.newServer().start() :
+                        DbServers.newServer(dbConfig).start();
+                // Init the connection pool
+                final ConnectionPool connectionPool = poolConfig == null ?
+                        ConnectionPools.newPool() :
+                        ConnectionPools.newPool(poolConfig);
+                // Init the data source
+                if (dataSource == null) {
+                    dataSource = connectionPool.getDataSource();
                 }
+                // Init the config repository
+                final ConfigRepository configRepository = new ConfigRepositoryImpl.Builder(dataSource).build();
+                // Init the config service
+                final ConfigService configService = new ConfigServiceImpl.Builder(configRepository).build();
+                // Init the web server
+                final WebServer webServer = webConfig == null ?
+                        WebServers.newServer(configService).start() :
+                        WebServers.newServer(webConfig, configService).start();
                 // Create the main instance
                 return new MetaConfig(dbServer, webServer, connectionPool, configService);
             } catch (final Exception e) {
