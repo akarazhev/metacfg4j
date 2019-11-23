@@ -102,8 +102,8 @@ public final class ConfigServer implements WebServer {
     public ConfigServer(final ConfigService configService) throws Exception {
         // Set the default config
         this(new Config.Builder(Settings.CONFIG_NAME, Arrays.asList(
-                new Property.Builder(Settings.PORT, Settings.BACKLOG_VALUE).build(),
-                new Property.Builder(Settings.BACKLOG, Settings.PORT_VALUE).build(),
+                new Property.Builder(Settings.PORT, Settings.PORT_VALUE).build(),
+                new Property.Builder(Settings.BACKLOG, Settings.BACKLOG_VALUE).build(),
                 new Property.Builder(Settings.KEY_STORE_FILE, Settings.KEY_STORE_FILE_VALUE).build(),
                 new Property.Builder(Settings.ALIAS, Settings.ALIAS_VALUE).build(),
                 new Property.Builder(Settings.STORE_PASSWORD, Settings.STORE_PASSWORD_VALUE).build(),
