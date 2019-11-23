@@ -82,7 +82,7 @@ public MetaConfig metaConfig() {
 
 To generate a certificate, you need open a command line and and enter:
 ```bash
-keytool -genkey -alias alias -keypass password -keystore metacfg4j.keystore -storepass password
+keytool -genkeypair -keyalg RSA -alias alias -keypass password -keystore metacfg4j.keystore -storepass password
 ```
 If you have certificate that's signed by CA (Certificate Authority), please use it.
 
