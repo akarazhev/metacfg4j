@@ -67,6 +67,10 @@ public final class ConfigServer implements WebServer {
 
         // The configuration name
         public static final String CONFIG_NAME = "config-server";
+        // The hostname key
+        public static final String HOSTNAME = "hostname";
+        // The hostname value
+        static final String HOSTNAME_VALUE = "localhost";
         // The port key
         public static final String PORT = "port";
         // The port value
@@ -102,6 +106,7 @@ public final class ConfigServer implements WebServer {
     public ConfigServer(final ConfigService configService) throws Exception {
         // Set the default config
         this(new Config.Builder(Settings.CONFIG_NAME, Arrays.asList(
+                new Property.Builder(Settings.HOSTNAME, Settings.HOSTNAME_VALUE).build(),
                 new Property.Builder(Settings.PORT, Settings.PORT_VALUE).build(),
                 new Property.Builder(Settings.BACKLOG, Settings.BACKLOG_VALUE).build(),
                 new Property.Builder(Settings.KEY_STORE_FILE, Settings.KEY_STORE_FILE_VALUE).build(),
@@ -121,23 +126,25 @@ public final class ConfigServer implements WebServer {
         // Validate the config
         final Config serverConfig = Validator.of(config).
                 validate(c -> Settings.CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
-                validate(c -> c.getProperty(Settings.PORT).isPresent(), "Port is not presented.").
-                validate(c -> c.getProperty(Settings.BACKLOG).isPresent(), "Backlog is not presented.").
                 validate(c -> c.getProperty(Settings.KEY_STORE_FILE).isPresent(), "Key store file is not presented.").
                 validate(c -> c.getProperty(Settings.ALIAS).isPresent(), "Alias is not presented.").
                 validate(c -> c.getProperty(Settings.STORE_PASSWORD).isPresent(), "Store password is not presented.").
                 validate(c -> c.getProperty(Settings.KEY_PASSWORD).isPresent(), "Key password is not presented.").
                 get();
+        // Get the hostname
+        final String hostname = serverConfig.getProperty(Settings.HOSTNAME).
+                map(Property::getValue).
+                orElse(Settings.HOSTNAME_VALUE);
         // Get the port
         final int port = serverConfig.getProperty(Settings.PORT).
                 map(property -> (int) property.asLong()).
-                orElse(8000);
+                orElse(Settings.PORT_VALUE);
         // Get the backlog
         final int backlog = serverConfig.getProperty(Settings.BACKLOG).
                 map(property -> (int) property.asLong()).
-                orElse(0);
+                orElse(Settings.BACKLOG_VALUE);
         // Init the server
-        httpsServer = HttpsServer.create(new InetSocketAddress(port), backlog);
+        httpsServer = HttpsServer.create(new InetSocketAddress(hostname, port), backlog);
         httpsServer.createContext(ACCEPT_CONFIG, new AcceptConfigController.Builder(configService).build()::handle);
         httpsServer.createContext(CONFIG_NAMES, new ConfigNamesController.Builder(configService).build()::handle);
         httpsServer.createContext(CONFIG, new ConfigController.Builder(configService).build()::handle);

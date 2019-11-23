@@ -126,11 +126,13 @@ public final class MetaConfig implements ConfigService, Closeable {
         private Config webConfig;
         private DataSource dataSource;
         private Config poolConfig;
+        private boolean isDefaultConfig;
 
         /**
          * The default constructor.
          */
         public Builder() {
+            this.isDefaultConfig = false;
         }
 
         /**
@@ -178,22 +180,37 @@ public final class MetaConfig implements ConfigService, Closeable {
         }
 
         /**
+         * Constructs the core configuration with the default configuration.
+         *
+         * @return a builder of the core configuration class.
+         */
+        public Builder defaultConfig() {
+            this.isDefaultConfig = true;
+            return this;
+        }
+
+        /**
          * Builds the core configuration class with parameters.
          *
          * @return a builder of the core configuration class.
          */
         public MetaConfig build() {
             try {
+                DbServer dbServer = null;
+                ConnectionPool connectionPool = null;
+                WebServer webServer = null;
                 // Init the DB server
-                final DbServer dbServer = dbConfig == null ?
-                        DbServers.newServer().start() :
-                        DbServers.newServer(dbConfig).start();
-                // Init the connection pool
-                final ConnectionPool connectionPool = poolConfig == null ?
-                        ConnectionPools.newPool() :
-                        ConnectionPools.newPool(poolConfig);
-                // Init the data source
-                if (dataSource == null) {
+                if (isDefaultConfig) {
+                    dbServer = DbServers.newServer().start();
+                } else if (dbConfig != null) {
+                    dbServer = DbServers.newServer(dbConfig).start();
+                }
+                // Init the connection pool and the datasource
+                if (isDefaultConfig) {
+                    connectionPool = ConnectionPools.newPool();
+                    dataSource = connectionPool.getDataSource();
+                } else if (dbConfig != null) {
+                    connectionPool = ConnectionPools.newPool(poolConfig);
                     dataSource = connectionPool.getDataSource();
                 }
                 // Init the config repository
@@ -201,9 +218,11 @@ public final class MetaConfig implements ConfigService, Closeable {
                 // Init the config service
                 final ConfigService configService = new ConfigServiceImpl.Builder(configRepository).build();
                 // Init the web server
-                final WebServer webServer = webConfig == null ?
-                        WebServers.newServer(configService).start() :
-                        WebServers.newServer(webConfig, configService).start();
+                if (isDefaultConfig) {
+                    webServer = WebServers.newServer(configService).start();
+                } else if (webConfig != null) {
+                    webServer = WebServers.newServer(webConfig, configService).start();
+                }
                 // Create the main instance
                 return new MetaConfig(dbServer, webServer, connectionPool, configService);
             } catch (final Exception e) {

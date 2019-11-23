@@ -29,7 +29,7 @@ Instantiate the meta configuration class in your project with the default config
 ```java
 @Bean(destroyMethod = "close")
 public MetaConfig metaConfig() {
-    return new MetaConfig.Builder().build();
+    return new MetaConfig.Builder().defaultConfig().build();
 }
 ```
 If you have the configured data source, you can use it:
@@ -39,6 +39,7 @@ public MetaConfig metaConfig() {
     return new MetaConfig.Builder().dataSource(ds).build();
 }
 ```
+NOTE: The web-server will not be started, since it requires the related configuration.
 
 ### Advanced Usage
 
@@ -62,6 +63,7 @@ public MetaConfig metaConfig() {
     // Create the web server config
     final Config webServer = new Config.Builder(ConfigServer.Settings.CONFIG_NAME,
         Arrays.asList(
+                new Property.Builder(Settings.HOSTNAME, "localhost").build(),
                 new Property.Builder(Settings.PORT, 8000).build(),
                 new Property.Builder(Settings.BACKLOG, 0).build(),
                 new Property.Builder(Settings.KEY_STORE_FILE, "./data/metacfg4j.keystore").build(),
