@@ -20,9 +20,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 final class ConfigTest {
 
     @Test
-    @DisplayName("Create a simple config")
-    void createSimpleConfig() {
-        Config config = new Config.Builder("Simple Config", Collections.emptyList()).build();
-        assertEquals("Simple Config", config.getName(), "The name must be: 'Simple Config'");
+    @DisplayName("Create a config")
+    void createConfig() {
+        Config config = new Config.Builder("Config", Collections.emptyList()).build();
+        assertEquals("Config", config.getName(), "The name must be: 'Config'");
     }
 }
