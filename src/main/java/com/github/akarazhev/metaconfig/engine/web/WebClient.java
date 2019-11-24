@@ -50,26 +50,26 @@ public final class WebClient {
     /**
      * Settings constants for the web client.
      */
-    final static class Settings {
+    public final static class Settings {
 
         private Settings() {
             throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
         }
 
         // The configuration name
-        static final String CONFIG_NAME = "web-client";
+        public static final String CONFIG_NAME = "web-client";
         // The URL key
-        static final String URL = "url";
+        public static final String URL = "url";
+        // The accept all hosts key
+        public static final String ACCEPT_ALL_HOSTS = "accept-all-hosts";
         // The method key
-        static final String METHOD = "method";
+        public static final String METHOD = "method";
         // The accept key
         static final String ACCEPT = "accept";
         // The content type key
         static final String CONTENT_TYPE = "content-type";
         // The content key
         static final String CONTENT = "content";
-        // The accept all hosts key
-        static final String ACCEPT_ALL_HOSTS = "accept-all-hosts";
     }
 
     // Status code
@@ -138,7 +138,7 @@ public final class WebClient {
      *
      * @return a status code.
      */
-    int getStatusCode() {
+    public int getStatusCode() {
         return statusCode;
     }
 
@@ -157,7 +157,7 @@ public final class WebClient {
      * @return the content.
      * @throws JsonException when a web client encounters a problem.
      */
-    JsonObject getJsonContent() throws JsonException {
+    public JsonObject getJsonContent() throws JsonException {
         return (JsonObject) Jsoner.deserialize(getContent());
     }
 
@@ -198,6 +198,7 @@ public final class WebClient {
                     }
                 }
         }, new java.security.SecureRandom());
+
         HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
         HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
     }

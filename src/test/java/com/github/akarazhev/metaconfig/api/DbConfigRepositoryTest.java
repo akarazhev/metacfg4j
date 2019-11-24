@@ -64,6 +64,8 @@ final class DbConfigRepositoryTest {
             dbServer.stop();
             dbServer = null;
         }
+
+        configRepository = null;
     }
 
     @BeforeEach
