@@ -182,14 +182,14 @@ final class WebServerTest {
         Config config = new Config.Builder("Meta Config", properties).attributes(Collections.singletonMap("key", "value")).build();
 
         final Collection<Property> props = new ArrayList<>(6);
-        properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
-        properties.add(new Property.Builder(URL, API_URL + "/config").build());
-        properties.add(new Property.Builder(METHOD, PUT).build());
-        properties.add(new Property.Builder(ACCEPT, APPLICATION_JSON).build());
-        properties.add(new Property.Builder(CONTENT_TYPE, APPLICATION_JSON).build());
-        properties.add(new Property.Builder(CONTENT, Jsoner.serialize(new Config[]{config})).build());
+        props.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
+        props.add(new Property.Builder(URL, API_URL + "/config").build());
+        props.add(new Property.Builder(METHOD, PUT).build());
+        props.add(new Property.Builder(ACCEPT, APPLICATION_JSON).build());
+        props.add(new Property.Builder(CONTENT_TYPE, APPLICATION_JSON).build());
+        props.add(new Property.Builder(CONTENT, Jsoner.serialize(new Config[]{config})).build());
 
-        config = new Config.Builder(CONFIG_NAME, properties).build();
+        config = new Config.Builder(CONFIG_NAME, props).build();
         final WebClient client = new WebClient.Builder(config).build();
         // Test status code
         assertEquals(200, client.getStatusCode());
