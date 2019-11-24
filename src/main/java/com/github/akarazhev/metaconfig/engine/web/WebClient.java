@@ -17,14 +17,10 @@ import com.github.cliftonlabs.json_simple.JsonException;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import java.security.KeyManagementException;
-import java.security.cert.X509Certificate;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +28,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
@@ -70,6 +68,8 @@ public final class WebClient {
         static final String CONTENT_TYPE = "content-type";
         // The content key
         static final String CONTENT = "content";
+        // The accept all hosts key
+        static final String ACCEPT_ALL_HOSTS = "accept-all-hosts";
     }
 
     // Status code
@@ -82,7 +82,21 @@ public final class WebClient {
         try {
             Optional<Property> property = config.getProperty(Settings.URL);
             if (property.isPresent()) {
-                acceptAllHosts(); // todo
+                // Accept all hosts
+                final List<Throwable> exceptions = new ArrayList<>(1);
+                config.getProperty(Settings.ACCEPT_ALL_HOSTS).ifPresent(prop -> {
+                            if (prop.asBool()) {
+                                try {
+                                    acceptAllHosts();
+                                } catch (Exception e) {
+                                    exceptions.add(e);
+                                }
+                            }
+                        }
+                );
+                if (exceptions.size() > 0) {
+                    throw new Exception(exceptions.get(0));
+                }
                 // Open a connection
                 final HttpsURLConnection connection = (HttpsURLConnection) new URL(property.get().getValue()).openConnection();
                 property = config.getProperty(Settings.METHOD);
@@ -167,31 +181,25 @@ public final class WebClient {
     }
 
     private void acceptAllHosts() throws Exception {
-        // Create a trust manager that does not validate certificate chains
-        TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
-            public X509Certificate[] getAcceptedIssuers() {
-                return null;
-            }
+        final SSLContext sslContext = SSLContext.getInstance("SSL");
+        sslContext.init(null, new TrustManager[]{
+                new X509TrustManager() {
+                    public X509Certificate[] getAcceptedIssuers() {
+                        // Empty implementation
+                        return null;
+                    }
 
-            public void checkClientTrusted(X509Certificate[] certs, String authType) {
-            }
+                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                        // Empty implementation
+                    }
 
-            public void checkServerTrusted(X509Certificate[] certs, String authType) {
-            }
-        }
-        };
-        // Install the all-trusting trust manager
-        SSLContext sc = SSLContext.getInstance("SSL");
-        sc.init(null, trustAllCerts, new java.security.SecureRandom());
-        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-        // Create all-trusting host name verifier
-        HostnameVerifier allHostsValid = new HostnameVerifier() {
-            public boolean verify(String hostname, SSLSession session) {
-                return true;
-            }
-        };
-        // Install the all-trusting host verifier
-        HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                        // Empty implementation
+                    }
+                }
+        }, new java.security.SecureRandom());
+        HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+        HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
     }
 
     /**

@@ -22,8 +22,8 @@
  */
 package com.github.akarazhev.metaconfig.extension;
 
+import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -45,7 +45,7 @@ public final class Validator<T> {
     /**
      * List of exception thrown during validation.
      */
-    private final List<Throwable> exceptions = new LinkedList<>();
+    private final Collection<Throwable> exceptions = new LinkedList<>();
 
     /**
      * Creates a monadic value of given object.

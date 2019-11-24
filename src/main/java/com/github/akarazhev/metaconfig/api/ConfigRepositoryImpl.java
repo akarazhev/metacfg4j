@@ -243,8 +243,8 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     }
 
     private Config[] saveAndFlush(final Connection connection, final Config[] configs) throws SQLException {
-        final List<Config> toUpdate = new LinkedList<>();
-        final List<Config> toInsert = new LinkedList<>();
+        final Collection<Config> toUpdate = new LinkedList<>();
+        final Collection<Config> toInsert = new LinkedList<>();
         for (Config config : configs) {
             if (config.getId() > 0) {
                 toUpdate.add(config);
@@ -280,7 +280,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
 
                 if (statement.executeBatch().length == configs.length) {
                     try (final ResultSet resultSet = statement.getGeneratedKeys()) {
-                        final List<Throwable> exceptions = new LinkedList<>();
+                        final Collection<Throwable> exceptions = new LinkedList<>();
                         for (int i = 0; i < configs.length; i++) {
                             resultSet.absolute(i + 1);
                             final int configId = resultSet.getInt(1);
@@ -361,7 +361,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
                         final Property[] properties) throws SQLException {
         if (statement.executeBatch().length == properties.length) {
             try (final ResultSet resultSet = statement.getGeneratedKeys()) {
-                final List<Throwable> exceptions = new LinkedList<>();
+                final Collection<Throwable> exceptions = new LinkedList<>();
                 for (int i = 0; i < properties.length; i++) {
                     resultSet.absolute(i + 1);
                     final int propertyId = resultSet.getInt(1);
@@ -392,7 +392,7 @@ final class ConfigRepositoryImpl implements ConfigRepository {
             final Config[] updated = new Config[configs.length];
             try (final PreparedStatement statement = connection.prepareStatement(SQL.UPDATE.CONFIGS)) {
                 final Map<Integer, Integer> idVersion = new HashMap<>();
-                final List<Throwable> exceptions = new LinkedList<>();
+                final Collection<Throwable> exceptions = new LinkedList<>();
                 for (final Config config : configs) {
                     final int version = getVersion(connection, config.getId()) + 1;
                     statement.setInt(5, config.getId());

@@ -33,8 +33,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -193,7 +193,7 @@ public final class ConfigServer implements WebServer {
             throw new Exception(CERTIFICATE_LOAD_ERROR);
         }
 
-        final List<Throwable> exceptions = new LinkedList<>();
+        final Collection<Throwable> exceptions = new LinkedList<>();
         final FileInputStream fileInputStream = new FileInputStream(keyStoreFile.get().getValue());
 
         final KeyStore keyStore = KeyStore.getInstance("JKS");

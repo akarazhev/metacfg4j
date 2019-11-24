@@ -26,13 +26,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.ACCEPT;
+import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.ACCEPT_ALL_HOSTS;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.CONFIG_NAME;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.CONTENT;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.METHOD;
@@ -46,7 +46,7 @@ import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.PUT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class WebServerTest {
-    private static String API_URL = "https://localhost:8000/api/metacfg";
+    private static final String API_URL = "https://localhost:8000/api/metacfg";
     private static WebServer webServer;
 
     @BeforeAll
@@ -60,7 +60,7 @@ final class WebServerTest {
 
             @Override
             public Stream<Config> update(final Stream<Config> stream) {
-                List<Config> list = stream.collect(Collectors.toList());
+                final Collection<Config> list = stream.collect(Collectors.toList());
                 for (final Config config : list) {
                     map.put(config.getName(), config);
                 }
@@ -114,7 +114,8 @@ final class WebServerTest {
 
     @Test
     void acceptConfig() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(2);
+        final Collection<Property> properties = new ArrayList<>(3);
+        properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/accept_config/name").build());
         properties.add(new Property.Builder(METHOD, POST).build());
 
@@ -128,7 +129,8 @@ final class WebServerTest {
 
     @Test
     void getConfigNames() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(2);
+        final Collection<Property> properties = new ArrayList<>(3);
+        properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/config_names").build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
@@ -142,7 +144,8 @@ final class WebServerTest {
 
     @Test
     void getConfigSections() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(2);
+        final Collection<Property> properties = new ArrayList<>(3);
+        properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/configs?names=" +
                 new String(Base64.getEncoder().encode("[\"name_1\", \"name_2\", \"name_3\"]".getBytes()))).build());
         properties.add(new Property.Builder(METHOD, GET).build());
@@ -157,7 +160,8 @@ final class WebServerTest {
 
     @Test
     void getConfigSection() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(2);
+        final Collection<Property> properties = new ArrayList<>(3);
+        properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/config/name").build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
@@ -166,17 +170,19 @@ final class WebServerTest {
         // Test status code
         assertEquals(200, client.getStatusCode());
         // Get the response
-        JsonObject jsonObject = client.getJsonContent();
+        final JsonObject jsonObject = client.getJsonContent();
         assertEquals(true, jsonObject.get("success"));
     }
 
     @Test
     void updateConfigSection() throws Exception {
-        Collection<Property> properties = new ArrayList<>(2);
+        final Collection<Property> properties = new ArrayList<>(2);
         properties.add(new Property.Builder("Property_1", "Value_1").build());
         properties.add(new Property.Builder("Property_2", "Value_2").build());
         Config config = new Config.Builder("Meta Config", properties).attributes(Collections.singletonMap("key", "value")).build();
 
+        final Collection<Property> props = new ArrayList<>(6);
+        properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/config").build());
         properties.add(new Property.Builder(METHOD, PUT).build());
         properties.add(new Property.Builder(ACCEPT, APPLICATION_JSON).build());
@@ -188,13 +194,14 @@ final class WebServerTest {
         // Test status code
         assertEquals(200, client.getStatusCode());
         // Get the response
-        JsonObject jsonObject = client.getJsonContent();
+        final JsonObject jsonObject = client.getJsonContent();
         assertEquals(true, jsonObject.get("success"));
     }
 
     @Test
     void deleteConfigSection() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(2);
+        final Collection<Property> properties = new ArrayList<>(3);
+        properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/config/" +
                 new String(Base64.getEncoder().encode("[\"name\"]".getBytes()))).build());
         properties.add(new Property.Builder(METHOD, DELETE).build());
@@ -204,7 +211,7 @@ final class WebServerTest {
         // Test status code
         assertEquals(200, client.getStatusCode());
         // Get the response
-        JsonObject jsonObject = client.getJsonContent();
+        final JsonObject jsonObject = client.getJsonContent();
         assertEquals(true, jsonObject.get("success"));
         assertEquals(1, ((BigDecimal) jsonObject.get("result")).intValue());
     }
