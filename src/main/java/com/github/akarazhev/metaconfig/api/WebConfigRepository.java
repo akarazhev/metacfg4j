@@ -10,6 +10,8 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
+import com.github.akarazhev.metaconfig.extension.Validator;
+
 import java.util.stream.Stream;
 
 /**
@@ -19,6 +21,7 @@ final class WebConfigRepository implements ConfigRepository {
     private final Config config;
 
     private WebConfigRepository(final Builder builder) {
+        // TODO: implementation
         this.config = builder.config;
     }
 
@@ -27,7 +30,7 @@ final class WebConfigRepository implements ConfigRepository {
      */
     @Override
     public Stream<Config> findByNames(Stream<String> stream) {
-        return null;
+        return null; // todo
     }
 
     /**
@@ -35,7 +38,7 @@ final class WebConfigRepository implements ConfigRepository {
      */
     @Override
     public Stream<String> findNames() {
-        return null;
+        return null; // todo
     }
 
     /**
@@ -43,7 +46,7 @@ final class WebConfigRepository implements ConfigRepository {
      */
     @Override
     public Stream<Config> saveAndFlush(Stream<Config> stream) {
-        return null;
+        return null; // todo
     }
 
     /**
@@ -51,7 +54,7 @@ final class WebConfigRepository implements ConfigRepository {
      */
     @Override
     public int delete(Stream<String> stream) {
-        return 0;
+        return 0; // todo
     }
 
     /**
@@ -66,7 +69,7 @@ final class WebConfigRepository implements ConfigRepository {
          * @param config the datasource.
          */
         Builder(final Config config) {
-            this.config = config;
+            this.config = Validator.of(config).get();
         }
 
         /**

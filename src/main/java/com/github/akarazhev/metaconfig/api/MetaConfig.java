@@ -123,6 +123,7 @@ public final class MetaConfig implements ConfigService, Closeable {
      */
     public final static class Builder {
         private Config dbConfig;
+        private Config webClient;
         private Config webConfig;
         private DataSource dataSource;
         private Config poolConfig;
@@ -143,6 +144,17 @@ public final class MetaConfig implements ConfigService, Closeable {
          */
         public Builder dbServer(final Config config) {
             this.dbConfig = Objects.requireNonNull(config);
+            return this;
+        }
+
+        /**
+         * Constructs the core configuration class with the configuration of a web client.
+         *
+         * @param config a configuration a web client.
+         * @return a builder of the core configuration class.
+         */
+        public Builder webClient(final Config config) {
+            this.webClient = Objects.requireNonNull(config);
             return this;
         }
 
@@ -209,13 +221,16 @@ public final class MetaConfig implements ConfigService, Closeable {
                 if (isDefaultConfig) {
                     connectionPool = ConnectionPools.newPool();
                     dataSource = connectionPool.getDataSource();
-                } else if (dbConfig != null) {
+                } else if (poolConfig != null) {
                     connectionPool = ConnectionPools.newPool(poolConfig);
                     dataSource = connectionPool.getDataSource();
                 }
+                // Init the repository
+                final ConfigRepository configRepository = dataSource != null ?
+                        new DbConfigRepository.Builder(dataSource).build() :
+                        new WebConfigRepository.Builder(webClient).build();
                 // Init the config service
-                final ConfigService configService =
-                        new ConfigServiceImpl.Builder(new DbConfigRepository.Builder(dataSource).build()).build();
+                final ConfigService configService = new ConfigServiceImpl.Builder(configRepository).build();
                 // Init the web server
                 if (isDefaultConfig) {
                     webServer = WebServers.newServer(configService).start();

@@ -10,6 +10,8 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
+import com.github.akarazhev.metaconfig.extension.Validator;
+
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -707,7 +709,7 @@ final class DbConfigRepository implements ConfigRepository {
          * @param dataSource a datasource.
          */
         Builder(final DataSource dataSource) {
-            this.dataSource = dataSource;
+            this.dataSource = Validator.of(dataSource).get();
         }
 
         /**

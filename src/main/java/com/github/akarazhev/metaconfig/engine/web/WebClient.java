@@ -209,7 +209,7 @@ public final class WebClient {
         private Config config;
 
         /**
-         * Constructs the web client based on the configuration.
+         * Constructs the a client based on the configuration.
          *
          * @param config a configuration of a web client.
          */
