@@ -1,7 +1,7 @@
 # metacfg4j
 
-The `metacfg4j` project (that stands for the `meta configuration for java`) is a library that can be used as a solution to add a business abstraction or 
-may extend an existed implementation to provide such software solutions as: various configuration (application, user's and etc.), CRUD services.
+The `metacfg4j` project (that stands for the `meta configuration for java`) is a library that can be used as the solution by creating a business abstraction or 
+may extend an existed implementation to provide such software solutions as: various configuration (application, user's and etc.), CRUD services, DSL.
 
 ## Architecture
 
@@ -10,8 +10,8 @@ This is a high-level abstraction based on the low-level API. It has been written
  &#8658; Embedded H2db (https://www.h2database.com)<br/>
  &#8658; JSON simple (https://github.com/fangyidong/json-simple)<br/>
 
-This library has an implementation of a simple web-server and a repository, service, controller. Web-server provides implementation of REST methods.
-Data is persisted into the embedded H2 DataBase.
+This library has the implementation of a simple web-client/server, repositories, services, controllers. The web-server provides implementation of REST methods.
+Data is persisted into the embedded H2 DataBase, but can be use any configured datasource.
   
 ## Usage
 
