@@ -16,11 +16,11 @@ import com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPool;
 import com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPools;
 import com.github.akarazhev.metaconfig.engine.web.WebServer;
 import com.github.akarazhev.metaconfig.engine.web.WebServers;
+import com.github.akarazhev.metaconfig.extension.Validator;
 
 import javax.sql.DataSource;
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -143,7 +143,7 @@ public final class MetaConfig implements ConfigService, Closeable {
          * @return a builder of the core configuration class.
          */
         public Builder dbServer(final Config config) {
-            this.dbConfig = Objects.requireNonNull(config);
+            this.dbConfig = Validator.of(config).get();
             return this;
         }
 
@@ -154,7 +154,7 @@ public final class MetaConfig implements ConfigService, Closeable {
          * @return a builder of the core configuration class.
          */
         public Builder webClient(final Config config) {
-            this.webClient = Objects.requireNonNull(config);
+            this.webClient = Validator.of(config).get();
             return this;
         }
 
@@ -165,7 +165,7 @@ public final class MetaConfig implements ConfigService, Closeable {
          * @return a builder of the core configuration class.
          */
         public Builder webServer(final Config config) {
-            this.webConfig = Objects.requireNonNull(config);
+            this.webConfig = Validator.of(config).get();
             return this;
         }
 
@@ -176,7 +176,7 @@ public final class MetaConfig implements ConfigService, Closeable {
          * @return a builder of the core configuration class.
          */
         public Builder connectionPool(final Config config) {
-            this.poolConfig = Objects.requireNonNull(config);
+            this.poolConfig = Validator.of(config).get();
             return this;
         }
 
@@ -187,7 +187,7 @@ public final class MetaConfig implements ConfigService, Closeable {
          * @return a builder of the core configuration class.
          */
         public Builder dataSource(final DataSource dataSource) {
-            this.dataSource = Objects.requireNonNull(dataSource);
+            this.dataSource = Validator.of(dataSource).get();
             return this;
         }
 

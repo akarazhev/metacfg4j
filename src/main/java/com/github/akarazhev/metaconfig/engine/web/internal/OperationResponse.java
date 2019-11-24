@@ -11,12 +11,12 @@
 package com.github.akarazhev.metaconfig.engine.web.internal;
 
 import com.github.akarazhev.metaconfig.extension.ExtJsonable;
+import com.github.akarazhev.metaconfig.extension.Validator;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsonable;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Objects;
 
 /**
  * The operation response model that contains a result, an error message and a flag of success.
@@ -87,7 +87,7 @@ final class OperationResponse<T> implements ExtJsonable {
          */
         Builder result(final T result) {
             this.success = true;
-            this.result = Objects.requireNonNull(result);
+            this.result = Validator.of(result).get();
             return this;
         }
 
@@ -99,7 +99,7 @@ final class OperationResponse<T> implements ExtJsonable {
          */
         Builder error(final String error) {
             this.success = false;
-            this.error = Objects.requireNonNull(error);
+            this.error = Validator.of(error).get();
             return this;
         }
 

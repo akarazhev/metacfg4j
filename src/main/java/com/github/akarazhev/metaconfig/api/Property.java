@@ -10,6 +10,7 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
+import com.github.akarazhev.metaconfig.extension.Validator;
 import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
@@ -175,7 +176,7 @@ public final class Property extends AbstractConfig {
      */
     @Override
     public Optional<String> getAttribute(final String key) {
-        return Optional.ofNullable(attributes.get(Objects.requireNonNull(key)));
+        return Optional.ofNullable(attributes.get(Validator.of(key).get()));
     }
 
     /**
@@ -265,7 +266,7 @@ public final class Property extends AbstractConfig {
          * @param property a property model.
          */
         public Builder(final Property property) {
-            final Property prototype = Objects.requireNonNull(property);
+            final Property prototype = Validator.of(property).get();
             this.name = prototype.name;
             this.caption = prototype.caption;
             this.description = prototype.description;
@@ -281,11 +282,11 @@ public final class Property extends AbstractConfig {
          * @param jsonObject a json object with the property model.
          */
         public Builder(final JsonObject jsonObject) {
-            this.name = Objects.requireNonNull((String) jsonObject.get("name"));
+            this.name = Validator.of((String) jsonObject.get("name")).get();
             this.caption = (String) jsonObject.get("caption");
             this.description = (String) jsonObject.get("description");
-            this.type = Type.valueOf(Objects.requireNonNull((String) jsonObject.get("type")));
-            this.value = Objects.requireNonNull((String) jsonObject.get("value"));
+            this.type = Type.valueOf(Validator.of((String) jsonObject.get("type")).get());
+            this.value = Validator.of((String) jsonObject.get("value")).get();
             getAttributes(jsonObject).ifPresent(this.attributes::putAll);
             this.properties.addAll(getProperties(jsonObject).collect(Collectors.toList()));
         }
@@ -297,9 +298,9 @@ public final class Property extends AbstractConfig {
          * @param value a string property value.
          */
         public Builder(final String name, final String value) {
-            this.name = Objects.requireNonNull(name);
+            this.name = Validator.of(name).get();
             this.type = Type.STRING;
-            this.value = Objects.requireNonNull(value);
+            this.value = Validator.of(value).get();
         }
 
         /**
@@ -310,9 +311,9 @@ public final class Property extends AbstractConfig {
          * @param value a property value.
          */
         public Builder(final String name, final String type, final String value) {
-            this.name = Objects.requireNonNull(name);
-            this.type = Type.valueOf(Objects.requireNonNull(type));
-            this.value = Objects.requireNonNull(value);
+            this.name = Validator.of(name).get();
+            this.type = Type.valueOf(Validator.of(type).get());
+            this.value = Validator.of(value).get();
         }
 
         /**
@@ -322,7 +323,7 @@ public final class Property extends AbstractConfig {
          * @param value a boolean property value.
          */
         public Builder(final String name, final boolean value) {
-            this.name = Objects.requireNonNull(name);
+            this.name = Validator.of(name).get();
             this.type = Type.BOOL;
             this.value = String.valueOf(value);
         }
@@ -334,7 +335,7 @@ public final class Property extends AbstractConfig {
          * @param value a double property value.
          */
         public Builder(final String name, final double value) {
-            this.name = Objects.requireNonNull(name);
+            this.name = Validator.of(name).get();
             this.type = Type.DOUBLE;
             this.value = String.valueOf(value);
         }
@@ -346,7 +347,7 @@ public final class Property extends AbstractConfig {
          * @param value a long property value.
          */
         public Builder(final String name, final long value) {
-            this.name = Objects.requireNonNull(name);
+            this.name = Validator.of(name).get();
             this.type = Type.LONG;
             this.value = String.valueOf(value);
         }
@@ -358,9 +359,9 @@ public final class Property extends AbstractConfig {
          * @param value an array property value.
          */
         public Builder(final String name, final String... value) {
-            this.name = Objects.requireNonNull(name);
+            this.name = Validator.of(name).get();
             this.type = Type.STRING_ARRAY;
-            this.value = new JsonArray(Arrays.asList(Objects.requireNonNull(value))).toJson();
+            this.value = new JsonArray(Arrays.asList(Validator.of(value).get())).toJson();
         }
 
         /**
@@ -393,7 +394,7 @@ public final class Property extends AbstractConfig {
          * @return a builder of the property model.
          */
         public Builder attribute(final String key, final String value) {
-            this.attributes.put(Objects.requireNonNull(key), Objects.requireNonNull(value));
+            this.attributes.put(Validator.of(key).get(), Validator.of(value).get());
             return this;
         }
 
@@ -404,7 +405,7 @@ public final class Property extends AbstractConfig {
          * @return a builder of the property model.
          */
         public Builder attributes(final Map<String, String> attributes) {
-            this.attributes.putAll(Objects.requireNonNull(attributes));
+            this.attributes.putAll(Validator.of(attributes).get());
             return this;
         }
 
@@ -416,7 +417,7 @@ public final class Property extends AbstractConfig {
          * @return a builder of the property model.
          */
         public Builder property(final String[] paths, final Property property) {
-            return properties(paths, Collections.singletonList(Objects.requireNonNull(property)));
+            return properties(paths, Collections.singletonList(Validator.of(property).get()));
         }
 
         /**
@@ -427,11 +428,11 @@ public final class Property extends AbstractConfig {
          * @return a builder of the property model.
          */
         public Builder properties(final String[] paths, final Collection<Property> properties) {
-            final String[] propertyPaths = Objects.requireNonNull(paths);
+            final String[] propertyPaths = Validator.of(paths).get();
             if (propertyPaths.length > 0) {
                 addAll(0, paths, this.properties, properties);
             } else {
-                this.properties.addAll(Objects.requireNonNull(properties));
+                this.properties.addAll(Validator.of(properties).get());
             }
 
             return this;
@@ -444,7 +445,7 @@ public final class Property extends AbstractConfig {
          * @return a builder of the property model.
          */
         public Builder properties(final Collection<Property> properties) {
-            this.properties.addAll(Objects.requireNonNull(properties));
+            this.properties.addAll(Validator.of(properties).get());
             return this;
         }
 

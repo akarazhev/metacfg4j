@@ -10,6 +10,7 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
+import com.github.akarazhev.metaconfig.extension.Validator;
 import com.github.cliftonlabs.json_simple.JsonObject;
 
 import java.io.IOException;
@@ -116,7 +117,7 @@ public final class Config extends AbstractConfig {
      */
     @Override
     public Optional<String> getAttribute(final String key) {
-        return Optional.ofNullable(attributes.get(Objects.requireNonNull(key)));
+        return Optional.ofNullable(attributes.get(Validator.of(key).get()));
     }
 
     /**
@@ -205,7 +206,7 @@ public final class Config extends AbstractConfig {
          * @param config a configuration model.
          */
         public Builder(final Config config) {
-            final Config prototype = Objects.requireNonNull(config);
+            final Config prototype = Validator.of(config).get();
             this.id = config.id;
             this.name = prototype.name;
             this.description = prototype.description;
@@ -221,12 +222,12 @@ public final class Config extends AbstractConfig {
          * @param jsonObject a json object with the configuration model.
          */
         public Builder(final JsonObject jsonObject) {
-            final JsonObject prototype = Objects.requireNonNull(jsonObject);
+            final JsonObject prototype = Validator.of(jsonObject).get();
             final Object id = prototype.get("id");
             if (id != null) {
                 this.id = ((BigDecimal) id).intValue();
             }
-            this.name = Objects.requireNonNull((String) prototype.get("name"));
+            this.name = Validator.of((String) prototype.get("name")).get();
             this.description = (String) prototype.get("description");
             final Object version = prototype.get("version");
             if (version != null) {
@@ -247,8 +248,8 @@ public final class Config extends AbstractConfig {
          * @param properties configuration properties.
          */
         public Builder(final String name, final Collection<Property> properties) {
-            this.name = Objects.requireNonNull(name);
-            this.properties.addAll(Objects.requireNonNull(properties));
+            this.name = Validator.of(name).get();
+            this.properties.addAll(Validator.of(properties).get());
         }
 
         /**
@@ -318,7 +319,7 @@ public final class Config extends AbstractConfig {
          * @return a builder of the configuration model.
          */
         public Builder attribute(final String key, final String value) {
-            this.attributes.put(Objects.requireNonNull(key), Objects.requireNonNull(value));
+            this.attributes.put(Validator.of(key).get(), Validator.of(value).get());
             return this;
         }
 
@@ -329,7 +330,7 @@ public final class Config extends AbstractConfig {
          * @return a builder of the configuration model.
          */
         public Builder attributes(final Map<String, String> attributes) {
-            this.attributes.putAll(Objects.requireNonNull(attributes));
+            this.attributes.putAll(Validator.of(attributes).get());
             return this;
         }
 
@@ -341,7 +342,7 @@ public final class Config extends AbstractConfig {
          * @return a builder of the configuration model.
          */
         public Builder property(final String[] paths, final Property property) {
-            return properties(paths, Collections.singletonList(Objects.requireNonNull(property)));
+            return properties(paths, Collections.singletonList(Validator.of(property).get()));
         }
 
         /**
@@ -352,12 +353,12 @@ public final class Config extends AbstractConfig {
          * @return a builder of the configuration model.
          */
         public Builder properties(final String[] paths, final Collection<Property> properties) {
-            final String[] propertyPaths = Objects.requireNonNull(paths);
+            final String[] propertyPaths = Validator.of(paths).get();
             if (propertyPaths.length > 0) {
                 // TODO: implement addition properties
 //                addAll(paths, 0, this.properties, properties);
             } else {
-                this.properties.addAll(Objects.requireNonNull(properties));
+                this.properties.addAll(Validator.of(properties).get());
             }
 
             return this;

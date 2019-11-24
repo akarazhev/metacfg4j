@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -600,7 +599,7 @@ final class DbConfigRepository implements ConfigRepository {
         }
 
         private static Connection open(final DataSource dataSource) throws SQLException {
-            final Connection connection = Objects.requireNonNull(dataSource).getConnection();
+            final Connection connection = Validator.of(dataSource).get().getConnection();
             connection.setAutoCommit(false);
             return connection;
         }
