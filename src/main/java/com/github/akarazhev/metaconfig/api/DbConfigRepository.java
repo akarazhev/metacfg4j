@@ -24,7 +24,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -48,10 +47,10 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_CONFIGS_
 /**
  * {@inheritDoc}
  */
-final class ConfigRepositoryImpl implements ConfigRepository {
+final class DbConfigRepository implements ConfigRepository {
     private final DataSource dataSource;
 
-    private ConfigRepositoryImpl(final Builder builder) {
+    private DbConfigRepository(final Builder builder) {
         this.dataSource = builder.dataSource;
         createDataBase(this.dataSource);
     }
@@ -697,13 +696,13 @@ final class ConfigRepositoryImpl implements ConfigRepository {
     }
 
     /**
-     * Wraps and builds the instance of the config repository.
+     * Wraps and builds the instance of the DB config repository.
      */
     public final static class Builder {
         private final DataSource dataSource;
 
         /**
-         * Constructs a config repository with a required parameter.
+         * Constructs a DB config repository with a required parameter.
          *
          * @param dataSource a datasource.
          */
@@ -712,12 +711,12 @@ final class ConfigRepositoryImpl implements ConfigRepository {
         }
 
         /**
-         * Builds a config repository with a required parameter.
+         * Builds a DB config repository with a required parameter.
          *
-         * @return a builder of the config repository.
+         * @return a builder of the DB config repository.
          */
         public ConfigRepository build() {
-            return new ConfigRepositoryImpl(this);
+            return new DbConfigRepository(this);
         }
     }
 }

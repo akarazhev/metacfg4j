@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-final class ConfigRepositoryTest {
+final class DbConfigRepositoryTest {
     private static final String FIRST_CONFIG = "The First Config";
     private static final String SECOND_CONFIG = "The Second Config";
 
@@ -49,7 +49,7 @@ final class ConfigRepositoryTest {
         }
 
         if (configRepository == null) {
-            configRepository = new ConfigRepositoryImpl.Builder(connectionPool.getDataSource()).build();
+            configRepository = new DbConfigRepository.Builder(connectionPool.getDataSource()).build();
         }
     }
 

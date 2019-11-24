@@ -213,10 +213,9 @@ public final class MetaConfig implements ConfigService, Closeable {
                     connectionPool = ConnectionPools.newPool(poolConfig);
                     dataSource = connectionPool.getDataSource();
                 }
-                // Init the config repository
-                final ConfigRepository configRepository = new ConfigRepositoryImpl.Builder(dataSource).build();
                 // Init the config service
-                final ConfigService configService = new ConfigServiceImpl.Builder(configRepository).build();
+                final ConfigService configService =
+                        new ConfigServiceImpl.Builder(new DbConfigRepository.Builder(dataSource).build()).build();
                 // Init the web server
                 if (isDefaultConfig) {
                     webServer = WebServers.newServer(configService).start();
