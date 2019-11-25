@@ -14,7 +14,6 @@ import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.Property;
 import com.github.akarazhev.metaconfig.engine.db.DbServer;
 import com.github.akarazhev.metaconfig.extension.Validator;
-import org.h2.tools.Server;
 
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -29,9 +28,9 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_CONFIG_NA
 /**
  * The internal implementation of the h2db server.
  */
-public final class H2dbServer implements DbServer {
-    private final static Logger LOGGER = Logger.getLogger(H2dbServer.class.getSimpleName());
-    private Server dbServer;
+public final class Server implements DbServer {
+    private final static Logger LOGGER = Logger.getLogger(Server.class.getSimpleName());
+    private org.h2.tools.Server dbServer;
     /**
      * Settings constants for the h2db server.
      */
@@ -62,7 +61,7 @@ public final class H2dbServer implements DbServer {
      *
      * @throws SQLException when a h2db server encounters a problem.
      */
-    public H2dbServer() throws SQLException {
+    public Server() throws SQLException {
         this(new Config.Builder(Settings.CONFIG_NAME, Arrays.asList(
                 new Property.Builder(Settings.TYPE, Settings.TYPE_TCP).build(),
                 new Property.Builder(Settings.ARGS, Settings.ARGS_VALUE).build())).build());
@@ -74,7 +73,7 @@ public final class H2dbServer implements DbServer {
      * @param config config a configuration of a h2db server.
      * @throws SQLException when a h2db server encounters a problem.
      */
-    public H2dbServer(final Config config) throws SQLException {
+    public Server(final Config config) throws SQLException {
         // Validate the config
         final Config h2DbConfig = Validator.of(config).
                 validate(c -> Settings.CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
@@ -91,13 +90,13 @@ public final class H2dbServer implements DbServer {
                 orElse(Settings.TYPE_TCP);
         switch (type) {
             case Settings.TYPE_WEB:
-                dbServer = Server.createWebServer(args);
+                dbServer = org.h2.tools.Server.createWebServer(args);
                 break;
             case Settings.TYPE_PG:
-                dbServer = Server.createPgServer(args);
+                dbServer = org.h2.tools.Server.createPgServer(args);
                 break;
             case Settings.TYPE_TCP:
-                dbServer = Server.createTcpServer(args);
+                dbServer = org.h2.tools.Server.createTcpServer(args);
                 break;
         }
     }

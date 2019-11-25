@@ -61,7 +61,7 @@ public MetaConfig metaConfig() {
                 new Property.Builder(ConnectionPools.Settings.PASSWORD, "sa").build())).
         build();
     // Create the web server config
-    final Config webServer = new Config.Builder(ConfigServer.Settings.CONFIG_NAME,
+    final Config webServer = new Config.Builder(Server.Settings.CONFIG_NAME,
         Arrays.asList(
                 new Property.Builder(Settings.HOSTNAME, "localhost").build(),
                 new Property.Builder(Settings.PORT, 8000).build(),

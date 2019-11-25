@@ -11,7 +11,7 @@
 package com.github.akarazhev.metaconfig.engine.db;
 
 import com.github.akarazhev.metaconfig.api.Config;
-import com.github.akarazhev.metaconfig.engine.db.h2db.H2dbServer;
+import com.github.akarazhev.metaconfig.engine.db.h2db.Server;
 
 import java.sql.SQLException;
 
@@ -32,7 +32,7 @@ public final class DbServers {
      * @return a db server.
      */
     public static DbServer newServer() throws SQLException {
-        return new H2dbServer();
+        return new Server();
     }
 
     /**
@@ -42,6 +42,6 @@ public final class DbServers {
      * @return a db server.
      */
     public static DbServer newServer(final Config config) throws SQLException {
-        return new H2dbServer(config) ;
+        return new Server(config) ;
     }
 }

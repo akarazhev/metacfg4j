@@ -52,8 +52,8 @@ import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG_NA
 /**
  * The internal implementation of the web server.
  */
-public final class ConfigServer implements WebServer {
-    private final static Logger LOGGER = Logger.getLogger(ConfigServer.class.getSimpleName());
+public final class Server implements WebServer {
+    private final static Logger LOGGER = Logger.getLogger(Server.class.getSimpleName());
     private HttpsServer httpsServer;
 
     /**
@@ -103,7 +103,7 @@ public final class ConfigServer implements WebServer {
      * @param configService a configuration service.
      * @throws Exception when a web server encounters a problem.
      */
-    public ConfigServer(final ConfigService configService) throws Exception {
+    public Server(final ConfigService configService) throws Exception {
         // Set the default config
         this(new Config.Builder(Settings.CONFIG_NAME, Arrays.asList(
                 new Property.Builder(Settings.HOSTNAME, Settings.HOSTNAME_VALUE).build(),
@@ -122,7 +122,7 @@ public final class ConfigServer implements WebServer {
      * @param configService a configuration service.
      * @throws Exception when a web server encounters a problem.
      */
-    public ConfigServer(final Config config, final ConfigService configService) throws Exception {
+    public Server(final Config config, final ConfigService configService) throws Exception {
         // Validate the config
         final Config serverConfig = Validator.of(config).
                 validate(c -> Settings.CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).

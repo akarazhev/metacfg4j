@@ -13,7 +13,7 @@ package com.github.akarazhev.metaconfig.engine.web;
 import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.ConfigService;
 import com.github.akarazhev.metaconfig.api.Property;
-import com.github.akarazhev.metaconfig.engine.web.server.ConfigServer;
+import com.github.akarazhev.metaconfig.engine.web.server.Server;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -103,7 +103,7 @@ public final class WebServers {
      * @throws Exception when a web server encounters a problem.
      */
     public static WebServer newServer(final ConfigService configService) throws Exception {
-        return new ConfigServer(configService);
+        return new Server(configService);
     }
 
     /**
@@ -115,6 +115,6 @@ public final class WebServers {
      * @throws Exception when a web server encounters a problem.
      */
     public static WebServer newServer(final Config config, final ConfigService configService) throws Exception {
-        return new ConfigServer(config, configService);
+        return new Server(config, configService);
     }
 }
