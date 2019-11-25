@@ -48,17 +48,17 @@ You can instantiate the meta configuration with the custom configuration:
 @Bean(destroyMethod = "close")
 public MetaConfig metaConfig() {
     // Create the DB server config
-    final Config dbServer = new Config.Builder(H2dbServer.Settings.CONFIG_NAME,
+    final Config dbServer = new Config.Builder(Server.Settings.CONFIG_NAME,
         Arrays.asList(
-                new Property.Builder(H2dbServer.Settings.TYPE, H2dbServer.Settings.TYPE_TCP).build(),
-                new Property.Builder(H2dbServer.Settings.ARGS, "-tcp", "-tcpPort", "8043").build())).
+                new Property.Builder(Settings.TYPE, Settings.TYPE_TCP).build(),
+                new Property.Builder(Settings.ARGS, "-tcp", "-tcpPort", "8043").build())).
         build();
     // Create the connection pool config
     final Config connectionPool = new Config.Builder(ConnectionPools.Settings.CONFIG_NAME,
         Arrays.asList(
-                new Property.Builder(ConnectionPools.Settings.URL, "jdbc:h2:./data/metacfg4j").build(),
-                new Property.Builder(ConnectionPools.Settings.USER, "sa").build(),
-                new Property.Builder(ConnectionPools.Settings.PASSWORD, "sa").build())).
+                new Property.Builder(Settings.URL, "jdbc:h2:./data/metacfg4j").build(),
+                new Property.Builder(Settings.USER, "sa").build(),
+                new Property.Builder(Settings.PASSWORD, "sa").build())).
         build();
     // Create the web server config
     final Config webServer = new Config.Builder(Server.Settings.CONFIG_NAME,

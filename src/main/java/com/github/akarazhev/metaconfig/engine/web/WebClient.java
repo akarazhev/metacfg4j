@@ -36,6 +36,12 @@ import java.util.Optional;
 import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.REQUEST_SEND_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_CONFIG_NAME;
+import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.ACCEPT;
+import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.ACCEPT_ALL_HOSTS;
+import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.CONFIG_NAME;
+import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.CONTENT;
+import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.CONTENT_TYPE;
+import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.METHOD;
 
 /**
  * The internal implementation of the web client. The config name must be "web-client".
@@ -84,7 +90,7 @@ public final class WebClient {
             if (property.isPresent()) {
                 // Accept all hosts
                 final List<Throwable> exceptions = new ArrayList<>(1);
-                config.getProperty(Settings.ACCEPT_ALL_HOSTS).ifPresent(prop -> {
+                config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(prop -> {
                             if (prop.asBool()) {
                                 try {
                                     acceptAllHosts();
@@ -99,18 +105,18 @@ public final class WebClient {
                 }
                 // Open a connection
                 final HttpsURLConnection connection = (HttpsURLConnection) new URL(property.get().getValue()).openConnection();
-                property = config.getProperty(Settings.METHOD);
+                property = config.getProperty(METHOD);
                 if (property.isPresent()) {
                     // Set a method
                     connection.setRequestMethod(property.get().getValue());
                 }
                 // Set the accept header
-                config.getProperty(Settings.ACCEPT).ifPresent(acceptProp ->
-                        connection.setRequestProperty(Constants.ACCEPT, acceptProp.getValue()));
+                config.getProperty(ACCEPT).ifPresent(acceptProp ->
+                        connection.setRequestProperty(ACCEPT, acceptProp.getValue()));
                 // Set the content type
-                config.getProperty(Settings.CONTENT_TYPE).ifPresent(contentTypeProp ->
-                        connection.setRequestProperty(Constants.CONTENT_TYPE, contentTypeProp.getValue()));
-                property = config.getProperty(Settings.CONTENT);
+                config.getProperty(CONTENT_TYPE).ifPresent(contentTypeProp ->
+                        connection.setRequestProperty(CONTENT_TYPE, contentTypeProp.getValue()));
+                property = config.getProperty(CONTENT);
                 if (property.isPresent()) {
                     // Enable the output stream
                     connection.setDoOutput(true);
@@ -217,8 +223,8 @@ public final class WebClient {
         public Builder(final Config config) {
             // Validate the config
             this.config = Validator.of(config).
-                    validate(c -> Settings.CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
-                    validate(c -> c.getProperty(Settings.METHOD).isPresent(), "Method is not presented.").
+                    validate(c -> CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
+                    validate(c -> c.getProperty(METHOD).isPresent(), "Method is not presented.").
                     validate(c -> c.getProperty(Settings.URL).isPresent(), "URL is not presented").
                     get();
         }

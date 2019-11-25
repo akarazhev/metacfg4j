@@ -24,6 +24,13 @@ import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ER
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STARTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STOPPED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_CONFIG_NAME;
+import static com.github.akarazhev.metaconfig.engine.db.h2db.Server.Settings.ARGS;
+import static com.github.akarazhev.metaconfig.engine.db.h2db.Server.Settings.ARGS_VALUE;
+import static com.github.akarazhev.metaconfig.engine.db.h2db.Server.Settings.CONFIG_NAME;
+import static com.github.akarazhev.metaconfig.engine.db.h2db.Server.Settings.TYPE;
+import static com.github.akarazhev.metaconfig.engine.db.h2db.Server.Settings.TYPE_PG;
+import static com.github.akarazhev.metaconfig.engine.db.h2db.Server.Settings.TYPE_TCP;
+import static com.github.akarazhev.metaconfig.engine.db.h2db.Server.Settings.TYPE_WEB;
 
 /**
  * The internal implementation of the h2db server.
@@ -62,9 +69,8 @@ public final class Server implements DbServer {
      * @throws SQLException when a h2db server encounters a problem.
      */
     public Server() throws SQLException {
-        this(new Config.Builder(Settings.CONFIG_NAME, Arrays.asList(
-                new Property.Builder(Settings.TYPE, Settings.TYPE_TCP).build(),
-                new Property.Builder(Settings.ARGS, Settings.ARGS_VALUE).build())).build());
+        this(new Config.Builder(CONFIG_NAME, Arrays.asList(new Property.Builder(TYPE, TYPE_TCP).build(),
+                new Property.Builder(ARGS, ARGS_VALUE).build())).build());
     }
 
     /**
@@ -76,26 +82,26 @@ public final class Server implements DbServer {
     public Server(final Config config) throws SQLException {
         // Validate the config
         final Config h2DbConfig = Validator.of(config).
-                validate(c -> Settings.CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
-                validate(c -> c.getProperty(Settings.TYPE).isPresent(), "Type is not presented.").
-                validate(c -> c.getProperty(Settings.ARGS).isPresent(), "Args is not presented.").
+                validate(c -> CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
+                validate(c -> c.getProperty(TYPE).isPresent(), "Type is not presented.").
+                validate(c -> c.getProperty(ARGS).isPresent(), "Args is not presented.").
                 get();
         // Get the args
-        final String[] args = h2DbConfig.getProperty(Settings.ARGS).
+        final String[] args = h2DbConfig.getProperty(ARGS).
                 map(Property::asArray).
                 orElse(new String[0]);
         // Get the type
-        final String type = h2DbConfig.getProperty(Settings.TYPE).
+        final String type = h2DbConfig.getProperty(TYPE).
                 map(Property::getValue).
-                orElse(Settings.TYPE_TCP);
+                orElse(TYPE_TCP);
         switch (type) {
-            case Settings.TYPE_WEB:
+            case TYPE_WEB:
                 dbServer = org.h2.tools.Server.createWebServer(args);
                 break;
-            case Settings.TYPE_PG:
+            case TYPE_PG:
                 dbServer = org.h2.tools.Server.createPgServer(args);
                 break;
-            case Settings.TYPE_TCP:
+            case TYPE_TCP:
                 dbServer = org.h2.tools.Server.createTcpServer(args);
                 break;
         }

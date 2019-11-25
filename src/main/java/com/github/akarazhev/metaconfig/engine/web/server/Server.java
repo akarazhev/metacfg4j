@@ -48,6 +48,21 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_CONFIG_NA
 import static com.github.akarazhev.metaconfig.engine.web.Constants.API.ACCEPT_CONFIG;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG_NAMES;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.ALIAS;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.ALIAS_VALUE;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.BACKLOG;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.BACKLOG_VALUE;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.CONFIG_NAME;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.HOSTNAME;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.HOSTNAME_VALUE;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.KEY_PASSWORD;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.KEY_PASSWORD_VALUE;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.KEY_STORE_FILE;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.KEY_STORE_FILE_VALUE;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.PORT;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.PORT_VALUE;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.STORE_PASSWORD;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.STORE_PASSWORD_VALUE;
 
 /**
  * The internal implementation of the web server.
@@ -105,14 +120,14 @@ public final class Server implements WebServer {
      */
     public Server(final ConfigService configService) throws Exception {
         // Set the default config
-        this(new Config.Builder(Settings.CONFIG_NAME, Arrays.asList(
-                new Property.Builder(Settings.HOSTNAME, Settings.HOSTNAME_VALUE).build(),
-                new Property.Builder(Settings.PORT, Settings.PORT_VALUE).build(),
-                new Property.Builder(Settings.BACKLOG, Settings.BACKLOG_VALUE).build(),
-                new Property.Builder(Settings.KEY_STORE_FILE, Settings.KEY_STORE_FILE_VALUE).build(),
-                new Property.Builder(Settings.ALIAS, Settings.ALIAS_VALUE).build(),
-                new Property.Builder(Settings.STORE_PASSWORD, Settings.STORE_PASSWORD_VALUE).build(),
-                new Property.Builder(Settings.KEY_PASSWORD, Settings.KEY_PASSWORD_VALUE).build())).build(), configService);
+        this(new Config.Builder(CONFIG_NAME, Arrays.asList(
+                new Property.Builder(HOSTNAME, HOSTNAME_VALUE).build(),
+                new Property.Builder(PORT, PORT_VALUE).build(),
+                new Property.Builder(BACKLOG, BACKLOG_VALUE).build(),
+                new Property.Builder(KEY_STORE_FILE, KEY_STORE_FILE_VALUE).build(),
+                new Property.Builder(ALIAS, ALIAS_VALUE).build(),
+                new Property.Builder(STORE_PASSWORD, STORE_PASSWORD_VALUE).build(),
+                new Property.Builder(KEY_PASSWORD, KEY_PASSWORD_VALUE).build())).build(), configService);
     }
 
     /**
@@ -125,24 +140,24 @@ public final class Server implements WebServer {
     public Server(final Config config, final ConfigService configService) throws Exception {
         // Validate the config
         final Config serverConfig = Validator.of(config).
-                validate(c -> Settings.CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
-                validate(c -> c.getProperty(Settings.KEY_STORE_FILE).isPresent(), "Key store file is not presented.").
-                validate(c -> c.getProperty(Settings.ALIAS).isPresent(), "Alias is not presented.").
-                validate(c -> c.getProperty(Settings.STORE_PASSWORD).isPresent(), "Store password is not presented.").
-                validate(c -> c.getProperty(Settings.KEY_PASSWORD).isPresent(), "Key password is not presented.").
+                validate(c -> CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
+                validate(c -> c.getProperty(KEY_STORE_FILE).isPresent(), "Key store file is not presented.").
+                validate(c -> c.getProperty(ALIAS).isPresent(), "Alias is not presented.").
+                validate(c -> c.getProperty(STORE_PASSWORD).isPresent(), "Store password is not presented.").
+                validate(c -> c.getProperty(KEY_PASSWORD).isPresent(), "Key password is not presented.").
                 get();
         // Get the hostname
-        final String hostname = serverConfig.getProperty(Settings.HOSTNAME).
+        final String hostname = serverConfig.getProperty(HOSTNAME).
                 map(Property::getValue).
-                orElse(Settings.HOSTNAME_VALUE);
+                orElse(HOSTNAME_VALUE);
         // Get the port
-        final int port = serverConfig.getProperty(Settings.PORT).
+        final int port = serverConfig.getProperty(PORT).
                 map(property -> (int) property.asLong()).
-                orElse(Settings.PORT_VALUE);
+                orElse(PORT_VALUE);
         // Get the backlog
-        final int backlog = serverConfig.getProperty(Settings.BACKLOG).
+        final int backlog = serverConfig.getProperty(BACKLOG).
                 map(property -> (int) property.asLong()).
-                orElse(Settings.BACKLOG_VALUE);
+                orElse(BACKLOG_VALUE);
         // Init the server
         httpsServer = HttpsServer.create(new InetSocketAddress(hostname, port), backlog);
         httpsServer.createContext(ACCEPT_CONFIG, new AcceptConfigController.Builder(configService).build()::handle);
@@ -188,7 +203,7 @@ public final class Server implements WebServer {
     }
 
     private SSLContext getSSLContext(final Config serverConfig) throws Exception {
-        final Optional<Property> keyStoreFile = serverConfig.getProperty(Settings.KEY_STORE_FILE);
+        final Optional<Property> keyStoreFile = serverConfig.getProperty(KEY_STORE_FILE);
         if (!keyStoreFile.isPresent()) {
             throw new Exception(CERTIFICATE_LOAD_ERROR);
         }
@@ -197,7 +212,7 @@ public final class Server implements WebServer {
         final FileInputStream fileInputStream = new FileInputStream(keyStoreFile.get().getValue());
 
         final KeyStore keyStore = KeyStore.getInstance("JKS");
-        serverConfig.getProperty(Settings.STORE_PASSWORD).ifPresent(property -> {
+        serverConfig.getProperty(STORE_PASSWORD).ifPresent(property -> {
             try {
                 keyStore.load(fileInputStream, property.getValue().toCharArray());
             } catch (IOException | NoSuchAlgorithmException | CertificateException e) {
@@ -205,7 +220,7 @@ public final class Server implements WebServer {
             }
         });
 
-        serverConfig.getProperty(Settings.ALIAS).ifPresent(property -> {
+        serverConfig.getProperty(ALIAS).ifPresent(property -> {
             try {
                 LOGGER.log(Level.INFO, keyStore.getCertificate(property.getValue()).toString());
             } catch (KeyStoreException e) {
@@ -214,7 +229,7 @@ public final class Server implements WebServer {
         });
 
         final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-        serverConfig.getProperty(Settings.STORE_PASSWORD).ifPresent(property -> {
+        serverConfig.getProperty(STORE_PASSWORD).ifPresent(property -> {
             try {
                 keyManagerFactory.init(keyStore, property.getValue().toCharArray());
             } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {

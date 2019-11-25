@@ -21,6 +21,13 @@ import java.util.Arrays;
 import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_FACTORY_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_CONFIG_NAME;
+import static com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPools.Settings.CONFIG_NAME;
+import static com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPools.Settings.PASSWORD;
+import static com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPools.Settings.PASSWORD_VALUE;
+import static com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPools.Settings.URL;
+import static com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPools.Settings.URL_VALUE;
+import static com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPools.Settings.USER;
+import static com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPools.Settings.USER_VALUE;
 
 /**
  * Provides factory methods to create a connection pool.
@@ -62,10 +69,10 @@ public final class ConnectionPools {
      * @return a connection pool.
      */
     public static ConnectionPool newPool() {
-        return newPool(new Config.Builder(Settings.CONFIG_NAME, Arrays.asList(
-                new Property.Builder(Settings.URL, Settings.URL_VALUE).build(),
-                new Property.Builder(Settings.USER, Settings.USER_VALUE).build(),
-                new Property.Builder(Settings.PASSWORD, Settings.PASSWORD_VALUE).build())).build());
+        return newPool(new Config.Builder(CONFIG_NAME, Arrays.asList(
+                new Property.Builder(URL, URL_VALUE).build(),
+                new Property.Builder(USER, USER_VALUE).build(),
+                new Property.Builder(PASSWORD, PASSWORD_VALUE).build())).build());
     }
 
     /**
@@ -76,23 +83,23 @@ public final class ConnectionPools {
     public static ConnectionPool newPool(final Config config) {
         // Validate the config
         final Config poolConfig = Validator.of(config).
-                validate(c -> Settings.CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
-                validate(c -> c.getProperty(Settings.URL).isPresent(), "URL is not presented.").
-                validate(c -> c.getProperty(Settings.USER).isPresent(), "User is not presented.").
-                validate(c -> c.getProperty(Settings.PASSWORD).isPresent(), "Password is not presented.").
+                validate(c -> CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
+                validate(c -> c.getProperty(URL).isPresent(), "URL is not presented.").
+                validate(c -> c.getProperty(USER).isPresent(), "User is not presented.").
+                validate(c -> c.getProperty(PASSWORD).isPresent(), "Password is not presented.").
                 get();
         // Get the url
-        final String url = poolConfig.getProperty(Settings.URL).
+        final String url = poolConfig.getProperty(URL).
                 map(Property::getValue).
-                orElse(Settings.URL_VALUE);
+                orElse(URL_VALUE);
         // Get the user
-        final String user = poolConfig.getProperty(Settings.USER).
+        final String user = poolConfig.getProperty(USER).
                 map(Property::getValue).
-                orElse(Settings.USER_VALUE);
+                orElse(USER_VALUE);
         // Get the password
-        final String password = poolConfig.getProperty(Settings.PASSWORD).
+        final String password = poolConfig.getProperty(PASSWORD).
                 map(Property::getValue).
-                orElse(Settings.PASSWORD_VALUE);
+                orElse(PASSWORD_VALUE);
         // Create the connection pool
         return new ConnectionPool() {
             private final JdbcConnectionPool connectionPool = JdbcConnectionPool.create(url, user, password);
