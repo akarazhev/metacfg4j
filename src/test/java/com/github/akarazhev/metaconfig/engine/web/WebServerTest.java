@@ -36,6 +36,8 @@ import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.CONF
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.CONTENT;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.METHOD;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.URL;
+import static com.github.akarazhev.metaconfig.engine.web.server.OperationResponse.Fields.RESULT;
+import static com.github.akarazhev.metaconfig.engine.web.server.OperationResponse.Fields.SUCCESS;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -66,7 +68,7 @@ final class WebServerTest {
         // Test status code
         assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
-        assertEquals(true, client.getJsonContent().get("success"));
+        assertEquals(true, client.getJsonContent().get(SUCCESS));
     }
 
     @Test
@@ -81,7 +83,7 @@ final class WebServerTest {
         // Test status code
         assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
-        assertEquals(true, client.getJsonContent().get("success"));
+        assertEquals(true, client.getJsonContent().get(SUCCESS));
     }
 
     @Test
@@ -97,7 +99,7 @@ final class WebServerTest {
         // Test status code
         assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
-        assertEquals(true, client.getJsonContent().get("success"));
+        assertEquals(true, client.getJsonContent().get(SUCCESS));
     }
 
     @Test
@@ -113,7 +115,7 @@ final class WebServerTest {
         assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
         final JsonObject jsonObject = client.getJsonContent();
-        assertEquals(true, jsonObject.get("success"));
+        assertEquals(true, jsonObject.get(SUCCESS));
     }
 
     @Test
@@ -137,7 +139,7 @@ final class WebServerTest {
         assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
         final JsonObject jsonObject = client.getJsonContent();
-        assertEquals(true, jsonObject.get("success"));
+        assertEquals(true, jsonObject.get(SUCCESS));
     }
 
     @Test
@@ -154,7 +156,7 @@ final class WebServerTest {
         assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
         final JsonObject jsonObject = client.getJsonContent();
-        assertEquals(true, jsonObject.get("success"));
-        assertEquals(1, ((BigDecimal) jsonObject.get("result")).intValue());
+        assertEquals(true, jsonObject.get(SUCCESS));
+        assertEquals(1, ((BigDecimal) jsonObject.get(RESULT)).intValue());
     }
 }

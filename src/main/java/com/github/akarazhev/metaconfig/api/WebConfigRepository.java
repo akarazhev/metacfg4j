@@ -15,6 +15,7 @@ import com.github.akarazhev.metaconfig.extension.Validator;
 import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
@@ -27,6 +28,9 @@ import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.ACCE
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.CONFIG_NAME;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.METHOD;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.URL;
+import static com.github.akarazhev.metaconfig.engine.web.server.OperationResponse.Fields.ERROR;
+import static com.github.akarazhev.metaconfig.engine.web.server.OperationResponse.Fields.RESULT;
+import static com.github.akarazhev.metaconfig.engine.web.server.OperationResponse.Fields.SUCCESS;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
@@ -53,33 +57,28 @@ final class WebConfigRepository implements ConfigRepository {
     @Override
     public Stream<String> findNames() {
         final Collection<Property> properties = new ArrayList<>(3);
-        properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
-
         this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
-
         this.config.getProperty(URL).ifPresent(property ->
                 properties.add(new Property.Builder(URL, property.getValue() + "/config_names").build()));
-
         properties.add(new Property.Builder(METHOD, GET).build());
-        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
 
         try {
-            final WebClient client = new WebClient.Builder(config).build();
+            final WebClient client = new WebClient.Builder(new Config.Builder(CONFIG_NAME, properties).build()).build();
             final int code = client.getStatusCode();
             if (code == HTTP_OK) {
                 final JsonObject content = client.getJsonContent();
-                if ((Boolean) content.get("success")) {
-                    return ((JsonArray) content.get("result")).stream().map(Objects::toString);
+                if ((Boolean) content.get(SUCCESS)) {
+                    return ((JsonArray) content.get(RESULT)).stream().map(Objects::toString);
+                } else {
+                    throw new IOException((String) content.get(ERROR));
                 }
             } else {
-                throw new Exception(String.format(SERVER_WRONG_STATUS_CODE, code));
+                throw new IOException(String.format(SERVER_WRONG_STATUS_CODE, code));
             }
         } catch (Exception e) {
             throw new RuntimeException(RECEIVED_CONFIGS_ERROR, e);
         }
-
-        return Stream.empty();
     }
 
     /**
