@@ -30,7 +30,7 @@ final class WebConfigRepositoryTest {
 
     @BeforeAll
     static void beforeAll() throws Exception {
-        webServer = WebServers.newServer().start();
+        webServer = WebServers.newTestServer().start();
         if (configRepository == null) {
             final Collection<Property> properties = new ArrayList<>(1);
             properties.add(new Property.Builder(URL, "https://localhost:8000/api/metacfg").build());

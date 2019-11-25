@@ -27,6 +27,7 @@ import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.ACCE
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.CONFIG_NAME;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.METHOD;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.URL;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  * {@inheritDoc}
@@ -54,13 +55,11 @@ final class WebConfigRepository implements ConfigRepository {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
 
-        this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property -> {
-            properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build());
-        });
+        this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
+                properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
 
-        this.config.getProperty(URL).ifPresent(property -> {
-            properties.add(new Property.Builder(URL, property.getValue() + "/config_names").build());
-        });
+        this.config.getProperty(URL).ifPresent(property ->
+                properties.add(new Property.Builder(URL, property.getValue() + "/config_names").build()));
 
         properties.add(new Property.Builder(METHOD, GET).build());
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
@@ -68,7 +67,7 @@ final class WebConfigRepository implements ConfigRepository {
         try {
             final WebClient client = new WebClient.Builder(config).build();
             final int code = client.getStatusCode();
-            if (code == 200) {
+            if (code == HTTP_OK) {
                 final JsonObject content = client.getJsonContent();
                 if ((Boolean) content.get("success")) {
                     return ((JsonArray) content.get("result")).stream().map(Objects::toString);

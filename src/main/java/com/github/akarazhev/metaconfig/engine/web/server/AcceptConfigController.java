@@ -8,7 +8,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License. */
-package com.github.akarazhev.metaconfig.engine.web.internal;
+package com.github.akarazhev.metaconfig.engine.web.server;
 
 import com.github.akarazhev.metaconfig.Constants;
 import com.github.akarazhev.metaconfig.api.ConfigService;
@@ -20,7 +20,7 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.CONFIG_ACCEPTED
 import static com.github.akarazhev.metaconfig.Constants.Messages.PATH_PARAM_NOT_PRESENT;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.API.ACCEPT_CONFIG;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.POST;
-import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.METHOD_NOT_ALLOWED;
+import static java.net.HttpURLConnection.HTTP_BAD_METHOD;
 
 /**
  * Provides a handler functionality for the POST accept method.
@@ -45,7 +45,7 @@ final class AcceptConfigController extends AbstractController {
                     orElseGet(() -> new OperationResponse.Builder<>().error(PATH_PARAM_NOT_PRESENT).build());
             writeResponse(httpExchange, response);
         } else {
-            throw new MethodNotAllowedException(METHOD_NOT_ALLOWED.getCode(), Constants.Messages.METHOD_NOT_ALLOWED);
+            throw new MethodNotAllowedException(HTTP_BAD_METHOD, Constants.Messages.METHOD_NOT_ALLOWED);
         }
     }
 

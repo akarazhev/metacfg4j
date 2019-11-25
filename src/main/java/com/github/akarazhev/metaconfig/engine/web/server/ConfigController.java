@@ -8,7 +8,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License. */
-package com.github.akarazhev.metaconfig.engine.web.internal;
+package com.github.akarazhev.metaconfig.engine.web.server;
 
 import com.github.akarazhev.metaconfig.Constants;
 import com.github.akarazhev.metaconfig.api.Config;
@@ -36,8 +36,8 @@ import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.DELETE;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.GET;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.PUT;
-import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.BAD_REQUEST;
-import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.METHOD_NOT_ALLOWED;
+import static java.net.HttpURLConnection.HTTP_BAD_METHOD;
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 
 /**
  * Provides a handler functionality for the GET, PUT, DELETE config methods.
@@ -83,7 +83,7 @@ final class ConfigController extends AbstractController {
                         collect(Collectors.toList());
                 writeResponse(httpExchange, new OperationResponse.Builder<>().result(updatedConfigs).build());
             } catch (final JsonException e) {
-                throw new InvalidRequestException(BAD_REQUEST.getCode(), JSON_TO_CONFIG_ERROR);
+                throw new InvalidRequestException(HTTP_BAD_REQUEST, JSON_TO_CONFIG_ERROR);
             }
         } else if (DELETE.equals(method)) {
             final OperationResponse response = getPathParams(uri.getPath(), CONFIG).findAny().
@@ -98,7 +98,7 @@ final class ConfigController extends AbstractController {
                     orElseGet(requestParamNotPresent);
             writeResponse(httpExchange, response);
         } else {
-            throw new MethodNotAllowedException(METHOD_NOT_ALLOWED.getCode(), Constants.Messages.METHOD_NOT_ALLOWED);
+            throw new MethodNotAllowedException(HTTP_BAD_METHOD, Constants.Messages.METHOD_NOT_ALLOWED);
         }
     }
 

@@ -36,6 +36,7 @@ import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.CONF
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.CONTENT;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.METHOD;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.URL;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class WebServerTest {
@@ -44,7 +45,7 @@ final class WebServerTest {
 
     @BeforeAll
     static void beforeAll() throws Exception {
-        webServer = WebServers.newServer().start();
+        webServer = WebServers.newTestServer().start();
     }
 
     @AfterAll
@@ -63,7 +64,7 @@ final class WebServerTest {
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
         final WebClient client = new WebClient.Builder(config).build();
         // Test status code
-        assertEquals(200, client.getStatusCode());
+        assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
         assertEquals(true, client.getJsonContent().get("success"));
     }
@@ -78,7 +79,7 @@ final class WebServerTest {
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
         final WebClient client = new WebClient.Builder(config).build();
         // Test status code
-        assertEquals(200, client.getStatusCode());
+        assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
         assertEquals(true, client.getJsonContent().get("success"));
     }
@@ -94,7 +95,7 @@ final class WebServerTest {
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
         final WebClient client = new WebClient.Builder(config).build();
         // Test status code
-        assertEquals(200, client.getStatusCode());
+        assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
         assertEquals(true, client.getJsonContent().get("success"));
     }
@@ -109,7 +110,7 @@ final class WebServerTest {
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
         final WebClient client = new WebClient.Builder(config).build();
         // Test status code
-        assertEquals(200, client.getStatusCode());
+        assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
         final JsonObject jsonObject = client.getJsonContent();
         assertEquals(true, jsonObject.get("success"));
@@ -133,7 +134,7 @@ final class WebServerTest {
         config = new Config.Builder(CONFIG_NAME, props).build();
         final WebClient client = new WebClient.Builder(config).build();
         // Test status code
-        assertEquals(200, client.getStatusCode());
+        assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
         final JsonObject jsonObject = client.getJsonContent();
         assertEquals(true, jsonObject.get("success"));
@@ -150,7 +151,7 @@ final class WebServerTest {
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
         final WebClient client = new WebClient.Builder(config).build();
         // Test status code
-        assertEquals(200, client.getStatusCode());
+        assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
         final JsonObject jsonObject = client.getJsonContent();
         assertEquals(true, jsonObject.get("success"));

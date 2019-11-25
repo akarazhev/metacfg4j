@@ -8,7 +8,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License. */
-package com.github.akarazhev.metaconfig.engine.web.internal;
+package com.github.akarazhev.metaconfig.engine.web.server;
 
 import com.github.akarazhev.metaconfig.api.ConfigService;
 import com.github.cliftonlabs.json_simple.JsonArray;
@@ -30,8 +30,8 @@ import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.engine.web.Constants.APPLICATION_JSON;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.CONTENT_TYPE;
-import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.BAD_REQUEST;
-import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.OK;
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  * Provides a basic functionality for all controllers.
@@ -123,12 +123,12 @@ abstract class AbstractController {
         try {
             httpExchange.getResponseHeaders().put(CONTENT_TYPE, Collections.singletonList(APPLICATION_JSON));
             final byte[] jsonBytes = response.toJson().getBytes();
-            httpExchange.sendResponseHeaders(OK.getCode(), jsonBytes.length);
+            httpExchange.sendResponseHeaders(HTTP_OK, jsonBytes.length);
             OutputStream outputStream = httpExchange.getResponseBody();
             outputStream.write(jsonBytes);
             outputStream.flush();
         } catch (final Exception e) {
-            throw new InvalidRequestException(BAD_REQUEST.getCode(), e.getMessage());
+            throw new InvalidRequestException(HTTP_BAD_REQUEST, e.getMessage());
         }
     }
 

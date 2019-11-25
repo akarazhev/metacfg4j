@@ -13,7 +13,7 @@ package com.github.akarazhev.metaconfig.engine.web;
 import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.ConfigService;
 import com.github.akarazhev.metaconfig.api.Property;
-import com.github.akarazhev.metaconfig.engine.web.internal.ConfigServer;
+import com.github.akarazhev.metaconfig.engine.web.server.ConfigServer;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -34,12 +34,12 @@ public final class WebServers {
     }
 
     /**
-     * Returns an empty web server.
+     * Returns a test web server.
      *
-     * @return a web server.
-     * @throws Exception when a web server encounters a problem.
+     * @return a test web server.
+     * @throws Exception when a test web server encounters a problem.
      */
-    public static WebServer newServer() throws Exception {
+    public static WebServer newTestServer() throws Exception {
         return newServer(new ConfigService() {
             private Consumer<Config> consumer;
             private final Map<String, Config> map = new HashMap<String, Config>() {{
