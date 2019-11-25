@@ -71,11 +71,11 @@ public final class WebClient {
         // The method key
         public static final String METHOD = "method";
         // The accept key
-        static final String ACCEPT = "accept";
+        public static final String ACCEPT = "accept";
         // The content type key
-        static final String CONTENT_TYPE = "content-type";
+        public static final String CONTENT_TYPE = "content-type";
         // The content key
-        static final String CONTENT = "content";
+        public static final String CONTENT = "content";
     }
 
     // Status code

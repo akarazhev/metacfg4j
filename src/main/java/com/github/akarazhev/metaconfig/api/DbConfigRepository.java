@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.DB_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.SAVE_CONFIGS_ERROR;
 import static java.util.AbstractMap.SimpleEntry;
 import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_ATTRIBUTES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
@@ -40,10 +41,8 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.DB_CONNECTION_E
 import static com.github.akarazhev.metaconfig.Constants.Messages.DB_ROLLBACK_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DELETE_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_ATTRIBUTES_ERROR;
-import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_CONFIG_PROPERTIES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIGS_ERROR;
-import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_CONFIGS_ERROR;
 
 /**
  * {@inheritDoc}
@@ -304,7 +303,7 @@ final class DbConfigRepository implements ConfigRepository {
                         }
                     }
                 } else {
-                    throw new SQLException(INSERT_CONFIGS_ERROR);
+                    throw new SQLException(SAVE_CONFIGS_ERROR);
                 }
 
                 connection.commit();
@@ -421,7 +420,7 @@ final class DbConfigRepository implements ConfigRepository {
                     }
 
                     if (statement.getUpdateCount() == 0) {
-                        throw new SQLException(UPDATE_CONFIGS_ERROR);
+                        throw new SQLException(SAVE_CONFIGS_ERROR);
                     }
 
                     for (int i = 0; i < configs.length; i++) {
@@ -430,7 +429,7 @@ final class DbConfigRepository implements ConfigRepository {
                                 build();
                     }
                 } else {
-                    throw new SQLException(UPDATE_CONFIGS_ERROR);
+                    throw new SQLException(SAVE_CONFIGS_ERROR);
                 }
 
                 connection.commit();

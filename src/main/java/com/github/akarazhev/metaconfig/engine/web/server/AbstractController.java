@@ -28,8 +28,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-import static com.github.akarazhev.metaconfig.engine.web.Constants.APPLICATION_JSON;
-import static com.github.akarazhev.metaconfig.engine.web.Constants.CONTENT_TYPE;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.Header.APPLICATION_JSON;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.Header.CONTENT_TYPE;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_OK;
 
