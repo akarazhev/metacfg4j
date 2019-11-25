@@ -112,10 +112,10 @@ public final class WebClient {
                 }
                 // Set the accept header
                 config.getProperty(ACCEPT).ifPresent(acceptProp ->
-                        connection.setRequestProperty(ACCEPT, acceptProp.getValue()));
+                        connection.setRequestProperty("Accept", acceptProp.getValue()));
                 // Set the content type
                 config.getProperty(CONTENT_TYPE).ifPresent(contentTypeProp ->
-                        connection.setRequestProperty(CONTENT_TYPE, contentTypeProp.getValue()));
+                        connection.setRequestProperty("Content-Type", contentTypeProp.getValue()));
                 property = config.getProperty(CONTENT);
                 if (property.isPresent()) {
                     // Enable the output stream

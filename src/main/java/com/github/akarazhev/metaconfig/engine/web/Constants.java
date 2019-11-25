@@ -30,7 +30,6 @@ public final class Constants {
             throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
         }
 
-        public static final String CONTENT_TYPE = "Content-Type";
         public static final String APPLICATION_JSON = "application/json";
     }
 

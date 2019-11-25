@@ -29,7 +29,6 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Header.APPLICATION_JSON;
-import static com.github.akarazhev.metaconfig.engine.web.Constants.Header.CONTENT_TYPE;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_OK;
 
@@ -121,7 +120,7 @@ abstract class AbstractController {
      */
     void writeResponse(final HttpExchange httpExchange, final OperationResponse response) throws IOException {
         try {
-            httpExchange.getResponseHeaders().put(CONTENT_TYPE, Collections.singletonList(APPLICATION_JSON));
+            httpExchange.getResponseHeaders().put("Content-Type", Collections.singletonList(APPLICATION_JSON));
             final byte[] jsonBytes = response.toJson().getBytes();
             httpExchange.sendResponseHeaders(HTTP_OK, jsonBytes.length);
             OutputStream outputStream = httpExchange.getResponseBody();
