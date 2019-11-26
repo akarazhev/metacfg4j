@@ -11,6 +11,7 @@
 package com.github.akarazhev.metaconfig.api;
 
 import com.github.akarazhev.metaconfig.extension.ExtJsonable;
+import com.github.akarazhev.metaconfig.extension.Validator;
 import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
 
@@ -103,6 +104,39 @@ interface Configurable extends ExtJsonable {
             return jsonProperties != null ?
                     jsonProperties.stream().map(json -> new Property.Builder((JsonObject) json).build()) :
                     Stream.empty();
+        }
+
+        /**
+         * Sets properties which belong to configurations.
+         *
+         * @param paths      path to properties.
+         * @param properties properties to set.
+         */
+        void setProperties(final String[] paths, final Collection<Property> properties) {
+            final String[] propertyPaths = Validator.of(paths).get();
+            if (propertyPaths.length > 0) {
+                setProperties(this.properties, 0, paths, properties);
+            } else {
+                this.properties.addAll(Validator.of(properties).get());
+            }
+        }
+
+        private void setProperties(final Collection<Property> target, final int index, final String[] paths,
+                                   final Collection<Property> source) {
+            if (index < paths.length) {
+                final int nextIndex = index + 1;
+                final Optional<Property> current = target.stream().
+                        filter(property -> paths[index].equals(property.getName())).findFirst();
+                if (current.isPresent()) {
+                    setProperties(current.get().getProps(), nextIndex, paths, source);
+                } else {
+                    final Property newProperty = new Property.Builder(paths[index], "").build();
+                    target.add(newProperty);
+                    setProperties(newProperty.getProps(), nextIndex, paths, source);
+                }
+            } else {
+                target.addAll(source);
+            }
         }
     }
 }

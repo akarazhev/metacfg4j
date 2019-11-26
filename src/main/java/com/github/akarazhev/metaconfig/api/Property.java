@@ -250,6 +250,10 @@ public final class Property extends AbstractConfig {
                 '}';
     }
 
+    Collection<Property> getProps() {
+        return properties;
+    }
+
     /**
      * Wraps and builds the instance of the property model.
      */
@@ -428,13 +432,7 @@ public final class Property extends AbstractConfig {
          * @return a builder of the property model.
          */
         public Builder properties(final String[] paths, final Collection<Property> properties) {
-            final String[] propertyPaths = Validator.of(paths).get();
-            if (propertyPaths.length > 0) {
-                addAll(0, paths, this.properties, properties);
-            } else {
-                this.properties.addAll(Validator.of(properties).get());
-            }
-
+            setProperties(paths, properties);
             return this;
         }
 
@@ -456,24 +454,6 @@ public final class Property extends AbstractConfig {
          */
         public Property build() {
             return new Property(this);
-        }
-
-        private void addAll(final int index, final String[] paths, final Collection<Property> target,
-                            final Collection<Property> source) {
-            if (index < paths.length) {
-                final int nextIndex = index + 1;
-                final Optional<Property> currentProperty = target.stream().
-                        filter(property -> paths[index].equals(property.getName())).findFirst();
-                if (currentProperty.isPresent()) {
-                    addAll(nextIndex, paths, currentProperty.get().properties, source);
-                } else {
-                    final Property newProperty = new Property.Builder(paths[index], "").build();
-                    target.add(newProperty);
-                    addAll(nextIndex, paths, newProperty.properties, source);
-                }
-            } else {
-                target.addAll(source);
-            }
         }
     }
 }
