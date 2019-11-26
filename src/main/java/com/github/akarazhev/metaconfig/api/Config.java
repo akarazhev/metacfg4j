@@ -353,14 +353,7 @@ public final class Config extends AbstractConfig {
          * @return a builder of the configuration model.
          */
         public Builder properties(final String[] paths, final Collection<Property> properties) {
-            final String[] propertyPaths = Validator.of(paths).get();
-            if (propertyPaths.length > 0) {
-                // TODO: implement addition properties
-//                addAll(paths, 0, this.properties, properties);
-            } else {
-                this.properties.addAll(Validator.of(properties).get());
-            }
-
+            setProperties(paths, properties);
             return this;
         }
 
