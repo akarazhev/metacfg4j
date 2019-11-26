@@ -44,6 +44,12 @@ final class ConfigTest {
     }
 
     @Test
+    @DisplayName("Create a config with properties")
+    void createConfigWithParameters() {
+        // todo
+    }
+
+    @Test
     @DisplayName("Compare two configs")
     void compareTwoConfigs() {
         final Config firstConfig = new Config.Builder("Config", Collections.emptyList()).build();
