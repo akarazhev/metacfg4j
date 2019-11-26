@@ -10,17 +10,12 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
-import com.github.akarazhev.metaconfig.engine.db.DbServer;
-import com.github.akarazhev.metaconfig.engine.db.DbServers;
-import com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPool;
-import com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPools;
 import com.github.akarazhev.metaconfig.engine.web.WebServer;
 import com.github.akarazhev.metaconfig.engine.web.WebServers;
 import com.github.akarazhev.metaconfig.extension.Validator;
 
 import javax.sql.DataSource;
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -30,16 +25,11 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.META_CONFIG_ERR
  * The core configuration class that provides the functionality.
  */
 public final class MetaConfig implements ConfigService, Closeable {
-    private final DbServer dbServer;
     private final WebServer webServer;
-    private final ConnectionPool connectionPool;
     private final ConfigService configService;
 
-    private MetaConfig(final DbServer dbServer, final WebServer webServer, final ConnectionPool connectionPool,
-                       final ConfigService configService) {
-        this.dbServer = dbServer;
+    private MetaConfig(final WebServer webServer, final ConfigService configService) {
         this.webServer = webServer;
-        this.connectionPool = connectionPool;
         this.configService = configService;
     }
 
@@ -103,18 +93,10 @@ public final class MetaConfig implements ConfigService, Closeable {
      * {@inheritDoc}
      */
     @Override
-    public void close() throws IOException {
+    public void close() {
         // Stop the web server
         if (webServer != null) {
             webServer.stop();
-        }
-        // Close the connection pool
-        if (connectionPool != null) {
-            connectionPool.close();
-        }
-        // Stop the database server
-        if (dbServer != null) {
-            dbServer.stop();
         }
     }
 
@@ -122,11 +104,9 @@ public final class MetaConfig implements ConfigService, Closeable {
      * Wraps and builds the instance of the core configuration class.
      */
     public final static class Builder {
-        private Config dbConfig;
         private Config webClient;
         private Config webConfig;
         private DataSource dataSource;
-        private Config poolConfig;
         private boolean isDefaultConfig;
 
         /**
@@ -134,17 +114,6 @@ public final class MetaConfig implements ConfigService, Closeable {
          */
         public Builder() {
             this.isDefaultConfig = false;
-        }
-
-        /**
-         * Constructs the core configuration class with the configuration of a db server.
-         *
-         * @param config a configuration of a db server.
-         * @return a builder of the core configuration class.
-         */
-        public Builder dbServer(final Config config) {
-            this.dbConfig = Validator.of(config).get();
-            return this;
         }
 
         /**
@@ -166,17 +135,6 @@ public final class MetaConfig implements ConfigService, Closeable {
          */
         public Builder webServer(final Config config) {
             this.webConfig = Validator.of(config).get();
-            return this;
-        }
-
-        /**
-         * Constructs the core configuration class with the configuration of a connection pool.
-         *
-         * @param config a configuration a connection pool.
-         * @return a builder of the core configuration class.
-         */
-        public Builder connectionPool(final Config config) {
-            this.poolConfig = Validator.of(config).get();
             return this;
         }
 
@@ -208,23 +166,7 @@ public final class MetaConfig implements ConfigService, Closeable {
          */
         public MetaConfig build() {
             try {
-                DbServer dbServer = null;
-                ConnectionPool connectionPool = null;
                 WebServer webServer = null;
-                // Init the DB server
-                if (isDefaultConfig) {
-                    dbServer = DbServers.newServer().start();
-                } else if (dbConfig != null) {
-                    dbServer = DbServers.newServer(dbConfig).start();
-                }
-                // Init the connection pool and the datasource
-                if (isDefaultConfig) {
-                    connectionPool = ConnectionPools.newPool();
-                    dataSource = connectionPool.getDataSource();
-                } else if (poolConfig != null) {
-                    connectionPool = ConnectionPools.newPool(poolConfig);
-                    dataSource = connectionPool.getDataSource();
-                }
                 // Init the repository
                 final ConfigRepository configRepository = dataSource != null ?
                         new DbConfigRepository.Builder(dataSource).build() :
@@ -238,7 +180,7 @@ public final class MetaConfig implements ConfigService, Closeable {
                     webServer = WebServers.newServer(webConfig, configService).start();
                 }
                 // Create the main instance
-                return new MetaConfig(dbServer, webServer, connectionPool, configService);
+                return new MetaConfig(webServer, configService);
             } catch (final Exception e) {
                 throw new RuntimeException(META_CONFIG_ERROR, e);
             }

@@ -1,17 +1,16 @@
 # metacfg4j
 
 The `metacfg4j` project (that stands for the `meta configuration for java`) is a library that can be used as the solution by creating a business abstraction or 
-may extend an existed implementation to provide such software solutions as: various configuration (application, user's and etc.), CRUD services, DSL.
+may extend an existed implementation to provide such software solutions as: various configuration (application, user's and etc.), CRUD services, DSL, MVP.
 
 ## Architecture
 
-This is a high-level abstraction based on the low-level API. It has been written without frameworks and delivered with two dependencies:
+This is a high-level abstraction based on the low-level API. It has been written without frameworks and delivered with one dependency:
 
- &#8658; Embedded H2db (https://www.h2database.com)<br/>
  &#8658; JSON simple (https://github.com/fangyidong/json-simple)<br/>
 
 This library has the implementation of a simple web-client/server, repositories, services, controllers. The web-server provides implementation of REST methods.
-Data is persisted into the embedded H2 DataBase, but can be use any configured datasource.
+Data is persisted into a DB, by using any configured datasource.
   
 ## Usage
 
@@ -47,19 +46,6 @@ You can instantiate the meta configuration with the custom configuration:
 ```java
 @Bean(destroyMethod = "close")
 public MetaConfig metaConfig() {
-    // Create the DB server config
-    final Config dbServer = new Config.Builder(Server.Settings.CONFIG_NAME,
-        Arrays.asList(
-                new Property.Builder(Settings.TYPE, Settings.TYPE_TCP).build(),
-                new Property.Builder(Settings.ARGS, "-tcp", "-tcpPort", "8043").build())).
-        build();
-    // Create the connection pool config
-    final Config connectionPool = new Config.Builder(ConnectionPools.Settings.CONFIG_NAME,
-        Arrays.asList(
-                new Property.Builder(Settings.URL, "jdbc:h2:./data/metacfg4j").build(),
-                new Property.Builder(Settings.USER, "sa").build(),
-                new Property.Builder(Settings.PASSWORD, "sa").build())).
-        build();
     // Create the web server config
     final Config webServer = new Config.Builder(Server.Settings.CONFIG_NAME,
         Arrays.asList(
@@ -73,8 +59,6 @@ public MetaConfig metaConfig() {
         .build();
     // Create the meta configuration
     return new MetaConfig.Builder().
-        dbServer(dbServer).
-        connectionPool(connectionPool).
         webServer(webServer).
         build();
     }
