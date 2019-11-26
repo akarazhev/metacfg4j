@@ -13,16 +13,47 @@ package com.github.akarazhev.metaconfig.api;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.Clock;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class ConfigTest {
+    private final long UPDATED = Clock.systemDefaultZone().millis();
 
     @Test
     @DisplayName("Create a config")
     void createConfig() {
-        Config config = new Config.Builder("Config", Collections.emptyList()).build();
-        assertEquals("Config", config.getName(), "The name must be: 'Config'");
+        final Config config = new Config.Builder("Config", Collections.emptyList()).build();
+        assertEquals("Config", config.getName());
+        assertFalse(config.getDescription().isPresent());
+        assertEquals(1, config.getVersion());
+        assertTrue(config.getUpdated() > 0);
+        assertTrue(config.getAttributes().isPresent());
+        assertTrue(config.getAttributes().get().isEmpty());
+        assertFalse(config.getAttribute("key").isPresent());
+        assertEquals(0, config.getAttributeKeys().count());
+    }
+
+    private Property getProperty() {
+        return new Property.Builder("Property", "Value").
+                caption("Caption").
+                description("Description").
+                attribute("key", "value").
+                property(new String[0], new Property.Builder("Sub-property-1", "Sub-value-1").build()).
+                build();
+    }
+
+    private Config getConfig() {
+        return new Config.Builder("Config", Collections.singletonList(getProperty())).
+                id(1).
+                description("Description").
+                version(1).
+                updated(UPDATED).
+                attribute("key", "value").
+                property(new String[0], new Property.Builder("Sub-property-1", "Sub-value-1").build()).
+                build();
     }
 }
