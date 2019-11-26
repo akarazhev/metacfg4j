@@ -17,12 +17,12 @@ import java.util.stream.Stream;
  */
 interface ConfigRepository {
     /**
-     * Returns configuration models for a configuration name.
+     * Returns configuration models for configuration names.
      *
-     * @param name a configuration name.
+     * @param stream a stream of names.
      * @return a stream of configurations models.
      */
-    Stream<Config> findByName(final String name);
+    Stream<Config> findByNames(final Stream<String> stream);
 
     /**
      * Returns all configuration names.
@@ -32,17 +32,18 @@ interface ConfigRepository {
     Stream<String> findNames();
 
     /**
-     * Saves and flushes a configuration model.
+     * Saves and flushes configuration models.
      *
-     * @param config a configuration model.
-     * @return an updated configuration model.
+     * @param stream a stream of configuration models.
+     * @return a stream of updated configuration models.
      */
-    Config saveAndFlush(final Config config);
+    Stream<Config> saveAndFlush(final Stream<Config> stream);
 
     /**
-     * Deletes a configuration model.
+     * Deletes configuration models.
      *
-     * @param name a configuration name.
+     * @param stream a stream of names.
+     * @return a number of deleted models.
      */
-    void delete(final String name);
+    int delete(final Stream<String> stream);
 }

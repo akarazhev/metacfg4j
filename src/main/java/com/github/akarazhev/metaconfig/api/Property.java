@@ -10,14 +10,16 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
+import com.github.akarazhev.metaconfig.extension.Validator;
+import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
+import com.github.cliftonlabs.json_simple.Jsoner;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -27,7 +29,7 @@ import java.util.stream.Stream;
 /**
  * The property model that contains parameters, attributes and properties.
  */
-public final class Property implements Configurable {
+public final class Property extends AbstractConfig {
     private final String name;
     private final String caption;
     private final String description;
@@ -36,11 +38,8 @@ public final class Property implements Configurable {
     private final Map<String, String> attributes;
     private final Collection<Property> properties;
 
-    /**
-     * Types of a stored property value.
-     */
-    public static enum Type {
-        BOOLEAN,
+    public enum Type {
+        BOOL,
         DOUBLE,
         LONG,
         STRING,
@@ -71,8 +70,8 @@ public final class Property implements Configurable {
      *
      * @return a property caption.
      */
-    public String getCaption() {
-        return caption;
+    public Optional<String> getCaption() {
+        return Optional.ofNullable(caption);
     }
 
     /**
@@ -80,17 +79,8 @@ public final class Property implements Configurable {
      *
      * @return a property description.
      */
-    public String getDescription() {
-        return description;
-    }
-
-    /**
-     * Returns a type of the property.
-     *
-     * @return a property type.
-     */
-    public Type getType() {
-        return type;
+    public Optional<String> getDescription() {
+        return Optional.ofNullable(description);
     }
 
     /**
@@ -103,13 +93,74 @@ public final class Property implements Configurable {
     }
 
     /**
+     * Returns a boolean value of the property.
+     *
+     * @return a property value.
+     */
+    public boolean asBool() {
+        if (Type.BOOL.equals(type)) {
+            return Boolean.valueOf(value);
+        }
+
+        throw new ClassCastException("Property has the different type: " + type);
+    }
+
+    /**
+     * Returns a double value of the property.
+     *
+     * @return a property value.
+     */
+    public double asDouble() {
+        if (Type.DOUBLE.equals(type)) {
+            return Double.valueOf(value);
+        }
+
+        throw new ClassCastException("Property has the different type: " + type);
+    }
+
+    /**
+     * Returns a long value of the property.
+     *
+     * @return a property value.
+     */
+    public long asLong() {
+        if (Type.LONG.equals(type)) {
+            return Long.valueOf(value);
+        }
+
+        throw new ClassCastException("Property has the different type: " + type);
+    }
+
+    /**
+     * Returns an array value of the property.
+     *
+     * @return a property value.
+     */
+    public String[] asArray() {
+        if (Type.STRING_ARRAY.equals(type)) {
+            return Jsoner.deserialize(value, new JsonArray()).stream().
+                    map(Objects::toString).
+                    toArray(String[]::new);
+        }
+
+        throw new ClassCastException("Property has the different type: " + type);
+    }
+
+    /**
+     * Returns a type of the property.
+     *
+     * @return a property type.
+     */
+    public Type getType() {
+        return type;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
     public Optional<Map<String, String>> getAttributes() {
-        return attributes != null ?
-                Optional.of(Collections.unmodifiableMap(attributes)) :
-                Optional.empty();
+        return Optional.of(Collections.unmodifiableMap(attributes));
     }
 
     /**
@@ -117,9 +168,7 @@ public final class Property implements Configurable {
      */
     @Override
     public Stream<String> getAttributeKeys() {
-        return attributes != null ?
-                attributes.keySet().stream() :
-                Stream.empty();
+        return attributes.keySet().stream();
     }
 
     /**
@@ -127,7 +176,7 @@ public final class Property implements Configurable {
      */
     @Override
     public Optional<String> getAttribute(final String key) {
-        return Optional.ofNullable(attributes.get(Objects.requireNonNull(key)));
+        return Optional.ofNullable(attributes.get(Validator.of(key).get()));
     }
 
     /**
@@ -142,8 +191,8 @@ public final class Property implements Configurable {
      * {@inheritDoc}
      */
     @Override
-    public Optional<Property> getProperty(final String name) {
-        return properties.stream().filter(property -> property.getName().equals(name)).findFirst();
+    public Optional<Property> getProperty(final String... paths) {
+        return getProperty(0, paths, getProperties());
     }
 
     /**
@@ -212,30 +261,46 @@ public final class Property implements Configurable {
         private final String value;
 
         /**
+         * Constructs a property model based on the property object.
+         *
+         * @param property a property model.
+         */
+        public Builder(final Property property) {
+            final Property prototype = Validator.of(property).get();
+            this.name = prototype.name;
+            this.caption = prototype.caption;
+            this.description = prototype.description;
+            this.type = prototype.type;
+            this.value = prototype.value;
+            this.attributes.putAll(prototype.attributes);
+            this.properties.addAll(prototype.properties);
+        }
+
+        /**
          * Constructs a property model based on the json object.
          *
          * @param jsonObject a json object with the property model.
          */
         public Builder(final JsonObject jsonObject) {
-            this.name = Objects.requireNonNull((String) jsonObject.get("name"));
+            this.name = Validator.of((String) jsonObject.get("name")).get();
             this.caption = (String) jsonObject.get("caption");
             this.description = (String) jsonObject.get("description");
-            this.type = Type.valueOf((String) jsonObject.get("type"));
-            this.value = (String) jsonObject.get("value");
-            getAttributes(jsonObject.get("attributes")).ifPresent(attributes -> this.attributes = attributes);
-            this.properties = getProperties(jsonObject.get("properties")).collect(Collectors.toList());
+            this.type = Type.valueOf(Validator.of((String) jsonObject.get("type")).get());
+            this.value = Validator.of((String) jsonObject.get("value")).get();
+            getAttributes(jsonObject).ifPresent(this.attributes::putAll);
+            this.properties.addAll(getProperties(jsonObject).collect(Collectors.toList()));
         }
 
         /**
          * Constructs a property model with required parameters.
          *
          * @param name  a property name.
-         * @param value a property value.
+         * @param value a string property value.
          */
         public Builder(final String name, final String value) {
-            this.name = Objects.requireNonNull(name);
+            this.name = Validator.of(name).get();
             this.type = Type.STRING;
-            this.value = Objects.requireNonNull(value);
+            this.value = Validator.of(value).get();
         }
 
         /**
@@ -245,10 +310,58 @@ public final class Property implements Configurable {
          * @param type  a property type.
          * @param value a property value.
          */
-        public Builder(final String name, final Type type, final String value) {
-            this.name = Objects.requireNonNull(name);
-            this.type = Objects.requireNonNull(type);
-            this.value = Objects.requireNonNull(value);
+        public Builder(final String name, final String type, final String value) {
+            this.name = Validator.of(name).get();
+            this.type = Type.valueOf(Validator.of(type).get());
+            this.value = Validator.of(value).get();
+        }
+
+        /**
+         * Constructs a property model with required parameters.
+         *
+         * @param name  a property name.
+         * @param value a boolean property value.
+         */
+        public Builder(final String name, final boolean value) {
+            this.name = Validator.of(name).get();
+            this.type = Type.BOOL;
+            this.value = String.valueOf(value);
+        }
+
+        /**
+         * Constructs a property model with required parameters.
+         *
+         * @param name  a property name.
+         * @param value a double property value.
+         */
+        public Builder(final String name, final double value) {
+            this.name = Validator.of(name).get();
+            this.type = Type.DOUBLE;
+            this.value = String.valueOf(value);
+        }
+
+        /**
+         * Constructs a property model with required parameters.
+         *
+         * @param name  a property name.
+         * @param value a long property value.
+         */
+        public Builder(final String name, final long value) {
+            this.name = Validator.of(name).get();
+            this.type = Type.LONG;
+            this.value = String.valueOf(value);
+        }
+
+        /**
+         * Constructs a property model with required parameters.
+         *
+         * @param name  a property name.
+         * @param value an array property value.
+         */
+        public Builder(final String name, final String... value) {
+            this.name = Validator.of(name).get();
+            this.type = Type.STRING_ARRAY;
+            this.value = new JsonArray(Arrays.asList(Validator.of(value).get())).toJson();
         }
 
         /**
@@ -258,7 +371,7 @@ public final class Property implements Configurable {
          * @return a builder of the property model.
          */
         public Builder caption(final String caption) {
-            this.caption = Objects.requireNonNull(caption);
+            this.caption = caption;
             return this;
         }
 
@@ -269,7 +382,19 @@ public final class Property implements Configurable {
          * @return a builder of the property model.
          */
         public Builder description(final String description) {
-            this.description = Objects.requireNonNull(description);
+            this.description = description;
+            return this;
+        }
+
+        /**
+         * Constructs a property model with an attribute.
+         *
+         * @param key   a key of the attribute.
+         * @param value a value of the attribute.
+         * @return a builder of the property model.
+         */
+        public Builder attribute(final String key, final String value) {
+            this.attributes.put(Validator.of(key).get(), Validator.of(value).get());
             return this;
         }
 
@@ -280,7 +405,36 @@ public final class Property implements Configurable {
          * @return a builder of the property model.
          */
         public Builder attributes(final Map<String, String> attributes) {
-            this.attributes = new HashMap<>(Objects.requireNonNull(attributes));
+            this.attributes.putAll(Validator.of(attributes).get());
+            return this;
+        }
+
+        /**
+         * Constructs a property model with a property.
+         *
+         * @param paths    paths to a property.
+         * @param property a property property.
+         * @return a builder of the property model.
+         */
+        public Builder property(final String[] paths, final Property property) {
+            return properties(paths, Collections.singletonList(Validator.of(property).get()));
+        }
+
+        /**
+         * Constructs a property model with properties.
+         *
+         * @param paths      paths to a properties.
+         * @param properties property properties.
+         * @return a builder of the property model.
+         */
+        public Builder properties(final String[] paths, final Collection<Property> properties) {
+            final String[] propertyPaths = Validator.of(paths).get();
+            if (propertyPaths.length > 0) {
+                addAll(0, paths, this.properties, properties);
+            } else {
+                this.properties.addAll(Validator.of(properties).get());
+            }
+
             return this;
         }
 
@@ -291,7 +445,7 @@ public final class Property implements Configurable {
          * @return a builder of the property model.
          */
         public Builder properties(final Collection<Property> properties) {
-            this.properties = new ArrayList<>(Objects.requireNonNull(properties));
+            this.properties.addAll(Validator.of(properties).get());
             return this;
         }
 
@@ -302,6 +456,24 @@ public final class Property implements Configurable {
          */
         public Property build() {
             return new Property(this);
+        }
+
+        private void addAll(final int index, final String[] paths, final Collection<Property> target,
+                            final Collection<Property> source) {
+            if (index < paths.length) {
+                final int nextIndex = index + 1;
+                final Optional<Property> currentProperty = target.stream().
+                        filter(property -> paths[index].equals(property.getName())).findFirst();
+                if (currentProperty.isPresent()) {
+                    addAll(nextIndex, paths, currentProperty.get().properties, source);
+                } else {
+                    final Property newProperty = new Property.Builder(paths[index], "").build();
+                    target.add(newProperty);
+                    addAll(nextIndex, paths, newProperty.properties, source);
+                }
+            } else {
+                target.addAll(source);
+            }
         }
     }
 }

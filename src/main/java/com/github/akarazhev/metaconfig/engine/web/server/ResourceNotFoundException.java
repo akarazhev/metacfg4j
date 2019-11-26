@@ -8,19 +8,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License. */
-package com.github.akarazhev.metaconfig.engine.web.internal;
+package com.github.akarazhev.metaconfig.engine.web.server;
 
 /**
- * Extends the basic exception to be used as an internal server exception.
+ * Extends the basic exception to be used as a resource not found exception.
  */
-final class InternalServerErrorException extends ConfigException {
+final class ResourceNotFoundException extends ConfigException {
     /**
      * Constructs an exception with a code and a message.
      *
      * @param code a code.
      * @param message a message.
      */
-    InternalServerErrorException(int code, String message) {
+    ResourceNotFoundException(final int code, final String message) {
         super(code, message);
     }
 }

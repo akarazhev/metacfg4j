@@ -17,12 +17,12 @@ import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class ConfigTest {
+final class ConfigTest {
 
     @Test
-    @DisplayName("Create simple meta config")
-    void createMetaConfig() {
-        Config config = new Config.Builder("Meta Config", Collections.emptyList()).build();
-        assertEquals("Meta Config", config.getName(), "The name must be: 'Meta Config'");
+    @DisplayName("Create a config")
+    void createConfig() {
+        Config config = new Config.Builder("Config", Collections.emptyList()).build();
+        assertEquals("Config", config.getName(), "The name must be: 'Config'");
     }
 }

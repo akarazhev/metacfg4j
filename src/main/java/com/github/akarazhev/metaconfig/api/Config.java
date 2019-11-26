@@ -10,40 +10,54 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
+import com.github.akarazhev.metaconfig.extension.Validator;
 import com.github.cliftonlabs.json_simple.JsonObject;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_ID_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_UPDATED_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_VERSION_VALUE;
+
 /**
  * The configuration model that contains parameters, attributes and properties.
  */
-public final class Config implements Configurable {
+public final class Config extends AbstractConfig {
+    private final int id;
     private final String name;
     private final String description;
-    private final long created;
+    private final int version;
     private final long updated;
     private final Map<String, String> attributes;
     private final Collection<Property> properties;
 
     private Config(final Builder builder) {
+        this.id = builder.id;
         this.name = builder.name;
         this.description = builder.description;
-        this.created = builder.created;
+        this.version = builder.version;
         this.updated = builder.updated;
         this.attributes = builder.attributes;
         this.properties = builder.properties;
+    }
+
+    /**
+     * Returns an id of the configuration.
+     *
+     * @return a configuration id.
+     */
+    public int getId() {
+        return id;
     }
 
     /**
@@ -65,12 +79,12 @@ public final class Config implements Configurable {
     }
 
     /**
-     * Returns a creation time of the configuration.
+     * Returns a version of the configuration.
      *
-     * @return a configuration created time value.
+     * @return a version value.
      */
-    public long getCreated() {
-        return created;
+    public int getVersion() {
+        return version;
     }
 
     /**
@@ -87,9 +101,7 @@ public final class Config implements Configurable {
      */
     @Override
     public Optional<Map<String, String>> getAttributes() {
-        return attributes != null ?
-                Optional.of(Collections.unmodifiableMap(attributes)) :
-                Optional.empty();
+        return Optional.of(Collections.unmodifiableMap(attributes));
     }
 
     /**
@@ -97,9 +109,7 @@ public final class Config implements Configurable {
      */
     @Override
     public Stream<String> getAttributeKeys() {
-        return attributes != null ?
-                attributes.keySet().stream() :
-                Stream.empty();
+        return attributes.keySet().stream();
     }
 
     /**
@@ -107,7 +117,7 @@ public final class Config implements Configurable {
      */
     @Override
     public Optional<String> getAttribute(final String key) {
-        return Optional.ofNullable(attributes.get(Objects.requireNonNull(key)));
+        return Optional.ofNullable(attributes.get(Validator.of(key).get()));
     }
 
     /**
@@ -122,8 +132,8 @@ public final class Config implements Configurable {
      * {@inheritDoc}
      */
     @Override
-    public Optional<Property> getProperty(final String name) {
-        return properties.stream().filter(property -> property.getName().equals(name)).findFirst();
+    public Optional<Property> getProperty(final String... paths) {
+        return getProperty(0, paths, getProperties());
     }
 
     /**
@@ -132,9 +142,10 @@ public final class Config implements Configurable {
     @Override
     public void toJson(final Writer writer) throws IOException {
         final JsonObject json = new JsonObject();
+        json.put("id", id);
         json.put("name", name);
         json.put("description", description);
-        json.put("created", created);
+        json.put("version", version);
         json.put("updated", updated);
         json.put("attributes", attributes);
         json.put("properties", properties);
@@ -145,15 +156,16 @@ public final class Config implements Configurable {
      * {@inheritDoc}
      */
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        final Config config = (Config) o;
-        return created == config.created &&
+        Config config = (Config) o;
+        return id == config.id &&
+                version == config.version &&
                 updated == config.updated &&
                 name.equals(config.name) &&
                 Objects.equals(description, config.description) &&
-                Objects.equals(attributes, config.attributes) &&
+                attributes.equals(config.attributes) &&
                 properties.equals(config.properties);
     }
 
@@ -162,7 +174,7 @@ public final class Config implements Configurable {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, created, updated, attributes, properties);
+        return Objects.hash(id, name, description, version, updated, attributes, properties);
     }
 
     /**
@@ -171,8 +183,9 @@ public final class Config implements Configurable {
     @Override
     public String toString() {
         return "Config{" +
-                "name='" + name + '\'' +
-                ", created=" + created +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", version=" + version +
                 ", updated=" + updated +
                 '}';
     }
@@ -181,10 +194,27 @@ public final class Config implements Configurable {
      * Wraps and builds the instance of the configuration model.
      */
     public final static class Builder extends ConfigBuilder {
+        private int id = 0;
         private final String name;
         private String description;
-        private final long created;
-        private final long updated;
+        private int version = 1;
+        private long updated = Clock.systemDefaultZone().millis();
+
+        /**
+         * Constructs a configuration model based on the config object.
+         *
+         * @param config a configuration model.
+         */
+        public Builder(final Config config) {
+            final Config prototype = Validator.of(config).get();
+            this.id = config.id;
+            this.name = prototype.name;
+            this.description = prototype.description;
+            this.version = prototype.version;
+            this.updated = prototype.updated;
+            this.attributes.putAll(prototype.attributes);
+            this.properties.addAll(prototype.properties);
+        }
 
         /**
          * Constructs a configuration model based on the json object.
@@ -192,12 +222,23 @@ public final class Config implements Configurable {
          * @param jsonObject a json object with the configuration model.
          */
         public Builder(final JsonObject jsonObject) {
-            this.name = Objects.requireNonNull((String) jsonObject.get("name"));
-            this.description = (String) jsonObject.get("description");
-            this.created = Objects.requireNonNull((BigDecimal) jsonObject.get("created")).longValue();
-            this.updated = Objects.requireNonNull((BigDecimal) jsonObject.get("updated")).longValue();
-            getAttributes(jsonObject.get("attributes")).ifPresent(attributes -> this.attributes = attributes);
-            this.properties = getProperties(jsonObject.get("properties")).collect(Collectors.toList());
+            final JsonObject prototype = Validator.of(jsonObject).get();
+            final Object id = prototype.get("id");
+            if (id != null) {
+                this.id = ((BigDecimal) id).intValue();
+            }
+            this.name = Validator.of((String) prototype.get("name")).get();
+            this.description = (String) prototype.get("description");
+            final Object version = prototype.get("version");
+            if (version != null) {
+                this.version = ((BigDecimal) version).intValue();
+            }
+            final Object updated = prototype.get("updated");
+            if (updated != null) {
+                this.updated = ((BigDecimal) updated).longValue();
+            }
+            getAttributes(prototype).ifPresent(this.attributes::putAll);
+            this.properties.addAll(getProperties(prototype).collect(Collectors.toList()));
         }
 
         /**
@@ -207,11 +248,24 @@ public final class Config implements Configurable {
          * @param properties configuration properties.
          */
         public Builder(final String name, final Collection<Property> properties) {
-            this.name = Objects.requireNonNull(name);
-            final long millis = Clock.systemDefaultZone().millis();
-            this.created = millis;
-            this.updated = millis;
-            this.properties = new ArrayList<>(Objects.requireNonNull(properties));
+            this.name = Validator.of(name).get();
+            this.properties.addAll(Validator.of(properties).get());
+        }
+
+        /**
+         * Constructs a configuration model with the id parameter.
+         *
+         * @param id a configuration id.
+         * @return a builder of the configuration model.
+         */
+        public Builder id(final int id) {
+            if (id > 0) {
+                this.id = id;
+            } else {
+                throw new IllegalArgumentException(WRONG_ID_VALUE);
+            }
+
+            return this;
         }
 
         /**
@@ -221,7 +275,51 @@ public final class Config implements Configurable {
          * @return a builder of the configuration model.
          */
         public Builder description(final String description) {
-            this.description = Objects.requireNonNull(description);
+            this.description = description;
+            return this;
+        }
+
+        /**
+         * Constructs a configuration model with the version parameter.
+         *
+         * @param version a configuration version.
+         * @return a builder of the configuration model.
+         */
+        public Builder version(final int version) {
+            if (version > 0) {
+                this.version = version;
+            } else {
+                throw new IllegalArgumentException(WRONG_VERSION_VALUE);
+            }
+
+            return this;
+        }
+
+        /**
+         * Constructs a configuration model with the updated parameter.
+         *
+         * @param updated a configuration updated.
+         * @return a builder of the configuration model.
+         */
+        public Builder updated(final long updated) {
+            if (updated > 0) {
+                this.updated = updated;
+            } else {
+                throw new IllegalArgumentException(WRONG_UPDATED_VALUE);
+            }
+
+            return this;
+        }
+
+        /**
+         * Constructs a configuration model with an attribute.
+         *
+         * @param key   a key of the attribute.
+         * @param value a value of the attribute.
+         * @return a builder of the configuration model.
+         */
+        public Builder attribute(final String key, final String value) {
+            this.attributes.put(Validator.of(key).get(), Validator.of(value).get());
             return this;
         }
 
@@ -232,7 +330,37 @@ public final class Config implements Configurable {
          * @return a builder of the configuration model.
          */
         public Builder attributes(final Map<String, String> attributes) {
-            this.attributes = new HashMap<>(Objects.requireNonNull(attributes));
+            this.attributes.putAll(Validator.of(attributes).get());
+            return this;
+        }
+
+        /**
+         * Constructs a configuration model with a property.
+         *
+         * @param paths    paths to a property.
+         * @param property a configuration property.
+         * @return a builder of the configuration model.
+         */
+        public Builder property(final String[] paths, final Property property) {
+            return properties(paths, Collections.singletonList(Validator.of(property).get()));
+        }
+
+        /**
+         * Constructs a configuration model with properties.
+         *
+         * @param paths      path to a properties.
+         * @param properties configuration properties.
+         * @return a builder of the configuration model.
+         */
+        public Builder properties(final String[] paths, final Collection<Property> properties) {
+            final String[] propertyPaths = Validator.of(paths).get();
+            if (propertyPaths.length > 0) {
+                // TODO: implement addition properties
+//                addAll(paths, 0, this.properties, properties);
+            } else {
+                this.properties.addAll(Validator.of(properties).get());
+            }
+
             return this;
         }
 

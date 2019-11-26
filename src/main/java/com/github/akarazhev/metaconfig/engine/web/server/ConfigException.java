@@ -8,38 +8,33 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License. */
-package com.github.akarazhev.metaconfig.engine.web.internal;
+package com.github.akarazhev.metaconfig.engine.web.server;
+
+import java.io.IOException;
 
 /**
- * Enum that insulates status codes for the config server.
+ * Extends a standard <code>IOException</code> to be used as a business internal exception.
  */
-enum StatusCodes {
-    OK(200),
-    CREATED(201),
-    ACCEPTED(202),
-
-    BAD_REQUEST(400),
-    NOT_FOUND(404),
-    METHOD_NOT_ALLOWED(405),
-    INTERNAL_SERVER_ERROR(500);
-
+class ConfigException extends IOException {
     private final int code;
 
     /**
-     * Constructs a status code enum.
+     * Constructs an exception with a code and a message.
      *
-     * @param code a code
+     * @param code a code.
+     * @param message a message.
      */
-    StatusCodes(final int code) {
+    ConfigException(final int code, final String message) {
+        super(message);
         this.code = code;
     }
 
     /**
-     * Returns a code value.
+     * Returns a code of the exception.
      *
-     * @return a code
+     * @return a value of the code.
      */
-    public int getCode() {
+    int getCode() {
         return code;
     }
 }

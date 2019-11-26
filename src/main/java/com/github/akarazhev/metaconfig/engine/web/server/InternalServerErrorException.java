@@ -8,33 +8,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License. */
-package com.github.akarazhev.metaconfig.engine.web.internal;
-
-import java.io.IOException;
+package com.github.akarazhev.metaconfig.engine.web.server;
 
 /**
- * Extends a standard <code>IOException</code> to be used as a business internal exception.
+ * Extends the basic exception to be used as an internal server exception.
  */
-class ConfigException extends IOException {
-    private final int code;
-
+final class InternalServerErrorException extends ConfigException {
     /**
      * Constructs an exception with a code and a message.
      *
      * @param code a code.
      * @param message a message.
      */
-    ConfigException(int code, String message) {
-        super(message);
-        this.code = code;
-    }
-
-    /**
-     * Returns a code of the exception.
-     *
-     * @return a value of the code.
-     */
-    int getCode() {
-        return code;
+    InternalServerErrorException(final int code, final String message) {
+        super(code, message);
     }
 }

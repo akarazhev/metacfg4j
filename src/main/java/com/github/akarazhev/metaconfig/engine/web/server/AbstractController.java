@@ -8,30 +8,36 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License. */
-package com.github.akarazhev.metaconfig.engine.web.internal;
+package com.github.akarazhev.metaconfig.engine.web.server;
 
 import com.github.akarazhev.metaconfig.api.ConfigService;
+import com.github.cliftonlabs.json_simple.JsonArray;
+import com.github.cliftonlabs.json_simple.JsonException;
+import com.github.cliftonlabs.json_simple.Jsoner;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-import static com.github.akarazhev.metaconfig.engine.web.WebConstants.APPLICATION_JSON;
-import static com.github.akarazhev.metaconfig.engine.web.WebConstants.CONTENT_TYPE;
-import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.BAD_REQUEST;
-import static com.github.akarazhev.metaconfig.engine.web.internal.StatusCodes.OK;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.Header.APPLICATION_JSON;
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  * Provides a basic functionality for all controllers.
  */
 abstract class AbstractController {
-    private final static Logger logger = Logger.getLogger(ConfigServer.class.getSimpleName());
+    private final static Logger LOGGER = Logger.getLogger(AbstractController.class.getSimpleName());
+    final static String REQ_PARAM_NAMES = "names";
     final ConfigService configService;
 
     AbstractController(final AbstractBuilder abstractBuilder) {
@@ -47,7 +53,7 @@ abstract class AbstractController {
     void handle(HttpExchange httpExchange) {
         try {
             execute(httpExchange);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             handle(httpExchange, e);
         } finally {
             httpExchange.close();
@@ -72,7 +78,7 @@ abstract class AbstractController {
      */
     Stream<String> getPathParams(final String path, final String api) {
         return path.contains(api) ?
-                Arrays.stream(path.substring(api.length()).split("/")) :
+                Arrays.stream(path.substring(api.length() + 1).split("/")) :
                 Stream.empty();
     }
 
@@ -84,10 +90,24 @@ abstract class AbstractController {
      * @return a value of a param.
      */
     Optional<String> getRequestParam(final String query, final String param) {
-        return Arrays.stream(query.split("&")).
-                filter(q -> q.contains(param)).
-                map(p -> p.split("=")[1]).
-                findFirst();
+        return query != null ?
+                Arrays.stream(query.split("&")).
+                        filter(q -> q.contains(param)).
+                        map(p -> p.split("=")[1]).
+                        findFirst() :
+                Optional.empty();
+    }
+
+    /**
+     * Returns values belong to the param.
+     *
+     * @param param a param to get a value of.
+     * @return a stream of values.
+     * @throws JsonException when a parser encounters a problem.
+     */
+    Stream<String> getValues(final String param) throws JsonException {
+        final String json = new String(Base64.getDecoder().decode(param), StandardCharsets.UTF_8);
+        return ((JsonArray) Jsoner.deserialize(json)).stream().map(Objects::toString);
     }
 
     /**
@@ -100,27 +120,27 @@ abstract class AbstractController {
      */
     void writeResponse(final HttpExchange httpExchange, final OperationResponse response) throws IOException {
         try {
-            httpExchange.getResponseHeaders().put(CONTENT_TYPE, Collections.singletonList(APPLICATION_JSON));
+            httpExchange.getResponseHeaders().put("Content-Type", Collections.singletonList(APPLICATION_JSON));
             final byte[] jsonBytes = response.toJson().getBytes();
-            httpExchange.sendResponseHeaders(OK.getCode(), jsonBytes.length);
+            httpExchange.sendResponseHeaders(HTTP_OK, jsonBytes.length);
             OutputStream outputStream = httpExchange.getResponseBody();
             outputStream.write(jsonBytes);
             outputStream.flush();
-        } catch (Exception e) {
-            throw new InvalidRequestException(BAD_REQUEST.getCode(), e.getMessage());
+        } catch (final Exception e) {
+            throw new InvalidRequestException(HTTP_BAD_REQUEST, e.getMessage());
         }
     }
 
     private void handle(final HttpExchange httpExchange, final Throwable throwable) {
         try {
-            logger.log(Level.WARNING, throwable.getMessage());
+            LOGGER.log(Level.WARNING, throwable.getMessage());
             throwable.printStackTrace();
 
             final OutputStream responseBody = httpExchange.getResponseBody();
             responseBody.write(getErrorResponse(throwable, httpExchange).toJson().getBytes());
             responseBody.close();
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, throwable.getMessage());
+        } catch (final Exception e) {
+            LOGGER.log(Level.SEVERE, throwable.getMessage());
             e.printStackTrace();
         }
     }

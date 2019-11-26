@@ -1,0 +1,1 @@
+DELETE FROM `CONFIGS` WHERE `NAME` = 'Simple Config';

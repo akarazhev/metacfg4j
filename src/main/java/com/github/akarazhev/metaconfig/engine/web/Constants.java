@@ -10,18 +10,28 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.engine.web;
 
-/**
- * Web сonstants of the web client-server.
- */
-public final class WebConstants {
+import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
 
-    private WebConstants() {
-        // WebConstants class
+/**
+ * Constants of the web client-server.
+ */
+public final class Constants {
+
+    private Constants() {
+        throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
     }
 
-    public static final String CONTENT_TYPE = "Content-Type";
-    public static final String APPLICATION_JSON = "application/json";
-    public static final String ACCEPT = "Accept";
+    /**
+     * Header constants for the web client-server.
+     */
+    public final static class Header {
+
+        private Header() {
+            throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
+        }
+
+        public static final String APPLICATION_JSON = "application/json";
+    }
 
     /**
      * Method constants for the web client-server.
@@ -29,7 +39,7 @@ public final class WebConstants {
     public final static class Method {
 
         private Method() {
-            // WebConstants class
+            throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
         }
 
         public static final String POST = "POST";
@@ -44,12 +54,11 @@ public final class WebConstants {
     public final static class API {
 
         private API() {
-            // WebConstants class
+            throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
         }
 
-        public static final String ACCEPT_CONFIG = "/api/config/accept";
-        public static final String CONFIG_NAMES = "/api/config/names";
-        public static final String CONFIG_SECTIONS = "/api/config/sections";
-        public static final String CONFIG_SECTION = "/api/config/section";
+        public static final String ACCEPT_CONFIG = "/api/metacfg/accept_config";
+        public static final String CONFIG_NAMES = "/api/metacfg/config_names";
+        public static final String CONFIG = "/api/metacfg/config";
     }
 }

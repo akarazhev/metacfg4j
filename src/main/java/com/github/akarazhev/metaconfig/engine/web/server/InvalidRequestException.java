@@ -8,7 +8,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License. */
-package com.github.akarazhev.metaconfig.engine.web.internal;
+package com.github.akarazhev.metaconfig.engine.web.server;
 
 /**
  * Extends the basic exception to be used as an invalid request exception.
@@ -20,7 +20,7 @@ final class InvalidRequestException extends ConfigException {
      * @param code a code.
      * @param message a message.
      */
-    InvalidRequestException(int code, String message) {
+    InvalidRequestException(final int code, final String message) {
         super(code, message);
     }
 }

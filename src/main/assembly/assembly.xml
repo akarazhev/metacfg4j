@@ -9,20 +9,17 @@
      See the License for the specific language governing permissions and
      limitations under the License. -->
 <assembly>
-    <id>lite</id>
+    <id>bundle</id>
     <formats>
         <format>jar</format>
     </formats>
     <includeBaseDirectory>false</includeBaseDirectory>
     <dependencySets>
         <dependencySet>
+            <outputDirectory>/</outputDirectory>
+            <useProjectArtifact>true</useProjectArtifact>
             <unpack>true</unpack>
             <scope>runtime</scope>
         </dependencySet>
     </dependencySets>
-    <fileSets>
-        <fileSet>
-            <directory>${project.build.outputDirectory}</directory>
-        </fileSet>
-    </fileSets>
 </assembly>

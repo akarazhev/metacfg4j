@@ -8,23 +8,44 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License. */
-package com.github.akarazhev.metaconfig.engine.web.internal;
+package com.github.akarazhev.metaconfig.engine.web.server;
 
 import com.github.akarazhev.metaconfig.extension.ExtJsonable;
+import com.github.akarazhev.metaconfig.extension.Validator;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsonable;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Objects;
+
+import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
+import static com.github.akarazhev.metaconfig.engine.web.server.OperationResponse.Fields.ERROR;
+import static com.github.akarazhev.metaconfig.engine.web.server.OperationResponse.Fields.RESULT;
+import static com.github.akarazhev.metaconfig.engine.web.server.OperationResponse.Fields.SUCCESS;
 
 /**
  * The operation response model that contains a result, an error message and a flag of success.
  */
-final class OperationResponse<T> implements ExtJsonable {
+public final class OperationResponse<T> implements ExtJsonable {
     private final boolean success;
     private final String error;
     private final T result;
+    /**
+     * Fields constants for the operation response.
+     */
+    public final static class Fields {
+
+        private Fields() {
+            throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
+        }
+
+        // The success field
+        public static final String SUCCESS = "success";
+        // The error field
+        public static final String ERROR = "error";
+        // The success field
+        public static final String RESULT = "result";
+    }
 
     private OperationResponse(final Builder<T> builder) {
         this.success = builder.success;
@@ -65,9 +86,9 @@ final class OperationResponse<T> implements ExtJsonable {
     @Override
     public void toJson(final Writer writer) throws IOException {
         final JsonObject json = new JsonObject();
-        json.put("success", success);
-        json.put("error", error);
-        json.put("result", result instanceof Jsonable ? ((Jsonable) result).toJson() : result);
+        json.put(SUCCESS, success);
+        json.put(ERROR, error);
+        json.put(RESULT, result instanceof Jsonable ? ((Jsonable) result).toJson() : result);
         json.toJson(writer);
     }
 
@@ -87,7 +108,7 @@ final class OperationResponse<T> implements ExtJsonable {
          */
         Builder result(final T result) {
             this.success = true;
-            this.result = Objects.requireNonNull(result);
+            this.result = Validator.of(result).get();
             return this;
         }
 
@@ -99,7 +120,7 @@ final class OperationResponse<T> implements ExtJsonable {
          */
         Builder error(final String error) {
             this.success = false;
-            this.error = Objects.requireNonNull(error);
+            this.error = Validator.of(error).get();
             return this;
         }
 

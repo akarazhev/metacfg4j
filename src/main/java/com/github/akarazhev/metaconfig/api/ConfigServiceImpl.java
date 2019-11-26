@@ -10,11 +10,7 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -24,17 +20,16 @@ final class ConfigServiceImpl implements ConfigService {
     private final ConfigRepository configRepository;
     private Consumer<Config> consumer;
 
-    ConfigServiceImpl(final ConfigRepository configRepository) {
-        this.configRepository = configRepository;
+    private ConfigServiceImpl(final Builder builder) {
+        this.configRepository = builder.configRepository;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Config update(final Config config, final boolean override) {
-        // Ignore override at this moment
-        return configRepository.saveAndFlush(config);
+    public Stream<Config> update(final Stream<Config> stream) {
+        return configRepository.saveAndFlush(stream);
     }
 
     /**
@@ -50,26 +45,23 @@ final class ConfigServiceImpl implements ConfigService {
      */
     @Override
     public Stream<Config> get() {
-        Collection<Config> configs = new LinkedList<>();
-        configRepository.findNames().forEach(name ->
-                configs.addAll(configRepository.findByName(name).collect(Collectors.toList())));
-        return configs.stream();
+        return get(getNames());
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Optional<Config> get(final String name) {
-        return configRepository.findByName(name).findFirst();
+    public Stream<Config> get(final Stream<String> stream) {
+        return configRepository.findByNames(stream);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void remove(final String name) {
-        configRepository.delete(name);
+    public int remove(final Stream<String> stream) {
+        return configRepository.delete(stream);
     }
 
     /**
@@ -78,7 +70,7 @@ final class ConfigServiceImpl implements ConfigService {
     @Override
     public void accept(final String name) {
         if (consumer != null) {
-            get(name).ifPresent(config -> consumer.accept(config));
+            get(Stream.of(name)).forEach(config -> consumer.accept(config));
         }
     }
 
@@ -88,5 +80,30 @@ final class ConfigServiceImpl implements ConfigService {
     @Override
     public void addConsumer(final Consumer<Config> consumer) {
         this.consumer = consumer;
+    }
+
+    /**
+     * Wraps and builds the instance of the config service.
+     */
+    public final static class Builder {
+        private final ConfigRepository configRepository;
+
+        /**
+         * Constructs a config service with a required parameter.
+         *
+         * @param configRepository a config repository.
+         */
+        public Builder(final ConfigRepository configRepository) {
+            this.configRepository = configRepository;
+        }
+
+        /**
+         * Builds a config service with a required parameter.
+         *
+         * @return a builder of the config service.
+         */
+        public ConfigService build() {
+            return new ConfigServiceImpl(this);
+        }
     }
 }
