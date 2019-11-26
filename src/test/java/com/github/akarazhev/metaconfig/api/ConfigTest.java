@@ -10,9 +10,14 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
+import com.github.cliftonlabs.json_simple.JsonException;
+import com.github.cliftonlabs.json_simple.JsonObject;
+import com.github.cliftonlabs.json_simple.Jsoner;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.time.Clock;
 import java.util.Collections;
 
@@ -27,6 +32,7 @@ final class ConfigTest {
     @DisplayName("Create a config")
     void createConfig() {
         final Config config = new Config.Builder("Config", Collections.emptyList()).build();
+        // Check test results
         assertEquals("Config", config.getName());
         assertFalse(config.getDescription().isPresent());
         assertEquals(1, config.getVersion());
@@ -35,6 +41,62 @@ final class ConfigTest {
         assertTrue(config.getAttributes().get().isEmpty());
         assertFalse(config.getAttribute("key").isPresent());
         assertEquals(0, config.getAttributeKeys().count());
+    }
+
+    @Test
+    @DisplayName("Compare two configs")
+    void compareTwoConfigs() {
+        final Config firstConfig = new Config.Builder("Property", Collections.emptyList()).build();
+        final Config secondConfig = new Config.Builder("Property", Collections.emptyList()).build();
+        // Check test results
+        assertEquals(firstConfig, secondConfig);
+    }
+
+    @Test
+    @DisplayName("Check hash codes of two configs")
+    void checkHashCodesOfTwoConfigs() {
+        final Config firstConfig = new Config.Builder("Property", Collections.emptyList()).build();
+        final Config secondConfig = new Config.Builder("Property", Collections.emptyList()).build();
+        // Check test results
+        assertEquals(firstConfig.hashCode(), secondConfig.hashCode());
+    }
+
+    @Test
+    @DisplayName("Check toString() of two configs")
+    void checkToStringOfTwoConfigs() {
+        final Config firstConfig = new Config.Builder("Property", Collections.emptyList()).build();
+        final Config secondConfig = new Config.Builder("Property", Collections.emptyList()).build();
+        // Check test results
+        assertEquals(firstConfig.toString(), secondConfig.toString());
+    }
+
+    @Test
+    @DisplayName("Create a config via the builder")
+    void createPropertyViaBuilder() {
+        final Config firstConfig = getConfig();
+        final Config secondConfig = new Config.Builder(firstConfig).build();
+        // Check test results
+        assertEquals(firstConfig, secondConfig);
+    }
+
+    @Test
+    @DisplayName("Create a config via the json builder")
+    void createPropertyViaJsonBuilder() throws JsonException {
+        final Config firstConfig = getConfig();
+        final Config secondConfig =
+                new Config.Builder((JsonObject) Jsoner.deserialize(firstConfig.toJson())).build();
+        // Check test results
+        assertEquals(firstConfig, secondConfig);
+    }
+
+    @Test
+    @DisplayName("Convert to a json")
+    void convertToJson() throws IOException {
+        final Config config = getConfig();
+        final StringWriter writer = new StringWriter();
+        config.toJson(writer);
+        // Check test results
+        assertEquals(writer.toString(), config.toJson());
     }
 
     private Property getProperty() {
