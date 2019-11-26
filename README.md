@@ -21,7 +21,7 @@ Add a maven dependency into your project:
 <dependency>
     <groupId>com.github.akarazhev.metacfg</groupId>
     <artifactId>metacfg4j</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0</version>
 </dependency>
 ```
 Instantiate the meta configuration class in your project with the default configuration:
@@ -35,7 +35,7 @@ If you have the configured data source, you can use it:
 ```java
 @Bean(destroyMethod = "close")
 public MetaConfig metaConfig() {
-    return new MetaConfig.Builder().dataSource(ds).build();
+    return new MetaConfig.Builder().dataSource(getDataSource()).build();
 }
 ```
 NOTE: The web-server will not be started, since it requires the related configuration.
@@ -60,6 +60,7 @@ public MetaConfig metaConfig() {
     // Create the meta configuration
     return new MetaConfig.Builder().
         webServer(webServer).
+        dataSource(getDataSource()).
         build();
     }
 ```
@@ -74,7 +75,20 @@ If you have certificate that's signed by CA (Certificate Authority), please use 
 
 ### Settings
 
+#### Web Server settings
+
+`hostname` - server hostname.
+`backlog` - server backlog.
+
+#### REST API
+
+Documentation...
+
 ## Build Requirements
 
  &#8658; Java 8+
  &#8658; Maven 3.6+
+ 
+ ## Contribution
+ 
+ Documentation...
