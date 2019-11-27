@@ -70,7 +70,12 @@ public final class WebServers {
             @Override
             public Stream<Config> get(final Stream<String> stream) {
                 final Collection<Config> configs = new LinkedList<>();
-                stream.forEach(name -> configs.add(map.get(name)));
+                stream.forEach(name -> {
+                    final Config config = map.get(name);
+                    if (config != null) {
+                        configs.add(config);
+                    }
+                });
                 return configs.stream();
             }
 

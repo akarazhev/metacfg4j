@@ -58,7 +58,7 @@ final class WebConfigRepositoryTest {
     void findByNames() {
         final Config[] configs = configRepository.findByNames(Stream.of("name")).toArray(Config[]::new);
         // Check test results
-        assertEquals(1, configs.length);
+        assertEquals(0, configs.length);
     }
 
     @Test
