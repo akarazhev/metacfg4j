@@ -23,6 +23,7 @@ import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class ConfigTest {
@@ -44,9 +45,33 @@ final class ConfigTest {
     }
 
     @Test
+    @DisplayName("Create a config exception")
+    void createConfigException() {
+        // Check test results
+        assertThrows(IllegalArgumentException.class,
+                () -> new Config.Builder("Config", Collections.emptyList()).id(0).build());
+        assertThrows(IllegalArgumentException.class,
+                () -> new Config.Builder("Config", Collections.emptyList()).version(0).build());
+        assertThrows(IllegalArgumentException.class,
+                () -> new Config.Builder("Config", Collections.emptyList()).updated(0).build());
+    }
+
+    @Test
     @DisplayName("Create a config with properties")
     void createConfigWithParameters() {
-        // todo
+        final Config config = getConfig();
+        // Check test results
+        assertEquals(1, config.getId());
+        assertEquals("Config", config.getName());
+        assertTrue(config.getDescription().isPresent());
+        assertEquals("Description", config.getDescription().get());
+        assertEquals(1, config.getVersion());
+        assertEquals(UPDATED, config.getUpdated());
+        assertTrue(config.getAttributes().isPresent());
+        assertEquals(2, config.getAttributes().get().size());
+        assertEquals(2, config.getProperties().count());
+        assertTrue(config.getProperty("Property-1").isPresent());
+        assertTrue(config.getProperty("Property-2").isPresent());
     }
 
     @Test
@@ -106,10 +131,11 @@ final class ConfigTest {
     }
 
     private Property getProperty() {
-        return new Property.Builder("Property", "Value").
+        return new Property.Builder("Property-1", "Value-1").
                 caption("Caption").
                 description("Description").
-                attribute("key", "value").
+                attribute("key_1", "value_1").
+                attributes(Collections.singletonMap("key_2", "value_2")).
                 property(new String[0], new Property.Builder("Sub-property-1", "Sub-value-1").build()).
                 build();
     }
@@ -120,8 +146,9 @@ final class ConfigTest {
                 description("Description").
                 version(1).
                 updated(UPDATED).
-                attribute("key", "value").
-                property(new String[0], new Property.Builder("Sub-property-1", "Sub-value-1").build()).
+                attribute("key_1", "value_1").
+                attributes(Collections.singletonMap("key_2", "value_2")).
+                property(new String[0], new Property.Builder("Property-2", "Value-2").build()).
                 build();
     }
 }
