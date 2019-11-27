@@ -74,8 +74,8 @@ public final class Config extends AbstractConfig {
      *
      * @return a configuration description.
      */
-    public String getDescription() {
-        return description;
+    public Optional<String> getDescription() {
+        return Optional.ofNullable(description);
     }
 
     /**

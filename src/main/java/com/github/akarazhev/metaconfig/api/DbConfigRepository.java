@@ -629,7 +629,11 @@ final class DbConfigRepository implements ConfigRepository {
         private static void setStatement(final PreparedStatement statement, final Config config, final int version)
                 throws SQLException {
             statement.setString(1, config.getName());
-            statement.setString(2, config.getDescription());
+            if (config.getDescription().isPresent()) {
+                statement.setString(2, config.getDescription().get());
+            } else {
+                statement.setString(2, null);
+            }
             statement.setInt(3, version);
             statement.setLong(4, config.getUpdated());
         }

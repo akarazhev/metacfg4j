@@ -10,19 +10,145 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
+import com.github.cliftonlabs.json_simple.JsonException;
+import com.github.cliftonlabs.json_simple.JsonObject;
+import com.github.cliftonlabs.json_simple.Jsoner;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.time.Clock;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class ConfigTest {
+    private final long UPDATED = Clock.systemDefaultZone().millis();
 
     @Test
     @DisplayName("Create a config")
     void createConfig() {
-        Config config = new Config.Builder("Config", Collections.emptyList()).build();
-        assertEquals("Config", config.getName(), "The name must be: 'Config'");
+        final Config config = new Config.Builder("Config", Collections.emptyList()).build();
+        // Check test results
+        assertEquals("Config", config.getName());
+        assertFalse(config.getDescription().isPresent());
+        assertEquals(1, config.getVersion());
+        assertTrue(config.getUpdated() > 0);
+        assertTrue(config.getAttributes().isPresent());
+        assertTrue(config.getAttributes().get().isEmpty());
+        assertFalse(config.getAttribute("key").isPresent());
+        assertEquals(0, config.getAttributeKeys().count());
+    }
+
+    @Test
+    @DisplayName("Create a config exception")
+    void createConfigException() {
+        // Check test results
+        assertThrows(IllegalArgumentException.class,
+                () -> new Config.Builder("Config", Collections.emptyList()).id(0).build());
+        assertThrows(IllegalArgumentException.class,
+                () -> new Config.Builder("Config", Collections.emptyList()).version(0).build());
+        assertThrows(IllegalArgumentException.class,
+                () -> new Config.Builder("Config", Collections.emptyList()).updated(0).build());
+    }
+
+    @Test
+    @DisplayName("Create a config with properties")
+    void createConfigWithParameters() {
+        final Config config = getConfig();
+        // Check test results
+        assertEquals(1, config.getId());
+        assertEquals("Config", config.getName());
+        assertTrue(config.getDescription().isPresent());
+        assertEquals("Description", config.getDescription().get());
+        assertEquals(1, config.getVersion());
+        assertEquals(UPDATED, config.getUpdated());
+        assertTrue(config.getAttributes().isPresent());
+        assertEquals(2, config.getAttributes().get().size());
+        assertEquals(2, config.getProperties().count());
+        assertTrue(config.getProperty("Property-1").isPresent());
+        assertTrue(config.getProperty("Property-2").isPresent());
+    }
+
+    @Test
+    @DisplayName("Compare two configs")
+    void compareTwoConfigs() {
+        final Config firstConfig = new Config.Builder("Config", Collections.emptyList()).build();
+        final Config secondConfig = new Config.Builder("Config", Collections.emptyList()).build();
+        // Check test results
+        assertEquals(firstConfig, secondConfig);
+    }
+
+    @Test
+    @DisplayName("Check hash codes of two configs")
+    void checkHashCodesOfTwoConfigs() {
+        final Config firstConfig = new Config.Builder("Config", Collections.emptyList()).build();
+        final Config secondConfig = new Config.Builder("Config", Collections.emptyList()).build();
+        // Check test results
+        assertEquals(firstConfig.hashCode(), secondConfig.hashCode());
+    }
+
+    @Test
+    @DisplayName("Check toString() of two configs")
+    void checkToStringOfTwoConfigs() {
+        final Config firstConfig = new Config.Builder("Config", Collections.emptyList()).build();
+        final Config secondConfig = new Config.Builder("Config", Collections.emptyList()).build();
+        // Check test results
+        assertEquals(firstConfig.toString(), secondConfig.toString());
+    }
+
+    @Test
+    @DisplayName("Create a config via the builder")
+    void createPropertyViaBuilder() {
+        final Config firstConfig = getConfig();
+        final Config secondConfig = new Config.Builder(firstConfig).build();
+        // Check test results
+        assertEquals(firstConfig, secondConfig);
+    }
+
+    @Test
+    @DisplayName("Create a config via the json builder")
+    void createPropertyViaJsonBuilder() throws JsonException {
+        final Config firstConfig = getConfig();
+        final Config secondConfig =
+                new Config.Builder((JsonObject) Jsoner.deserialize(firstConfig.toJson())).build();
+        // Check test results
+        assertEquals(firstConfig, secondConfig);
+    }
+
+    @Test
+    @DisplayName("Convert to a json")
+    void convertToJson() throws IOException {
+        final Config config = getConfig();
+        final StringWriter writer = new StringWriter();
+        config.toJson(writer);
+        // Check test results
+        assertEquals(writer.toString(), config.toJson());
+    }
+
+    private Property getProperty() {
+        return new Property.Builder("Property-1", "Value-1").
+                caption("Caption").
+                description("Description").
+                attribute("key_1", "value_1").
+                attributes(Collections.singletonMap("key_2", "value_2")).
+                property(new String[0], new Property.Builder("Sub-property-1", "Sub-value-1").build()).
+                build();
+    }
+
+    private Config getConfig() {
+        return new Config.Builder("Config", Collections.singletonList(getProperty())).
+                id(1).
+                description("Description").
+                version(1).
+                updated(UPDATED).
+                attribute("key_1", "value_1").
+                attributes(Collections.singletonMap("key_2", "value_2")).
+                property(new String[0], new Property.Builder("Property-2", "Value-2").build()).
+                build();
     }
 }
