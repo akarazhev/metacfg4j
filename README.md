@@ -26,14 +26,12 @@ Add a maven dependency into your project:
 ```
 Instantiate the meta configuration class in your project with the default configuration:
 ```java
-@Bean(destroyMethod = "close")
 public MetaConfig metaConfig() {
     return new MetaConfig.Builder().defaultConfig().build();
 }
 ```
 If you have the configured data source, you can use it:
 ```java
-@Bean(destroyMethod = "close")
 public MetaConfig metaConfig() {
     return new MetaConfig.Builder().dataSource(getDataSource()).build();
 }
@@ -44,7 +42,6 @@ NOTE: The web-server will not be started, since it requires the related configur
 
 You can instantiate the meta configuration with the custom configuration:
 ```java
-@Bean(destroyMethod = "close")
 public MetaConfig metaConfig() {
     // Create the web server config
     final Config webServer = new Config.Builder(Server.Settings.CONFIG_NAME,
@@ -65,6 +62,14 @@ public MetaConfig metaConfig() {
     }
 ```
 
+It's possible to configure the meta configuration as a client:
+```java
+public MetaConfig metaConfig() {
+    return new MetaConfig.Builder().dataSource(getDataSource()).build();
+}
+```
+NOTE: you need to call the close method in the end of processing.
+
 ### Certificate generation
 
 To generate a certificate, you need open a command line and and enter:
@@ -77,18 +82,34 @@ If you have certificate that's signed by CA (Certificate Authority), please use 
 
 #### Web Server settings
 
-`hostname` - server hostname.
-`backlog` - server backlog.
+The following settings are available:
+
+ * `config-server` - the name of the configuration. <br/>
+ * `hostname` - the server hostname. <br/>
+ * `port` - the server port. <br/>
+ * `backlog` - the server backlog. <br/>
+ * `keyStoreFile` - the path to a certificate. <br/>
+ * `alias` - the alias of a certificate. <br/>
+ * `storePassword` - the store password of a certificate. <br/>
+ * `keyPassword` - the key password of a certificate. <br/>
 
 #### REST API
 
-Documentation...
+The API is available by the https protocol:
+
+`POST api/metacfg/accept_config/CONFIG_NAME` - calls the logic for the config. <br/>
+`GET api/metacfg/config_names` - returns a list of config names. <br/>
+`GET api/metacfg/configs?names=CONFIG_NAMES_IN_BASE64` - returns a list of configs. <br/>
+`GET api/metacfg/config/CONFIG_NAME` - returns a config by the name. <br/>
+`PUT api/metacfg/config` - creates or updates a config. <br/>
+`DELETE api/metacfg/config/CONFIG_NAMES_IN_BASE64` - removes configs. <br/>
 
 ## Build Requirements
 
- &#8658; Java 8+
- &#8658; Maven 3.6+
+ &#8658; Java 8+ <br/>
+ &#8658; Maven 3.6+ <br/>
  
  ## Contribution
  
- Documentation...
+Contribution is always welcome. Please perform changes and submit pull requests from the `dev` branch instead of `master`.  
+Please set your editor to use spaces instead of tabs, and adhere to the apparent style of the code you are editing.
