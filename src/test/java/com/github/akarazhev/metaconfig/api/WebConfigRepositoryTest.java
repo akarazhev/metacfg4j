@@ -75,8 +75,7 @@ final class WebConfigRepositoryTest {
 
     @Test
     void delete() {
-        int count = configRepository.delete(Stream.of("name"));
-        assertEquals(1, count);
+        assertEquals(1, configRepository.delete(Stream.of("name")));
     }
 
     private Config getFirstConfig() {

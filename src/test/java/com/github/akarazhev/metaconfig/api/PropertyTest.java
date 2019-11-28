@@ -112,6 +112,9 @@ final class PropertyTest {
         final Optional<Property> secondSubProperty = firstSubProperty.get().getProperty("Sub-property-2");
         assertTrue(secondSubProperty.isPresent());
         assertEquals("Sub-property-2", secondSubProperty.get().getName());
+        final Optional<Property> lastSubProperty = property.getProperty("Sub-property-1", "Sub-property-2");
+        assertTrue(lastSubProperty.isPresent());
+        assertEquals("Sub-property-2", lastSubProperty.get().getName());
     }
 
     @Test
