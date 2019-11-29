@@ -35,7 +35,7 @@ final class ConfigTest {
     void createConfig() {
         final Config config = new Config.Builder("Config", Collections.emptyList()).build();
         // Check test results
-        assertEquals("Config", config.getName());
+        assertEquals("Config", config.getName(), "The config name is different");
         assertFalse(config.getDescription().isPresent());
         assertEquals(1, config.getVersion());
         assertTrue(config.getUpdated() > 0);
