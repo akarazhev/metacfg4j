@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class DbConfigRepositoryTest {
@@ -81,6 +82,18 @@ final class DbConfigRepositoryTest {
     }
 
     @Test
+    void findByEmptyNames() {
+        // Check test results
+        assertEquals(0, configRepository.findByNames(Stream.empty()).count());
+    }
+
+    @Test
+    void findByNotExistedNames() {
+        // Check test results
+        assertEquals(0, configRepository.findByNames(Stream.of(NEW_CONFIG)).count());
+    }
+
+    @Test
     void findConfigsByName() {
         final Config[] configs =
                 configRepository.findByNames(Stream.of(FIRST_CONFIG, SECOND_CONFIG)).toArray(Config[]::new);
@@ -95,6 +108,15 @@ final class DbConfigRepositoryTest {
     }
 
     @Test
+    void configsCanNotBeFoundByName() throws IOException {
+        connectionPool.close();
+        // Check test results
+        assertThrows(RuntimeException.class, () -> configRepository.findByNames(Stream.of(FIRST_CONFIG, SECOND_CONFIG)));
+        connectionPool = ConnectionPools.newPool();
+        configRepository = new DbConfigRepository.Builder(connectionPool.getDataSource()).build();
+    }
+
+    @Test
     void findNames() {
         final String[] names = configRepository.findNames().toArray(String[]::new);
         // Check test results
@@ -104,7 +126,32 @@ final class DbConfigRepositoryTest {
     }
 
     @Test
-    void updateFirstConfigById() {
+    void namesCanNotBeFound() throws IOException {
+        connectionPool.close();
+        // Check test results
+        assertThrows(RuntimeException.class, () -> configRepository.findNames());
+        connectionPool = ConnectionPools.newPool();
+        configRepository = new DbConfigRepository.Builder(connectionPool.getDataSource()).build();
+    }
+
+    @Test
+    void saveAndFlushNewConfig() {
+        final Optional<Config> newConfig =
+                configRepository.saveAndFlush(Stream.of(getConfigWithProperties(NEW_CONFIG))).findFirst();
+        // Check test results
+        assertTrue(newConfig.isPresent());
+        assertTrue(newConfig.get().getId() > 0);
+    }
+
+    @Test
+    void saveAndFlushEmptyConfig() {
+        final Stream<Config> configs = configRepository.saveAndFlush(Stream.empty());
+        // Check test results
+        assertEquals(0, configs.count());
+    }
+
+    @Test
+    void saveAndFlushConfigById() {
         final Optional<Config> firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
         // Check test results
         assertTrue(firstConfig.isPresent());
@@ -113,16 +160,16 @@ final class DbConfigRepositoryTest {
                 build();
         Optional<Config> updatedConfig = configRepository.saveAndFlush(Stream.of(newConfig)).findFirst();
         assertTrue(updatedConfig.isPresent());
+        assertTrue(updatedConfig.get().getId() > 0);
     }
 
     @Test
-    void findSecondConfigByName() {
-        final Optional<Config> secondConfig = configRepository.findByNames(Stream.of(SECOND_CONFIG)).findFirst();
-        // Check test results
-        assertTrue(secondConfig.isPresent());
-        final Config actualConfig = secondConfig.get();
-        final Config expectedConfig = getConfigWithProperties(SECOND_CONFIG);
-        assertEqualsConfig(expectedConfig, actualConfig);
+    void optimisticLockingError() {
+        final Optional<Config> firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
+        assertTrue(firstConfig.isPresent());
+        final Config newConfig = new Config.Builder(firstConfig.get()).build();
+        configRepository.saveAndFlush(Stream.of(newConfig));
+        assertThrows(RuntimeException.class, () -> configRepository.saveAndFlush(Stream.of(newConfig)));
     }
 
     private void assertEqualsConfig(final Config expected, final Config actual) {
