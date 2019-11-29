@@ -33,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class DbConfigRepositoryTest {
     private static final String FIRST_CONFIG = "The First Config";
     private static final String SECOND_CONFIG = "The Second Config";
+    private static final String NEW_CONFIG = "New Config";
 
     private static ConnectionPool connectionPool;
     private static ConfigRepository configRepository;
@@ -70,28 +71,36 @@ final class DbConfigRepositoryTest {
 
     @BeforeEach
     void beforeEach() {
-        configRepository.saveAndFlush(Stream.of(getFirstConfig(), getSecondConfig()));
+        configRepository.saveAndFlush(Stream.of(getConfigWithSubProperties(FIRST_CONFIG),
+                getConfigWithProperties(SECOND_CONFIG)));
     }
 
     @AfterEach
     void afterEach() {
-        configRepository.delete(Stream.of(FIRST_CONFIG, SECOND_CONFIG));
+        configRepository.delete(Stream.of(FIRST_CONFIG, SECOND_CONFIG, NEW_CONFIG));
     }
 
     @Test
-    void findFirstConfigByName() {
-        final Optional<Config> firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
+    void findConfigsByName() {
+        final Config[] configs =
+                configRepository.findByNames(Stream.of(FIRST_CONFIG, SECOND_CONFIG)).toArray(Config[]::new);
         // Check test results
-        assertTrue(firstConfig.isPresent());
-        final Config actualConfig = firstConfig.get();
-        final Config expectedConfig = getFirstConfig();
-        assertEqualsConfig(expectedConfig, actualConfig);
+        assertEquals(2, configs.length);
+        final Config firstExpected = getConfigWithSubProperties(FIRST_CONFIG);
+        final Config secondExpected = getConfigWithSubProperties(SECOND_CONFIG);
+        assertEqualsConfig(firstExpected, configs[0]);
+        assertEqualsProperty(firstExpected, configs[0]);
+        assertEqualsConfig(secondExpected, configs[1]);
+        assertEqualsProperty(secondExpected, configs[1]);
+    }
 
-        final Optional<Property> expected = expectedConfig.getProperty("Property");
-        assertTrue(expected.isPresent());
-        final Optional<Property> actual = actualConfig.getProperty("Property");
-        assertTrue(actual.isPresent());
-        assertEqualsProperty(expected.get(), actual.get());
+    @Test
+    void findNames() {
+        final String[] names = configRepository.findNames().toArray(String[]::new);
+        // Check test results
+        assertEquals(2, names.length);
+        assertEquals(FIRST_CONFIG, names[0]);
+        assertEquals(SECOND_CONFIG, names[1]);
     }
 
     @Test
@@ -99,7 +108,7 @@ final class DbConfigRepositoryTest {
         final Optional<Config> firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
         // Check test results
         assertTrue(firstConfig.isPresent());
-        final Config newConfig = new Config.Builder("New Config", Collections.emptyList()).
+        final Config newConfig = new Config.Builder(NEW_CONFIG, Collections.emptyList()).
                 id(firstConfig.get().getId()).
                 build();
         Optional<Config> updatedConfig = configRepository.saveAndFlush(Stream.of(newConfig)).findFirst();
@@ -112,7 +121,7 @@ final class DbConfigRepositoryTest {
         // Check test results
         assertTrue(secondConfig.isPresent());
         final Config actualConfig = secondConfig.get();
-        final Config expectedConfig = getSecondConfig();
+        final Config expectedConfig = getConfigWithProperties(SECOND_CONFIG);
         assertEqualsConfig(expectedConfig, actualConfig);
     }
 
@@ -126,7 +135,14 @@ final class DbConfigRepositoryTest {
         assertEquals(expected.getAttributes(), actual.getAttributes());
     }
 
-    private void assertEqualsProperty(final Property expected, final Property actual) {
+    private void assertEqualsProperty(final Config expectedConfig, final Config actualConfig) {
+        final Optional<Property> expectedProperty = expectedConfig.getProperty("Property");
+        assertTrue(expectedProperty.isPresent());
+        final Property expected = expectedProperty.get();
+        final Optional<Property> actualProperty = actualConfig.getProperty("Property");
+        assertTrue(actualProperty.isPresent());
+        final Property actual = actualProperty.get();
+
         assertEquals(expected.getName(), actual.getName());
         assertEquals(expected.getCaption(), actual.getCaption());
         assertEquals(expected.getDescription(), actual.getDescription());
@@ -138,7 +154,7 @@ final class DbConfigRepositoryTest {
         assertEquals(expected.getAttributes(), actual.getAttributes());
     }
 
-    private Config getFirstConfig() {
+    private Config getConfigWithSubProperties(final String name) {
         final Property firstSubProperty = new Property.Builder("Sub-Property-1", "Sub-Value-1").
                 attribute("key_1", "value_1").build();
         final Property secondSubProperty = new Property.Builder("Sub-Property-2", "Sub-Value-2").
@@ -159,10 +175,10 @@ final class DbConfigRepositoryTest {
         attributes.put("key_2", "value_2");
         attributes.put("key_3", "value_3");
 
-        return new Config.Builder(FIRST_CONFIG, Collections.singletonList(property)).attributes(attributes).build();
+        return new Config.Builder(name, Collections.singletonList(property)).attributes(attributes).build();
     }
 
-    private Config getSecondConfig() {
+    private Config getConfigWithProperties(final String name) {
         final Property firstProperty = new Property.Builder("Property-1", "Value-1").
                 attribute("key_1", "value_1").build();
         final Property secondProperty = new Property.Builder("Property-2", "Value-2").
@@ -183,6 +199,6 @@ final class DbConfigRepositoryTest {
         attributes.put("key_2", "value_2");
         attributes.put("key_3", "value_3");
 
-        return new Config.Builder(SECOND_CONFIG, Collections.singletonList(property)).attributes(attributes).build();
+        return new Config.Builder(name, Collections.singletonList(property)).attributes(attributes).build();
     }
 }

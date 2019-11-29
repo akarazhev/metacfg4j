@@ -24,10 +24,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.DB_ERROR;
@@ -136,7 +134,7 @@ final class DbConfigRepository implements ConfigRepository {
             try (final Connection connection = dataSource.getConnection();
                  final Statement statement = connection.createStatement();
                  final ResultSet resultSet = statement.executeQuery(SQL.SELECT.NAMES)) {
-                final Set<String> names = new HashSet<>();
+                final Collection<String> names = new LinkedList<>();
                 while (resultSet.next()) {
                     names.add(resultSet.getString(1));
                 }
@@ -536,7 +534,7 @@ final class DbConfigRepository implements ConfigRepository {
                 throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
             }
 
-            static final String NAMES = "SELECT `NAME` FROM `CONFIGS`;";
+            static final String NAMES = "SELECT `NAME` FROM `CONFIGS` ORDER BY `NAME`;";
             static final String VERSION = "SELECT `VERSION` FROM `CONFIGS` WHERE `ID` = ?;";
             static final String CONFIGS =
                     "SELECT `C`.`ID`, `C`.`NAME`, `C`.`DESCRIPTION`, `C`.`VERSION`, `C`.`UPDATED`, `CA`.`KEY`, " +
