@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.time.Clock;
+import java.util.Collection;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -59,7 +60,7 @@ final class ConfigTest {
     @Test
     @DisplayName("Create a config with properties")
     void createConfigWithParameters() {
-        final Config config = getConfig();
+        final Config config = getConfig(Collections.singletonList(getProperty()));
         // Check test results
         assertEquals(1, config.getId());
         assertEquals("Config", config.getName());
@@ -103,8 +104,8 @@ final class ConfigTest {
 
     @Test
     @DisplayName("Create a config via the builder")
-    void createPropertyViaBuilder() {
-        final Config firstConfig = getConfig();
+    void createConfigViaBuilder() {
+        final Config firstConfig = getConfig(Collections.singletonList(getProperty()));
         final Config secondConfig = new Config.Builder(firstConfig).build();
         // Check test results
         assertEquals(firstConfig, secondConfig);
@@ -112,8 +113,18 @@ final class ConfigTest {
 
     @Test
     @DisplayName("Create a config via the json builder")
-    void createPropertyViaJsonBuilder() throws JsonException {
-        final Config firstConfig = getConfig();
+    void createConfigViaJsonBuilder() throws JsonException {
+        final String json = "{\"name\":\"Config\",\"description\":\"Description\"}";
+        final Config firstConfig = new Config.Builder((JsonObject) Jsoner.deserialize(json)).build();
+        // Check test results
+        assertTrue(firstConfig.getAttributes().isPresent());
+        assertEquals(0, firstConfig.getProperties().count());
+    }
+
+    @Test
+    @DisplayName("Create a config with params via the json builder")
+    void createConfigWithParamsViaJsonBuilder() throws JsonException {
+        final Config firstConfig = getConfig(Collections.singletonList(getProperty()));
         final Config secondConfig =
                 new Config.Builder((JsonObject) Jsoner.deserialize(firstConfig.toJson())).build();
         // Check test results
@@ -121,9 +132,19 @@ final class ConfigTest {
     }
 
     @Test
-    @DisplayName("Convert to a json")
-    void convertToJson() throws IOException {
-        final Config config = getConfig();
+    @DisplayName("Convert a config to a json")
+    void convertConfigToJson() throws IOException {
+        final Config config = getConfig(Collections.emptyList());
+        final StringWriter writer = new StringWriter();
+        config.toJson(writer);
+        // Check test results
+        assertEquals(writer.toString(), config.toJson());
+    }
+
+    @Test
+    @DisplayName("Convert a config with properties to a json")
+    void convertConfigWithPropertiesToJson() throws IOException {
+        final Config config = getConfig(Collections.singletonList(getProperty()));
         final StringWriter writer = new StringWriter();
         config.toJson(writer);
         // Check test results
@@ -140,8 +161,8 @@ final class ConfigTest {
                 build();
     }
 
-    private Config getConfig() {
-        return new Config.Builder("Config", Collections.singletonList(getProperty())).
+    private Config getConfig(final Collection<Property> properties) {
+        return new Config.Builder("Config", properties).
                 id(1).
                 description("Description").
                 version(1).

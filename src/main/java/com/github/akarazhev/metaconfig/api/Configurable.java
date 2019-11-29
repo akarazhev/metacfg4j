@@ -80,8 +80,8 @@ interface Configurable extends ExtJsonable {
          * @return attributes as a map.
          */
         Optional<Map<String, String>> getAttributes(final JsonObject jsonObject) {
-            if (jsonObject != null) {
-                final JsonObject jsonAttributes = (JsonObject) jsonObject.get("attributes");
+            final JsonObject jsonAttributes = (JsonObject) jsonObject.get("attributes");
+            if (jsonAttributes != null) {
                 final Map<String, String> attributes = new HashMap<>();
                 for (final Object key : jsonAttributes.keySet()) {
                     attributes.put((String) key, (String) jsonAttributes.get(key));

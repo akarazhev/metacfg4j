@@ -226,6 +226,17 @@ final class PropertyTest {
     @Test
     @DisplayName("Create a property via the json builder")
     void createPropertyViaJsonBuilder() throws JsonException {
+        final String json = "{\"name\":\"Property\",\"caption\":\"Caption\",\"description\":\"Description\"," +
+                "\"type\":\"STRING\",\"value\":\"Value\"}";
+        final Property firstProperty = new Property.Builder((JsonObject) Jsoner.deserialize(json)).build();
+        // Check test results
+        assertTrue(firstProperty.getAttributes().isPresent());
+        assertEquals(0, firstProperty.getProperties().count());
+    }
+
+    @Test
+    @DisplayName("Create a property with params via the json builder")
+    void createPropertyWithParamsViaJsonBuilder() throws JsonException {
         final Property firstProperty = getProperty();
         final Property secondProperty =
                 new Property.Builder((JsonObject) Jsoner.deserialize(firstProperty.toJson())).build();
@@ -234,8 +245,8 @@ final class PropertyTest {
     }
 
     @Test
-    @DisplayName("Convert to a json")
-    void convertToJson() throws IOException {
+    @DisplayName("Convert a property to a json")
+    void convertPropertyToJson() throws IOException {
         final Property property = getProperty();
         final StringWriter writer = new StringWriter();
         property.toJson(writer);

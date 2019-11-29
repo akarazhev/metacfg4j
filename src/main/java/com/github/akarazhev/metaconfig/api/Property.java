@@ -286,13 +286,14 @@ public final class Property extends AbstractConfig {
          * @param jsonObject a json object with the property model.
          */
         public Builder(final JsonObject jsonObject) {
-            this.name = Validator.of((String) jsonObject.get("name")).get();
-            this.caption = (String) jsonObject.get("caption");
-            this.description = (String) jsonObject.get("description");
-            this.type = Type.valueOf(Validator.of((String) jsonObject.get("type")).get());
-            this.value = Validator.of((String) jsonObject.get("value")).get();
-            getAttributes(jsonObject).ifPresent(this.attributes::putAll);
-            this.properties.addAll(getProperties(jsonObject).collect(Collectors.toList()));
+            final JsonObject prototype = Validator.of(jsonObject).get();
+            this.name = Validator.of((String) prototype.get("name")).get();
+            this.caption = (String) prototype.get("caption");
+            this.description = (String) prototype.get("description");
+            this.type = Type.valueOf(Validator.of((String) prototype.get("type")).get());
+            this.value = Validator.of((String) prototype.get("value")).get();
+            getAttributes(prototype).ifPresent(this.attributes::putAll);
+            this.properties.addAll(getProperties(prototype).collect(Collectors.toList()));
         }
 
         /**
