@@ -18,8 +18,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.time.Clock;
-import java.util.Collection;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,8 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("Config test")
-final class ConfigTest {
-    private final long UPDATED = Clock.systemDefaultZone().millis();
+final class ConfigTest extends TestData {
 
     @Test
     @DisplayName("Create a config")
@@ -150,27 +147,5 @@ final class ConfigTest {
         config.toJson(writer);
         // Check test results
         assertEquals(writer.toString(), config.toJson());
-    }
-
-    private Config getConfig(final Collection<Property> properties) {
-        return new Config.Builder("Config", properties).
-                id(1).
-                description("Description").
-                version(1).
-                updated(UPDATED).
-                attribute("key_1", "value_1").
-                attributes(Collections.singletonMap("key_2", "value_2")).
-                property(new String[0], new Property.Builder("Property-2", "Value-2").build()).
-                build();
-    }
-
-    private Property getProperty() {
-        return new Property.Builder("Property-1", "Value-1").
-                caption("Caption").
-                description("Description").
-                attribute("key_1", "value_1").
-                attributes(Collections.singletonMap("key_2", "value_2")).
-                property(new String[0], new Property.Builder("Sub-property-1", "Sub-value-1").build()).
-                build();
     }
 }

@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("Property test")
-final class PropertyTest {
+final class PropertyTest extends TestData {
 
     @Test
     @DisplayName("Create a property")
@@ -253,14 +253,5 @@ final class PropertyTest {
         property.toJson(writer);
         // Check test results
         assertEquals(writer.toString(), property.toJson());
-    }
-
-    private Property getProperty() {
-        return new Property.Builder("Property", "Value").
-                caption("Caption").
-                description("Description").
-                attribute("key", "value").
-                property(new String[0], new Property.Builder("Sub-property-1", "Sub-value-1").build()).
-                build();
     }
 }
