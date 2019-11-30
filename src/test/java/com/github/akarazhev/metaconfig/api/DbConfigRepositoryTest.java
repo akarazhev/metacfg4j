@@ -18,6 +18,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -31,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@DisplayName("Data base repository test")
 final class DbConfigRepositoryTest {
     private static final String FIRST_CONFIG = "The First Config";
     private static final String SECOND_CONFIG = "The Second Config";
@@ -82,19 +84,22 @@ final class DbConfigRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find configs by empty names")
     void findByEmptyNames() {
         // Check test results
         assertEquals(0, configRepository.findByNames(Stream.empty()).count());
     }
 
     @Test
-    void findByNotExistedNames() {
+    @DisplayName("Find configs by the not existed name")
+    void findByNotExistedName() {
         // Check test results
         assertEquals(0, configRepository.findByNames(Stream.of(NEW_CONFIG)).count());
     }
 
     @Test
-    void findConfigsByName() {
+    @DisplayName("Find configs by names")
+    void findConfigsByNames() {
         final Config[] configs =
                 configRepository.findByNames(Stream.of(FIRST_CONFIG, SECOND_CONFIG)).toArray(Config[]::new);
         // Check test results
@@ -108,7 +113,8 @@ final class DbConfigRepositoryTest {
     }
 
     @Test
-    void configsCanNotBeFoundByName() throws IOException {
+    @DisplayName("Find configs by names with the closed connection pool")
+    void findByNamesWithClosedConnectionPool() throws IOException {
         connectionPool.close();
         // Check test results
         assertThrows(RuntimeException.class, () -> configRepository.findByNames(Stream.of(FIRST_CONFIG, SECOND_CONFIG)));
@@ -117,6 +123,7 @@ final class DbConfigRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find config names")
     void findNames() {
         final String[] names = configRepository.findNames().toArray(String[]::new);
         // Check test results
@@ -126,7 +133,8 @@ final class DbConfigRepositoryTest {
     }
 
     @Test
-    void namesCanNotBeFound() throws IOException {
+    @DisplayName("Find config names with the closed connection pool")
+    void findNamesWithClosedConnectionPool() throws IOException {
         connectionPool.close();
         // Check test results
         assertThrows(RuntimeException.class, () -> configRepository.findNames());
@@ -135,6 +143,7 @@ final class DbConfigRepositoryTest {
     }
 
     @Test
+    @DisplayName("Save and flush a new config")
     void saveAndFlushNewConfig() {
         final Optional<Config> newConfig =
                 configRepository.saveAndFlush(Stream.of(getConfigWithProperties(NEW_CONFIG))).findFirst();
@@ -144,6 +153,7 @@ final class DbConfigRepositoryTest {
     }
 
     @Test
+    @DisplayName("Save and flush an empty")
     void saveAndFlushEmptyConfig() {
         final Stream<Config> configs = configRepository.saveAndFlush(Stream.empty());
         // Check test results
@@ -151,6 +161,7 @@ final class DbConfigRepositoryTest {
     }
 
     @Test
+    @DisplayName("Save and flush by the config id")
     void saveAndFlushConfigById() {
         final Optional<Config> firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
         // Check test results
@@ -164,6 +175,7 @@ final class DbConfigRepositoryTest {
     }
 
     @Test
+    @DisplayName("Optimistic locking error")
     void optimisticLockingError() {
         final Optional<Config> firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
         assertTrue(firstConfig.isPresent());
