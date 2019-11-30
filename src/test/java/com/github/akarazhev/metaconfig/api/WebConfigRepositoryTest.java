@@ -52,12 +52,12 @@ final class WebConfigRepositoryTest extends TestData {
 
     @AfterAll
     static void afterAll() {
+        configRepository = null;
+
         if (webServer != null) {
             webServer.stop();
             webServer = null;
         }
-
-        configRepository = null;
     }
 
     @BeforeEach

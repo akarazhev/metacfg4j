@@ -32,9 +32,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("Config service test")
 final class ConfigServiceTest extends TestData {
+    private static DbServer dbServer;
     private static ConnectionPool connectionPool;
     private static ConfigService configService;
-    private static DbServer dbServer;
 
     @BeforeAll
     static void beforeAll() throws Exception {
@@ -55,6 +55,8 @@ final class ConfigServiceTest extends TestData {
 
     @AfterAll
     static void afterAll() throws IOException {
+        configService = null;
+
         if (connectionPool != null) {
             connectionPool.close();
             connectionPool = null;
@@ -64,8 +66,6 @@ final class ConfigServiceTest extends TestData {
             dbServer.stop();
             dbServer = null;
         }
-
-        configService = null;
     }
 
     @BeforeEach

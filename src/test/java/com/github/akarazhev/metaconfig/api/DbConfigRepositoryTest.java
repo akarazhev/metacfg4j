@@ -32,9 +32,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("Data base repository test")
 final class DbConfigRepositoryTest extends TestData {
+    private static DbServer dbServer;
     private static ConnectionPool connectionPool;
     private static ConfigRepository configRepository;
-    private static DbServer dbServer;
 
     @BeforeAll
     static void beforeAll() throws Exception {
@@ -53,6 +53,8 @@ final class DbConfigRepositoryTest extends TestData {
 
     @AfterAll
     static void afterAll() throws IOException {
+        configRepository = null;
+
         if (connectionPool != null) {
             connectionPool.close();
             connectionPool = null;
@@ -62,8 +64,6 @@ final class DbConfigRepositoryTest extends TestData {
             dbServer.stop();
             dbServer = null;
         }
-
-        configRepository = null;
     }
 
     @BeforeEach
