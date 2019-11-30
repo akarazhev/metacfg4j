@@ -46,13 +46,13 @@ public MetaConfig metaConfig() {
     // Create the web server config
     final Config webServer = new Config.Builder(Server.Settings.CONFIG_NAME,
         Arrays.asList(
-                new Property.Builder(Settings.HOSTNAME, "localhost").build(),
-                new Property.Builder(Settings.PORT, 8000).build(),
-                new Property.Builder(Settings.BACKLOG, 0).build(),
-                new Property.Builder(Settings.KEY_STORE_FILE, "./data/metacfg4j.keystore").build(),
-                new Property.Builder(Settings.ALIAS, "alias").build(),
-                new Property.Builder(Settings.STORE_PASSWORD, "password").build(),
-                new Property.Builder(Settings.KEY_PASSWORD, "password").build()))
+                new Property.Builder(Server.Settings.HOSTNAME, "localhost").build(),
+                new Property.Builder(Server.Settings.PORT, 8000).build(),
+                new Property.Builder(Server.Settings.BACKLOG, 0).build(),
+                new Property.Builder(Server.Settings.KEY_STORE_FILE, "./data/metacfg4j.keystore").build(),
+                new Property.Builder(Server.Settings.ALIAS, "alias").build(),
+                new Property.Builder(Server.Settings.STORE_PASSWORD, "password").build(),
+                new Property.Builder(Server.Settings.KEY_PASSWORD, "password").build()))
         .build();
     // Create the meta configuration
     return new MetaConfig.Builder().
@@ -65,7 +65,14 @@ public MetaConfig metaConfig() {
 It's possible to configure the meta configuration as a client:
 ```java
 public MetaConfig metaConfig() {
-    return new MetaConfig.Builder().dataSource(getDataSource()).build();
+    // Create the web client config
+    final Config webClient = new Config.Builder(WebClient.Settings.CONFIG_NAME,
+        Arrays.asList(
+                new Property.Builder(WebClient.Settings.URL, "https://localhost:8000/api/metacfg").build(),
+                new Property.Builder(WebClient.Settings.ACCEPT_ALL_HOSTS, true).build()))
+        .build();
+    // Create the meta configuration
+    return new MetaConfig.Builder().webClient(webClient).build();
 }
 ```
 NOTE: you need to call the close method in the end of processing.
