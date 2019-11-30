@@ -155,9 +155,8 @@ final class DbConfigRepositoryTest {
     @Test
     @DisplayName("Save and flush an empty")
     void saveAndFlushEmptyConfig() {
-        final Stream<Config> configs = configRepository.saveAndFlush(Stream.empty());
         // Check test results
-        assertEquals(0, configs.count());
+        assertEquals(0, configRepository.saveAndFlush(Stream.empty()).count());
     }
 
     @Test
