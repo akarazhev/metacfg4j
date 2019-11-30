@@ -10,5 +10,9 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
+import org.junit.jupiter.api.DisplayName;
+
+@DisplayName("Meta config test")
 final class MetaConfigTest {
+    // todo
 }
