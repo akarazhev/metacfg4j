@@ -160,16 +160,6 @@ final class WebConfigRepositoryTest extends TestData {
     }
 
     @Test
-    @DisplayName("Optimistic locking error")
-    void optimisticLockingError() {
-        final Optional<Config> firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
-        assertTrue(firstConfig.isPresent());
-        final Config newConfig = new Config.Builder(firstConfig.get()).build();
-        configRepository.saveAndFlush(Stream.of(newConfig));
-        assertThrows(RuntimeException.class, () -> configRepository.saveAndFlush(Stream.of(newConfig)));
-    }
-
-    @Test
     @DisplayName("Delete configs by empty names")
     void deleteByEmptyNames() {
         // Check test results

@@ -16,6 +16,7 @@ import com.github.akarazhev.metaconfig.engine.web.server.Server;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -65,7 +66,7 @@ public final class WebServers {
 
             @Override
             public Stream<Config> get() {
-                return dataStorage.values().stream();
+                return dataStorage.values().stream().sorted(Comparator.comparing(Config::getName));
             }
 
             @Override
@@ -78,7 +79,7 @@ public final class WebServers {
                     }
                 });
 
-                return configs.stream();
+                return configs.stream().sorted(Comparator.comparing(Config::getName));
             }
 
             @Override
