@@ -51,8 +51,11 @@ final class MetaConfigTest {
                             new Property.Builder(Server.Settings.STORE_PASSWORD, "password").build(),
                             new Property.Builder(Server.Settings.KEY_PASSWORD, "password").build()))
                     .build();
-            dbMetaConfig =
-                    new MetaConfig.Builder().webServer(webServer).dataSource(connectionPool.getDataSource()).build();
+            dbMetaConfig = new MetaConfig.Builder().
+                    defaultConfig().
+                    webServer(webServer).
+                    dataSource(connectionPool.getDataSource()).
+                    build();
         }
 
         if (webMetaConfig == null) {
@@ -61,9 +64,9 @@ final class MetaConfigTest {
                             new Property.Builder(WebClient.Settings.URL, "https://localhost:8000/api/metacfg").build(),
                             new Property.Builder(WebClient.Settings.ACCEPT_ALL_HOSTS, true).build()))
                     .build();
-
-            dbMetaConfig =
-                    new MetaConfig.Builder().webClient(webClient).build();
+            webMetaConfig = new MetaConfig.Builder().
+                    webClient(webClient).
+                    build();
         }
     }
 
