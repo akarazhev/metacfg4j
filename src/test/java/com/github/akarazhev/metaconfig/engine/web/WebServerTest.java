@@ -159,6 +159,6 @@ final class WebServerTest {
         // Get the response
         final JsonObject jsonObject = client.getJsonContent();
         assertEquals(true, jsonObject.get(SUCCESS));
-        assertEquals(1, ((BigDecimal) jsonObject.get(RESULT)).intValue());
+        assertEquals(0, ((BigDecimal) jsonObject.get(RESULT)).intValue());
     }
 }
