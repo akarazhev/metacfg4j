@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.CONFIG_ACCEPT_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DELETE_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SAVE_CONFIGS_ERROR;
@@ -33,6 +34,7 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_WRONG_ST
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Header.APPLICATION_JSON;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.DELETE;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.GET;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.POST;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.PUT;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.ACCEPT;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.ACCEPT_ALL_HOSTS;
@@ -121,6 +123,23 @@ final class WebConfigRepository implements ConfigRepository {
         properties.add(new Property.Builder(METHOD, DELETE).build());
 
         return ((BigDecimal) getContent(properties, DELETE_CONFIGS_ERROR)).intValue();
+    }
+
+    /**
+     * Accepts a configuration model by the name.
+     *
+     * @param name a configuration name.
+     */
+    public void accept(final String name) {
+        final Collection<Property> properties = new ArrayList<>(3);
+        this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
+                properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
+        this.config.getProperty(URL).ifPresent(property ->
+                properties.add(new Property.Builder(URL, property.getValue() + "/accept_config/" +
+                        name).build()));
+        properties.add(new Property.Builder(METHOD, POST).build());
+
+        getContent(properties, CONFIG_ACCEPT_ERROR);
     }
 
     private String getNames(Stream<String> stream) {

@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Header.APPLICATION_JSON;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
@@ -157,8 +158,11 @@ abstract class AbstractController {
             final MethodNotAllowedException exception = (MethodNotAllowedException) throwable;
             httpExchange.sendResponseHeaders(exception.getCode(), 0);
         } else {
-            final InternalServerErrorException exception = (InternalServerErrorException) throwable;
-            httpExchange.sendResponseHeaders(exception.getCode(), 0);
+            if (throwable instanceof InternalServerErrorException) {
+                httpExchange.sendResponseHeaders(((InternalServerErrorException) throwable).getCode(), 0);
+            } else {
+                httpExchange.sendResponseHeaders(HTTP_INTERNAL_ERROR, 0);
+            }
         }
 
         return response;

@@ -46,13 +46,14 @@ public final class Constants {
         public static final String REQUEST_PARAM_NOT_PRESENT = "Request param is not presented.";
         public static final String JSON_TO_CONFIG_ERROR = "JSON can not be parsed to config.";
         public static final String CONFIG_ACCEPTED = "Accepted '%s' config.";
+        public static final String CONFIG_ACCEPT_ERROR = "Config accept error.";
         public static final String CREATE_CONFIG_TABLE_ERROR = "'Configs' table can not be created.";
-        public static final String SAVE_CONFIGS_ERROR = "Configs instances can not be saved.";
+        public static final String SAVE_CONFIGS_ERROR = "Config(s) instances can not be saved.";
         public static final String INSERT_ATTRIBUTES_ERROR = "Attributes can not be inserted.";
         public static final String UPDATE_ATTRIBUTES_ERROR = "Attributes can not be updated.";
-        public static final String INSERT_CONFIG_PROPERTIES_ERROR = "Config properties can not be inserted.";
+        public static final String INSERT_CONFIG_PROPERTIES_ERROR = "Config property/properties can not be inserted.";
         public static final String RECEIVED_CONFIGS_ERROR = "Config instances can not be received.";
-        public static final String DELETE_CONFIGS_ERROR = "Configs can not be deleted.";
+        public static final String DELETE_CONFIGS_ERROR = "Config(s) can not be deleted.";
         public static final String DB_ERROR = "Database error.";
         public static final String DB_ROLLBACK_ERROR = "Database rollback error.";
         public static final String DB_CONNECTION_ERROR = "Database connection error.";

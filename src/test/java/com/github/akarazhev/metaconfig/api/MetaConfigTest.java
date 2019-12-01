@@ -17,14 +17,24 @@ import com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPools;
 import com.github.akarazhev.metaconfig.engine.web.WebClient;
 import com.github.akarazhev.metaconfig.engine.web.server.Server;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("Meta config test")
-final class MetaConfigTest {
+final class MetaConfigTest extends TestData {
     private static DbServer dbServer;
     private static ConnectionPool connectionPool;
     private static MetaConfig dbMetaConfig;
@@ -91,5 +101,230 @@ final class MetaConfigTest {
             dbServer.stop();
             dbServer = null;
         }
+    }
+
+    @BeforeEach
+    void beforeEach() {
+        dbMetaConfig.update(Stream.of(getConfigWithSubProperties(FIRST_CONFIG),
+                getConfigWithProperties(SECOND_CONFIG)));
+        dbMetaConfig.addConsumer(null);
+    }
+
+    @AfterEach
+    void afterEach() {
+        dbMetaConfig.remove(Stream.of(FIRST_CONFIG, SECOND_CONFIG, NEW_CONFIG));
+    }
+
+    @Test
+    @DisplayName("Get configs by empty names")
+    void getByEmptyNames() {
+        // Check test results
+        assertEquals(0, dbMetaConfig.get(Stream.empty()).count());
+        assertEquals(0, webMetaConfig.get(Stream.empty()).count());
+    }
+
+    @Test
+    @DisplayName("Get configs by the not existed name")
+    void getByNotExistedName() {
+        // Check test results
+        assertEquals(0, dbMetaConfig.get(Stream.of(NEW_CONFIG)).count());
+        assertEquals(0, webMetaConfig.get(Stream.of(NEW_CONFIG)).count());
+    }
+
+    @Test
+    @DisplayName("Get configs by names")
+    void getConfigsByNames() {
+        assertEqualsConfigs(dbMetaConfig.get(Stream.of(FIRST_CONFIG, SECOND_CONFIG)).toArray(Config[]::new));
+        assertEqualsConfigs(webMetaConfig.get(Stream.of(FIRST_CONFIG, SECOND_CONFIG)).toArray(Config[]::new));
+    }
+
+    /*
+    @Test
+    @DisplayName("Get configs by names with the closed connection pool")
+    void getByNamesWithClosedConnectionPool() throws IOException {
+        connectionPool.close();
+        // Check test results
+        assertThrows(RuntimeException.class, () -> configService.get(Stream.of(FIRST_CONFIG, SECOND_CONFIG)));
+        connectionPool = ConnectionPools.newPool();
+        final ConfigRepository configRepository =
+                new DbConfigRepository.Builder(connectionPool.getDataSource()).build();
+        configService = new ConfigServiceImpl.Builder(configRepository).build();
+    }*/
+
+    @Test
+    @DisplayName("Get config names")
+    void getNames() {
+        assertEqualsNames(dbMetaConfig.getNames().toArray(String[]::new));
+        assertEqualsNames(webMetaConfig.getNames().toArray(String[]::new));
+
+
+        final String[] names = dbMetaConfig.getNames().toArray(String[]::new);
+        // Check test results
+        assertEquals(2, names.length);
+        assertEquals(FIRST_CONFIG, names[0]);
+        assertEquals(SECOND_CONFIG, names[1]);
+    }
+
+    /*@Test
+    @DisplayName("Get config names with the closed connection pool")
+    void getNamesWithClosedConnectionPool() throws IOException {
+        connectionPool.close();
+        // Check test results
+        assertThrows(RuntimeException.class, () -> configService.getNames());
+        connectionPool = ConnectionPools.newPool();
+        final ConfigRepository configRepository =
+                new DbConfigRepository.Builder(connectionPool.getDataSource()).build();
+        configService = new ConfigServiceImpl.Builder(configRepository).build();
+    }*/
+
+    @Test
+    @DisplayName("Update a new config")
+    void updateNewConfig() {
+        final Optional<Config> newDbConfig =
+                dbMetaConfig.update(Stream.of(getConfigWithProperties(NEW_CONFIG))).findFirst();
+        final Optional<Config> newWebConfig =
+                webMetaConfig.update(Stream.of(getConfigWithProperties(NEW_CONFIG))).findFirst();
+        // Check test results
+        assertTrue(newDbConfig.isPresent());
+        assertTrue(newDbConfig.get().getId() > 0);
+        assertTrue(newWebConfig.isPresent());
+        assertTrue(newWebConfig.get().getId() > 0);
+    }
+
+    @Test
+    @DisplayName("Update an empty")
+    void updateEmptyConfig() {
+        // Check test results
+        assertEquals(0, dbMetaConfig.update(Stream.empty()).count());
+        assertEquals(0, webMetaConfig.update(Stream.empty()).count());
+    }
+
+    @Test
+    @DisplayName("Update by the first config id")
+    void updateConfigByFirstId() {
+        final Optional<Config> firstConfig = dbMetaConfig.get(Stream.of(FIRST_CONFIG)).findFirst();
+        // Check test results
+        assertTrue(firstConfig.isPresent());
+        final Config newConfig = new Config.Builder(NEW_CONFIG, Collections.emptyList()).
+                id(firstConfig.get().getId()).
+                build();
+        Optional<Config> updatedDbConfig = dbMetaConfig.update(Stream.of(newConfig)).findFirst();
+        assertTrue(updatedDbConfig.isPresent());
+        assertTrue(updatedDbConfig.get().getId() > 0);
+    }
+
+    @Test
+    @DisplayName("Update by the second config id")
+    void updateConfigBySecondId() {
+        final Optional<Config> secondConfig = dbMetaConfig.get(Stream.of(FIRST_CONFIG)).findFirst();
+        // Check test results
+        assertTrue(secondConfig.isPresent());
+        final Config newConfig = new Config.Builder(NEW_CONFIG, Collections.emptyList()).
+                id(secondConfig.get().getId()).
+                build();
+        Optional<Config> updatedWebConfig = webMetaConfig.update(Stream.of(newConfig)).findFirst();
+        assertTrue(updatedWebConfig.isPresent());
+        assertTrue(updatedWebConfig.get().getId() > 0);
+    }
+
+    @Test
+    @DisplayName("Optimistic locking error")
+    void optimisticLockingError() {
+        final Optional<Config> firstConfig = dbMetaConfig.get(Stream.of(FIRST_CONFIG)).findFirst();
+        assertTrue(firstConfig.isPresent());
+        final Config newConfig = new Config.Builder(firstConfig.get()).build();
+        dbMetaConfig.update(Stream.of(newConfig));
+        assertThrows(RuntimeException.class, () -> dbMetaConfig.update(Stream.of(newConfig)));
+        assertThrows(RuntimeException.class, () -> webMetaConfig.update(Stream.of(newConfig)));
+    }
+
+    @Test
+    @DisplayName("Remove configs by empty names")
+    void removeByEmptyNames() {
+        // Check test results
+        assertEquals(0, dbMetaConfig.remove(Stream.empty()));
+        assertEquals(0, webMetaConfig.remove(Stream.empty()));
+    }
+
+    @Test
+    @DisplayName("Remove configs by the not existed name")
+    void removeByNotExistedName() {
+        // Check test results
+        assertEquals(0, dbMetaConfig.remove(Stream.of(NEW_CONFIG)));
+        assertEquals(0, webMetaConfig.remove(Stream.of(NEW_CONFIG)));
+    }
+
+    @Test
+    @DisplayName("Remove configs by names")
+    void removeByNames() {
+        // Check test results
+        assertEquals(1, dbMetaConfig.remove(Stream.of(FIRST_CONFIG)));
+        assertEquals(1, webMetaConfig.remove(Stream.of(SECOND_CONFIG)));
+    }
+
+    @Test
+    @DisplayName("Add a consumer for the config")
+    void addConsumer() {
+        final StringBuilder message = new StringBuilder();
+        dbMetaConfig.addConsumer(config -> {
+            if (FIRST_CONFIG.equals(config.getName())) {
+                message.append(FIRST_CONFIG);
+            }
+        });
+        // Check test results
+        assertEquals(0, message.length());
+    }
+
+    @Test
+    @DisplayName("Accept config by the name")
+    void acceptByName() {
+        dbMetaConfig.accept(FIRST_CONFIG);
+    }
+
+    @Test
+    @DisplayName("Accept config by the different name")
+    void acceptByDifferentName() {
+        final StringBuilder message = new StringBuilder();
+        dbMetaConfig.addConsumer(config -> {
+            if (FIRST_CONFIG.equals(config.getName())) {
+                message.append(FIRST_CONFIG);
+            }
+        });
+
+        webMetaConfig.accept(NEW_CONFIG);
+        // Check test results
+        assertEquals(0, message.length());
+    }
+
+    @Test
+    @DisplayName("Accept config by the name with consumer")
+    void acceptByNameWithConsumer() {
+        final StringBuilder message = new StringBuilder();
+        dbMetaConfig.addConsumer(config -> {
+            if (FIRST_CONFIG.equals(config.getName())) {
+                message.append(FIRST_CONFIG);
+            }
+        });
+
+        webMetaConfig.accept(FIRST_CONFIG);
+        // Check test results
+        assertEquals(FIRST_CONFIG, message.toString());
+    }
+
+    private void assertEqualsConfigs(final Config[] configs) {
+        // Check test results
+        assertEquals(2, configs.length);
+        final Config firstExpected = getConfigWithSubProperties(FIRST_CONFIG);
+        final Config secondExpected = getConfigWithSubProperties(SECOND_CONFIG);
+        assertEqualsConfig(firstExpected, configs[0]);
+        assertEqualsProperty(firstExpected, configs[0]);
+        assertEqualsConfig(secondExpected, configs[1]);
+        assertEqualsProperty(secondExpected, configs[1]);
+    }
+
+    private void assertEqualsNames(final String[] names) {
+        assertEquals(2, names.length);
+        assertEquals(FIRST_CONFIG, names[0]);
+        assertEquals(SECOND_CONFIG, names[1]);
     }
 }
