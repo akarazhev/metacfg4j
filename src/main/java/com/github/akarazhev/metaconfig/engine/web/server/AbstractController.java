@@ -11,6 +11,7 @@
 package com.github.akarazhev.metaconfig.engine.web.server;
 
 import com.github.akarazhev.metaconfig.api.ConfigService;
+import com.github.akarazhev.metaconfig.extension.URLUtils;
 import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonException;
 import com.github.cliftonlabs.json_simple.Jsoner;
@@ -79,7 +80,7 @@ abstract class AbstractController {
      */
     Stream<String> getPathParams(final String path, final String api) {
         return path.contains(api) ?
-                Arrays.stream(path.substring(api.length() + 1).split("/")) :
+                Arrays.stream(path.substring(api.length() + 1).split("/")).map(URLUtils::decode) :
                 Stream.empty();
     }
 
@@ -128,6 +129,7 @@ abstract class AbstractController {
             outputStream.write(jsonBytes);
             outputStream.flush();
         } catch (final Exception e) {
+            LOGGER.log(Level.SEVERE, e.getMessage());
             throw new InvalidRequestException(HTTP_BAD_REQUEST, e.getMessage());
         }
     }

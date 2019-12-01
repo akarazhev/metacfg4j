@@ -11,6 +11,7 @@
 package com.github.akarazhev.metaconfig.api;
 
 import com.github.akarazhev.metaconfig.engine.web.WebClient;
+import com.github.akarazhev.metaconfig.extension.URLUtils;
 import com.github.akarazhev.metaconfig.extension.Validator;
 import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
@@ -136,7 +137,7 @@ final class WebConfigRepository implements ConfigRepository {
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
         this.config.getProperty(URL).ifPresent(property ->
                 properties.add(new Property.Builder(URL, property.getValue() + "/accept_config/" +
-                        name).build()));
+                        URLUtils.encode(name)).build()));
         properties.add(new Property.Builder(METHOD, POST).build());
 
         getContent(properties, CONFIG_ACCEPT_ERROR);

@@ -23,13 +23,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_FACTORY_CLASS_ERROR;
+
 /**
  * Provides factory methods to create a web server.
  */
 public final class WebServers {
 
     private WebServers() {
-        throw new AssertionError("Factory class ca not be ");
+        throw new AssertionError(CREATE_FACTORY_CLASS_ERROR);
     }
 
     /**

@@ -106,8 +106,7 @@ The API is available by the https protocol:
 
 `POST api/metacfg/accept_config/CONFIG_NAME` - calls the logic for the config. <br/>
 `GET api/metacfg/config_names` - returns a list of config names. <br/>
-`GET api/metacfg/configs?names=CONFIG_NAMES_IN_BASE64` - returns a list of configs. <br/>
-`GET api/metacfg/config/CONFIG_NAME` - returns a config by the name. <br/>
+`GET api/metacfg/config?names=CONFIG_NAMES_IN_BASE64` - returns a list of configs. <br/>
 `PUT api/metacfg/config` - creates or updates a config. <br/>
 `DELETE api/metacfg/config/CONFIG_NAMES_IN_BASE64` - removes configs. <br/>
 
