@@ -108,7 +108,7 @@ The API is available by the https protocol:
 `GET api/metacfg/config_names` - returns a list of config names. <br/>
 `GET api/metacfg/config?names=CONFIG_NAMES_IN_BASE64` - returns a list of configs. <br/>
 `PUT api/metacfg/config` - creates or updates a config. <br/>
-`DELETE api/metacfg/config/CONFIG_NAMES_IN_BASE64` - removes configs. <br/>
+`DELETE api/metacfg/config?names=CONFIG_NAMES_IN_BASE64` - removes a list of configs. <br/>
 
 ## Build Requirements
 

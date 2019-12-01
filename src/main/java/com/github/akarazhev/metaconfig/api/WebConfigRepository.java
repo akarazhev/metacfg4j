@@ -63,16 +63,8 @@ final class WebConfigRepository implements ConfigRepository {
      * {@inheritDoc}
      */
     @Override
-    public Stream<Config> findByNames(Stream<String> stream) {
-        final Collection<Property> properties = new ArrayList<>(3);
-        this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
-                properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
-        this.config.getProperty(URL).ifPresent(property ->
-                properties.add(new Property.Builder(URL, property.getValue() + "/configs?names=" +
-                        getNames(stream)).build()));
-        properties.add(new Property.Builder(METHOD, GET).build());
-
-        return ((JsonArray) getContent(properties, RECEIVED_CONFIGS_ERROR)).stream().
+    public Stream<Config> findByNames(final Stream<String> stream) {
+        return ((JsonArray) getContent(getProperties(stream, GET), RECEIVED_CONFIGS_ERROR)).stream().
                 map(config -> new Config.Builder((JsonObject) config).build());
     }
 
@@ -95,7 +87,7 @@ final class WebConfigRepository implements ConfigRepository {
      * {@inheritDoc}
      */
     @Override
-    public Stream<Config> saveAndFlush(Stream<Config> stream) {
+    public Stream<Config> saveAndFlush(final Stream<Config> stream) {
         final Collection<Property> properties = new ArrayList<>(6);
         this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
@@ -114,16 +106,8 @@ final class WebConfigRepository implements ConfigRepository {
      * {@inheritDoc}
      */
     @Override
-    public int delete(Stream<String> stream) {
-        final Collection<Property> properties = new ArrayList<>(3);
-        this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
-                properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
-        this.config.getProperty(URL).ifPresent(property ->
-                properties.add(new Property.Builder(URL, property.getValue() + "/config/" +
-                        getNames(stream)).build()));
-        properties.add(new Property.Builder(METHOD, DELETE).build());
-
-        return ((BigDecimal) getContent(properties, DELETE_CONFIGS_ERROR)).intValue();
+    public int delete(final Stream<String> stream) {
+        return ((BigDecimal) getContent(getProperties(stream, DELETE), DELETE_CONFIGS_ERROR)).intValue();
     }
 
     /**
@@ -143,7 +127,18 @@ final class WebConfigRepository implements ConfigRepository {
         getContent(properties, CONFIG_ACCEPT_ERROR);
     }
 
-    private String getNames(Stream<String> stream) {
+    private Collection<Property> getProperties(final Stream<String> stream, final String method) {
+        final Collection<Property> properties = new ArrayList<>(3);
+        this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
+                properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
+        this.config.getProperty(URL).ifPresent(property ->
+                properties.add(new Property.Builder(URL, property.getValue() + "/configs?names=" +
+                        getNames(stream)).build()));
+        properties.add(new Property.Builder(METHOD, method).build());
+        return properties;
+    }
+
+    private String getNames(final Stream<String> stream) {
         final String jsonNames = new JsonArray(Arrays.asList(stream.toArray(String[]::new))).toJson();
         return new String(Base64.getEncoder().encode(jsonNames.getBytes()), StandardCharsets.UTF_8);
     }

@@ -32,7 +32,6 @@ import java.util.stream.Stream;
 import static com.github.akarazhev.metaconfig.Constants.Messages.JSON_TO_CONFIG_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.REQUEST_PARAM_NOT_PRESENT;
 import static com.github.akarazhev.metaconfig.Constants.Messages.STRING_TO_JSON_ERROR;
-import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.DELETE;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.GET;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.PUT;
@@ -86,11 +85,10 @@ final class ConfigController extends AbstractController {
                 throw new InvalidRequestException(HTTP_BAD_REQUEST, JSON_TO_CONFIG_ERROR);
             }
         } else if (DELETE.equals(method)) {
-            final OperationResponse response = getPathParams(uri.getPath(), CONFIG).findAny().
+            final OperationResponse response = getRequestParam(uri.getQuery(), REQ_PARAM_NAMES).
                     map(param -> {
                         try {
-                            final int count = configService.remove(getValues(param));
-                            return new OperationResponse.Builder<>().result(count).build();
+                            return new OperationResponse.Builder<>().result(configService.remove(getValues(param))).build();
                         } catch (final Exception e) {
                             return new OperationResponse.Builder<>().error(STRING_TO_JSON_ERROR).build();
                         }
