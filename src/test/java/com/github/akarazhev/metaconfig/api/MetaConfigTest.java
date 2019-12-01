@@ -138,44 +138,19 @@ final class MetaConfigTest extends TestData {
         assertEqualsConfigs(webMetaConfig.get(Stream.of(FIRST_CONFIG, SECOND_CONFIG)).toArray(Config[]::new));
     }
 
-    /*
-    @Test
-    @DisplayName("Get configs by names with the closed connection pool")
-    void getByNamesWithClosedConnectionPool() throws IOException {
-        connectionPool.close();
-        // Check test results
-        assertThrows(RuntimeException.class, () -> configService.get(Stream.of(FIRST_CONFIG, SECOND_CONFIG)));
-        connectionPool = ConnectionPools.newPool();
-        final ConfigRepository configRepository =
-                new DbConfigRepository.Builder(connectionPool.getDataSource()).build();
-        configService = new ConfigServiceImpl.Builder(configRepository).build();
-    }*/
-
     @Test
     @DisplayName("Get config names")
     void getNames() {
         assertEqualsNames(dbMetaConfig.getNames().toArray(String[]::new));
         assertEqualsNames(webMetaConfig.getNames().toArray(String[]::new));
-
-
-        final String[] names = dbMetaConfig.getNames().toArray(String[]::new);
-        // Check test results
-        assertEquals(2, names.length);
-        assertEquals(FIRST_CONFIG, names[0]);
-        assertEquals(SECOND_CONFIG, names[1]);
     }
 
-    /*@Test
-    @DisplayName("Get config names with the closed connection pool")
-    void getNamesWithClosedConnectionPool() throws IOException {
-        connectionPool.close();
-        // Check test results
-        assertThrows(RuntimeException.class, () -> configService.getNames());
-        connectionPool = ConnectionPools.newPool();
-        final ConfigRepository configRepository =
-                new DbConfigRepository.Builder(connectionPool.getDataSource()).build();
-        configService = new ConfigServiceImpl.Builder(configRepository).build();
-    }*/
+    @Test
+    @DisplayName("Get configs")
+    void getConfigs() {
+        assertEqualsNames(dbMetaConfig.get().toArray(Config[]::new));
+        assertEqualsNames(webMetaConfig.get().toArray(Config[]::new));
+    }
 
     @Test
     @DisplayName("Update a new config")
@@ -326,5 +301,11 @@ final class MetaConfigTest extends TestData {
         assertEquals(2, names.length);
         assertEquals(FIRST_CONFIG, names[0]);
         assertEquals(SECOND_CONFIG, names[1]);
+    }
+
+    private void assertEqualsNames(final Config[] configs) {
+        assertEquals(2, configs.length);
+        assertEquals(FIRST_CONFIG, configs[0].getName());
+        assertEquals(SECOND_CONFIG, configs[1].getName());
     }
 }

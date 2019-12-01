@@ -143,6 +143,16 @@ final class ConfigServiceTest extends TestData {
     }
 
     @Test
+    @DisplayName("Get configs")
+    void getConfigs() {
+        final Config[] configs = configService.get().toArray(Config[]::new);
+        // Check test results
+        assertEquals(2, configs.length);
+        assertEquals(FIRST_CONFIG, configs[0].getName());
+        assertEquals(SECOND_CONFIG, configs[1].getName());
+    }
+
+    @Test
     @DisplayName("Update a new config")
     void updateNewConfig() {
         final Optional<Config> newConfig =
