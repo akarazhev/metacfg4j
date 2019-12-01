@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("Meta config test")
-final class MetaConfigTest extends TestData {
+final class MetaConfigTest extends UnitTest {
     private static DbServer dbServer;
     private static ConnectionPool connectionPool;
     private static MetaConfig dbMetaConfig;

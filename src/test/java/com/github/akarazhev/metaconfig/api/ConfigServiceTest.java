@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("Config service test")
-final class ConfigServiceTest extends TestData {
+final class ConfigServiceTest extends UnitTest {
     private static DbServer dbServer;
     private static ConnectionPool connectionPool;
     private static ConfigService configService;

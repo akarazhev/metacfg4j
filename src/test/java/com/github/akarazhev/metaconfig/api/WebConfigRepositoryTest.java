@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("Web config repository test")
-final class WebConfigRepositoryTest extends TestData {
+final class WebConfigRepositoryTest extends UnitTest {
     private static WebServer webServer;
     private static ConfigRepository configRepository;
 

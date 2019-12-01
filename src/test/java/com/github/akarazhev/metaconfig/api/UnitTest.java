@@ -20,7 +20,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class TestData {
+class UnitTest {
     static final long UPDATED = Clock.systemDefaultZone().millis();
     static final String FIRST_CONFIG = "The First Config";
     static final String SECOND_CONFIG = "The Second Config";

@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("Data base repository test")
-final class DbConfigRepositoryTest extends TestData {
+final class DbConfigRepositoryTest extends UnitTest {
     private static DbServer dbServer;
     private static ConnectionPool connectionPool;
     private static ConfigRepository configRepository;

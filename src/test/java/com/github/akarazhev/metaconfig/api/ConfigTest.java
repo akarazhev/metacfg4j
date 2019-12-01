@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("Config test")
-final class ConfigTest extends TestData {
+final class ConfigTest extends UnitTest {
 
     @Test
     @DisplayName("Create a config")

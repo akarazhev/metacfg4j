@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("Property test")
-final class PropertyTest extends TestData {
+final class PropertyTest extends UnitTest {
 
     @Test
     @DisplayName("Create a property")
