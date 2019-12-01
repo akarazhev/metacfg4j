@@ -13,25 +13,27 @@ package com.github.akarazhev.metaconfig.api;
 import com.github.akarazhev.metaconfig.engine.web.WebServer;
 import com.github.akarazhev.metaconfig.engine.web.WebServers;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.ACCEPT_ALL_HOSTS;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.CONFIG_NAME;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.URL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-final class WebConfigRepositoryTest {
-    private static final String FIRST_CONFIG = "The First Config";
-    private static final String SECOND_CONFIG = "The Second Config";
-
+@DisplayName("Web config repository test")
+final class WebConfigRepositoryTest extends UnitTest {
     private static WebServer webServer;
     private static ConfigRepository configRepository;
 
@@ -39,91 +41,142 @@ final class WebConfigRepositoryTest {
     static void beforeAll() throws Exception {
         webServer = WebServers.newTestServer().start();
         if (configRepository == null) {
-            final Collection<Property> properties = new ArrayList<>(1);
+            final Collection<Property> properties = new ArrayList<>(2);
             properties.add(new Property.Builder(URL, "https://localhost:8000/api/metacfg").build());
             properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
-            final Config config = new Config.Builder(CONFIG_NAME, properties).build();
 
-            configRepository = new WebConfigRepository.Builder(config).build();
+            configRepository =
+                    new WebConfigRepository.Builder(new Config.Builder(CONFIG_NAME, properties).build()).build();
         }
     }
 
     @AfterAll
     static void afterAll() {
-        webServer.stop();
-        webServer = null;
+        configRepository = null;
+
+        if (webServer != null) {
+            webServer.stop();
+            webServer = null;
+        }
+    }
+
+    @BeforeEach
+    void beforeEach() {
+        configRepository.saveAndFlush(Stream.of(getConfigWithSubProperties(FIRST_CONFIG),
+                getConfigWithProperties(SECOND_CONFIG)));
+    }
+
+    @AfterEach
+    void afterEach() {
+        configRepository.delete(Stream.of(FIRST_CONFIG, SECOND_CONFIG, NEW_CONFIG));
     }
 
     @Test
-    void findByNames() {
-        final Config[] configs = configRepository.findByNames(Stream.of("name")).toArray(Config[]::new);
+    @DisplayName("Find configs by empty names")
+    void findByEmptyNames() {
         // Check test results
-        assertEquals(0, configs.length);
+        assertEquals(0, configRepository.findByNames(Stream.empty()).count());
     }
 
     @Test
+    @DisplayName("Find configs by the not existed name")
+    void findByNotExistedName() {
+        // Check test results
+        assertEquals(0, configRepository.findByNames(Stream.of(NEW_CONFIG)).count());
+    }
+
+    @Test
+    @DisplayName("Find configs by names")
+    void findConfigsByNames() {
+        final Config[] configs =
+                configRepository.findByNames(Stream.of(FIRST_CONFIG, SECOND_CONFIG)).toArray(Config[]::new);
+        // Check test results
+        assertEquals(2, configs.length);
+        final Config firstExpected = getConfigWithSubProperties(FIRST_CONFIG);
+        final Config secondExpected = getConfigWithSubProperties(SECOND_CONFIG);
+        assertEqualsConfig(firstExpected, configs[0]);
+        assertEqualsProperty(firstExpected, configs[0]);
+        assertEqualsConfig(secondExpected, configs[1]);
+        assertEqualsProperty(secondExpected, configs[1]);
+    }
+
+    @Test
+    @DisplayName("Find configs by names with the stopped web server")
+    void findByNamesWithStoppedWebServer() throws Exception {
+        webServer.stop();
+        // Check test results
+        assertThrows(RuntimeException.class, () -> configRepository.findByNames(Stream.of(FIRST_CONFIG, SECOND_CONFIG)));
+        webServer = WebServers.newTestServer().start();
+    }
+
+    @Test
+    @DisplayName("Find config names")
     void findNames() {
         final String[] names = configRepository.findNames().toArray(String[]::new);
         // Check test results
         assertEquals(2, names.length);
+        assertEquals(FIRST_CONFIG, names[0]);
+        assertEquals(SECOND_CONFIG, names[1]);
     }
 
     @Test
-    void saveAndFlush() {
-        assertEquals(2, configRepository.saveAndFlush(Stream.of(getFirstConfig(), getSecondConfig())).count());
+    @DisplayName("Find config names with the stopped web server")
+    void findNamesWithStoppedWebServer() throws Exception {
+        webServer.stop();
+        // Check test results
+        assertThrows(RuntimeException.class, () -> configRepository.findNames());
+        webServer = WebServers.newTestServer().start();
     }
 
     @Test
-    void delete() {
-        int count = configRepository.delete(Stream.of("name"));
-        assertEquals(1, count);
+    @DisplayName("Save and flush a new config")
+    void saveAndFlushNewConfig() {
+        final Optional<Config> newConfig =
+                configRepository.saveAndFlush(Stream.of(getConfigWithProperties(NEW_CONFIG))).findFirst();
+        // Check test results
+        assertTrue(newConfig.isPresent());
+        assertTrue(newConfig.get().getId() > 0);
     }
 
-    private Config getFirstConfig() {
-        final Property firstSubProperty = new Property.Builder("Sub-Property-1", "Sub-Value-1").
-                attribute("key_1", "value_1").build();
-        final Property secondSubProperty = new Property.Builder("Sub-Property-2", "Sub-Value-2").
-                attribute("key_2", "value_2").build();
-        final Property thirdSubProperty = new Property.Builder("Sub-Property-3", "Sub-Value-3").
-                attribute("key_3", "value_3").build();
-        final Property property = new Property.Builder("Property", "Value").
-                caption("Caption").
-                description("Description").
-                attribute("key", "value").
-                property(new String[0], firstSubProperty).
-                property(new String[]{"Sub-Property-1"}, secondSubProperty).
-                property(new String[]{"Sub-Property-1", "Sub-Property-2"}, thirdSubProperty).
-                build();
-
-        final Map<String, String> attributes = new HashMap<>();
-        attributes.put("key_1", "value_1");
-        attributes.put("key_2", "value_2");
-        attributes.put("key_3", "value_3");
-
-        return new Config.Builder(FIRST_CONFIG, Collections.singletonList(property)).attributes(attributes).build();
+    @Test
+    @DisplayName("Save and flush an empty")
+    void saveAndFlushEmptyConfig() {
+        // Check test results
+        assertEquals(0, configRepository.saveAndFlush(Stream.empty()).count());
     }
 
-    private Config getSecondConfig() {
-        final Property firstProperty = new Property.Builder("Property-1", "Value-1").
-                attribute("key_1", "value_1").build();
-        final Property secondProperty = new Property.Builder("Property-2", "Value-2").
-                attribute("key_2", "value_2").build();
-        final Property thirdProperty = new Property.Builder("Property-3", "Value-3").
-                attribute("key_3", "value_3").build();
-        final Property property = new Property.Builder("Property", "Value").
-                caption("Caption").
-                description("Description").
-                attribute("key", "value").
-                property(new String[0], firstProperty).
-                property(new String[0], secondProperty).
-                property(new String[0], thirdProperty).
+    @Test
+    @DisplayName("Save and flush by the config id")
+    void saveAndFlushConfigById() {
+        final Optional<Config> firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
+        // Check test results
+        assertTrue(firstConfig.isPresent());
+        final Config newConfig = new Config.Builder(NEW_CONFIG, Collections.emptyList()).
+                id(firstConfig.get().getId()).
                 build();
+        Optional<Config> updatedConfig = configRepository.saveAndFlush(Stream.of(newConfig)).findFirst();
+        assertTrue(updatedConfig.isPresent());
+        assertTrue(updatedConfig.get().getId() > 0);
+    }
 
-        final Map<String, String> attributes = new HashMap<>();
-        attributes.put("key_1", "value_1");
-        attributes.put("key_2", "value_2");
-        attributes.put("key_3", "value_3");
+    @Test
+    @DisplayName("Delete configs by empty names")
+    void deleteByEmptyNames() {
+        // Check test results
+        assertEquals(0, configRepository.delete(Stream.empty()));
+    }
 
-        return new Config.Builder(SECOND_CONFIG, Collections.singletonList(property)).attributes(attributes).build();
+    @Test
+    @DisplayName("Delete configs by the not existed name")
+    void deleteByNotExistedName() {
+        // Check test results
+        assertEquals(0, configRepository.delete(Stream.of(NEW_CONFIG)));
+    }
+
+    @Test
+    @DisplayName("Delete configs by names")
+    void deleteByNames() {
+        // Check test results
+        assertEquals(2, configRepository.delete(Stream.of(FIRST_CONFIG, SECOND_CONFIG)));
     }
 }

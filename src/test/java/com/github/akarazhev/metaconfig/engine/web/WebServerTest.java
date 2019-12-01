@@ -12,6 +12,7 @@ package com.github.akarazhev.metaconfig.engine.web;
 
 import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.Property;
+import com.github.akarazhev.metaconfig.extension.URLUtils;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
 import org.junit.jupiter.api.AfterAll;
@@ -61,7 +62,8 @@ final class WebServerTest {
     void acceptConfig() throws Exception {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
-        properties.add(new Property.Builder(URL, API_URL + "/accept_config/name").build());
+        properties.add(new Property.Builder(URL,
+                API_URL + "/accept_config/" + URLUtils.encode("name")).build());
         properties.add(new Property.Builder(METHOD, POST).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
@@ -148,7 +150,7 @@ final class WebServerTest {
     void deleteConfigSection() throws Exception {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
-        properties.add(new Property.Builder(URL, API_URL + "/config/" +
+        properties.add(new Property.Builder(URL, API_URL + "/configs?names=" +
                 new String(Base64.getEncoder().encode("[\"name\"]".getBytes()), StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, DELETE).build());
 
@@ -159,6 +161,6 @@ final class WebServerTest {
         // Get the response
         final JsonObject jsonObject = client.getJsonContent();
         assertEquals(true, jsonObject.get(SUCCESS));
-        assertEquals(1, ((BigDecimal) jsonObject.get(RESULT)).intValue());
+        assertEquals(0, ((BigDecimal) jsonObject.get(RESULT)).intValue());
     }
 }

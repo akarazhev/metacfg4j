@@ -166,7 +166,6 @@ public final class MetaConfig implements ConfigService, Closeable {
          */
         public MetaConfig build() {
             try {
-                WebServer webServer = null;
                 // Init the repository
                 final ConfigRepository configRepository = dataSource != null ?
                         new DbConfigRepository.Builder(dataSource).build() :
@@ -174,6 +173,7 @@ public final class MetaConfig implements ConfigService, Closeable {
                 // Init the config service
                 final ConfigService configService = new ConfigServiceImpl.Builder(configRepository).build();
                 // Init the web server
+                WebServer webServer = null;
                 if (isDefaultConfig) {
                     webServer = WebServers.newServer(configService).start();
                 } else if (webConfig != null) {

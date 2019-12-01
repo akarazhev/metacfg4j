@@ -185,8 +185,8 @@ public final class Config extends AbstractConfig {
         return "Config{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
                 ", version=" + version +
-                ", updated=" + updated +
                 '}';
     }
 

@@ -26,7 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-final class PropertyTest {
+@DisplayName("Property test")
+final class PropertyTest extends UnitTest {
 
     @Test
     @DisplayName("Create a property")
@@ -112,6 +113,9 @@ final class PropertyTest {
         final Optional<Property> secondSubProperty = firstSubProperty.get().getProperty("Sub-property-2");
         assertTrue(secondSubProperty.isPresent());
         assertEquals("Sub-property-2", secondSubProperty.get().getName());
+        final Optional<Property> lastSubProperty = property.getProperty("Sub-property-1", "Sub-property-2");
+        assertTrue(lastSubProperty.isPresent());
+        assertEquals("Sub-property-2", lastSubProperty.get().getName());
     }
 
     @Test
@@ -223,6 +227,17 @@ final class PropertyTest {
     @Test
     @DisplayName("Create a property via the json builder")
     void createPropertyViaJsonBuilder() throws JsonException {
+        final String json = "{\"name\":\"Property\",\"caption\":\"Caption\",\"description\":\"Description\"," +
+                "\"type\":\"STRING\",\"value\":\"Value\"}";
+        final Property firstProperty = new Property.Builder((JsonObject) Jsoner.deserialize(json)).build();
+        // Check test results
+        assertTrue(firstProperty.getAttributes().isPresent());
+        assertEquals(0, firstProperty.getProperties().count());
+    }
+
+    @Test
+    @DisplayName("Create a property with params via the json builder")
+    void createPropertyWithParamsViaJsonBuilder() throws JsonException {
         final Property firstProperty = getProperty();
         final Property secondProperty =
                 new Property.Builder((JsonObject) Jsoner.deserialize(firstProperty.toJson())).build();
@@ -231,21 +246,12 @@ final class PropertyTest {
     }
 
     @Test
-    @DisplayName("Convert to a json")
-    void convertToJson() throws IOException {
+    @DisplayName("Convert a property to a json")
+    void convertPropertyToJson() throws IOException {
         final Property property = getProperty();
         final StringWriter writer = new StringWriter();
         property.toJson(writer);
         // Check test results
         assertEquals(writer.toString(), property.toJson());
-    }
-
-    private Property getProperty() {
-        return new Property.Builder("Property", "Value").
-                caption("Caption").
-                description("Description").
-                attribute("key", "value").
-                property(new String[0], new Property.Builder("Sub-property-1", "Sub-value-1").build()).
-                build();
     }
 }

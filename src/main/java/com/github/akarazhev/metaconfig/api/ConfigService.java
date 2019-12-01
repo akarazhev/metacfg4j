@@ -56,7 +56,7 @@ public interface ConfigService {
     int remove(final Stream<String> stream);
 
     /**
-     * Removes a configuration model by the name.
+     * Accepts a configuration model by the name.
      *
      * @param name a configuration name.
      */

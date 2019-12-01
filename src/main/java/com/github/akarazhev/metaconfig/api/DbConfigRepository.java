@@ -24,10 +24,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.DB_ERROR;
@@ -60,71 +58,80 @@ final class DbConfigRepository implements ConfigRepository {
      */
     @Override
     public Stream<Config> findByNames(final Stream<String> stream) {
-        try {
-            final String[] names = stream.toArray(String[]::new);
-            try (final Connection connection = dataSource.getConnection();
-                 final PreparedStatement statement = connection.prepareStatement(getSql(SQL.SELECT.CONFIGS, names))) {
-                JDBCUtils.setStatement(statement, names);
+        final String[] names = stream.toArray(String[]::new);
+        if (names.length > 0) {
+            try {
+                try (final Connection connection = dataSource.getConnection();
+                     final PreparedStatement statement = connection.prepareStatement(getSql(SQL.SELECT.CONFIGS, names))) {
+                    JDBCUtils.setStatement(statement, names);
 
-                try (final ResultSet resultSet = statement.executeQuery()) {
-                    int prevConfigId = -1;
-                    final Map<Integer, Config> configs = new HashMap<>();
-                    final Map<Integer, Property> properties = new HashMap<>();
-                    final Collection<SimpleEntry<Integer, Integer>> links = new LinkedList<>();
-                    while (resultSet.next()) {
-                        // Create properties
-                        final int propertyId = resultSet.getInt(8);
-                        final Property property = properties.get(propertyId);
-                        if (property == null) {
-                            properties.put(propertyId, new Property.Builder(resultSet.getString(10),
-                                    resultSet.getString(13),
-                                    resultSet.getString(14)).
-                                    caption(resultSet.getString(11)).
-                                    description(resultSet.getString(12)).
-                                    attribute(resultSet.getString(15), resultSet.getString(16)).
-                                    build());
-                        } else {
-                            properties.put(propertyId, new Property.Builder(property).
-                                    attribute(resultSet.getString(15), resultSet.getString(16)).
-                                    build());
+                    try (final ResultSet resultSet = statement.executeQuery()) {
+                        int prevConfigId = -1;
+                        final Map<Integer, Config> configs = new HashMap<>();
+                        final Map<Integer, Property> properties = new HashMap<>();
+                        final Collection<SimpleEntry<Integer, Integer>> links = new LinkedList<>();
+                        while (resultSet.next()) {
+                            // Create properties
+                            final int propertyId = resultSet.getInt(8);
+                            final Property property = properties.get(propertyId);
+                            if (property == null) {
+                                properties.put(propertyId, new Property.Builder(resultSet.getString(10),
+                                        resultSet.getString(13),
+                                        resultSet.getString(14)).
+                                        caption(resultSet.getString(11)).
+                                        description(resultSet.getString(12)).
+                                        attribute(resultSet.getString(15), resultSet.getString(16)).
+                                        build());
+                            } else {
+                                properties.put(propertyId, new Property.Builder(property).
+                                        attribute(resultSet.getString(15), resultSet.getString(16)).
+                                        build());
+                            }
+                            // Create links
+                            links.add(new SimpleEntry<>(propertyId, resultSet.getInt(9)));
+                            // Create configs
+                            final int configId = resultSet.getInt(1);
+                            final Config config = configs.get(configId);
+                            if (config == null) {
+                                configs.put(configId,
+                                        new Config.Builder(resultSet.getString(2), Collections.emptyList()).
+                                                id(configId).
+                                                description(resultSet.getString(3)).
+                                                version(resultSet.getInt(4)).
+                                                updated(resultSet.getLong(5)).
+                                                attribute(resultSet.getString(6),
+                                                        resultSet.getString(7)).
+                                                build());
+                            } else {
+                                configs.put(configId, new Config.Builder(config).
+                                        attribute(resultSet.getString(6), resultSet.getString(7)).
+                                        build());
+                            }
+                            // Set properties to the config
+                            if (prevConfigId > -1 && configId != prevConfigId) {
+                                configs.put(prevConfigId, new Config.Builder(configs.get(prevConfigId)).
+                                        properties(new String[0], getLinkedProps(properties, links)).build());
+                                links.clear();
+                                properties.clear();
+                            }
+
+                            prevConfigId = configId;
                         }
-                        // Create links
-                        links.add(new SimpleEntry<>(propertyId, resultSet.getInt(9)));
-                        // Create configs
-                        final int configId = resultSet.getInt(1);
-                        final Config config = configs.get(configId);
-                        if (config == null) {
-                            configs.put(configId, new Config.Builder(resultSet.getString(2), Collections.emptyList()).
-                                    id(configId).
-                                    description(resultSet.getString(3)).
-                                    version(resultSet.getInt(4)).
-                                    updated(resultSet.getLong(5)).
-                                    attribute(resultSet.getString(6), resultSet.getString(7)).
-                                    build());
-                        } else {
-                            configs.put(configId, new Config.Builder(config).
-                                    attribute(resultSet.getString(6), resultSet.getString(7)).
-                                    build());
-                        }
-                        // Set properties to the config
-                        if (prevConfigId > -1 && configId != prevConfigId) {
+
+                        if (configs.size() > 0) {
                             configs.put(prevConfigId, new Config.Builder(configs.get(prevConfigId)).
                                     properties(new String[0], getLinkedProps(properties, links)).build());
-                            links.clear();
-                            properties.clear();
                         }
 
-                        prevConfigId = configId;
+                        return configs.values().stream();
                     }
-
-                    configs.put(prevConfigId, new Config.Builder(configs.get(prevConfigId)).
-                            properties(new String[0], getLinkedProps(properties, links)).build());
-                    return configs.values().stream();
                 }
+            } catch (final SQLException e) {
+                throw new RuntimeException(RECEIVED_CONFIGS_ERROR, e);
             }
-        } catch (final SQLException e) {
-            throw new RuntimeException(RECEIVED_CONFIGS_ERROR, e);
         }
+
+        return Stream.empty();
     }
 
     /**
@@ -136,7 +143,7 @@ final class DbConfigRepository implements ConfigRepository {
             try (final Connection connection = dataSource.getConnection();
                  final Statement statement = connection.createStatement();
                  final ResultSet resultSet = statement.executeQuery(SQL.SELECT.NAMES)) {
-                final Set<String> names = new HashSet<>();
+                final Collection<String> names = new LinkedList<>();
                 while (resultSet.next()) {
                     names.add(resultSet.getString(1));
                 }
@@ -174,8 +181,7 @@ final class DbConfigRepository implements ConfigRepository {
         Connection connection = null;
         try {
             connection = JDBCUtils.open(dataSource);
-            final String[] names = stream.toArray(String[]::new);
-            return delete(connection, names);
+            return delete(connection, stream.toArray(String[]::new));
         } catch (final SQLException e) {
             JDBCUtils.rollback(connection, e);
         } finally {
@@ -536,7 +542,7 @@ final class DbConfigRepository implements ConfigRepository {
                 throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
             }
 
-            static final String NAMES = "SELECT `NAME` FROM `CONFIGS`;";
+            static final String NAMES = "SELECT `NAME` FROM `CONFIGS` ORDER BY `NAME`;";
             static final String VERSION = "SELECT `VERSION` FROM `CONFIGS` WHERE `ID` = ?;";
             static final String CONFIGS =
                     "SELECT `C`.`ID`, `C`.`NAME`, `C`.`DESCRIPTION`, `C`.`VERSION`, `C`.`UPDATED`, `CA`.`KEY`, " +

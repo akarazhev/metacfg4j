@@ -11,6 +11,7 @@
 package com.github.akarazhev.metaconfig.engine.web.server;
 
 import com.github.akarazhev.metaconfig.api.ConfigService;
+import com.github.akarazhev.metaconfig.extension.URLUtils;
 import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonException;
 import com.github.cliftonlabs.json_simple.Jsoner;
@@ -30,6 +31,7 @@ import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Header.APPLICATION_JSON;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
@@ -78,7 +80,7 @@ abstract class AbstractController {
      */
     Stream<String> getPathParams(final String path, final String api) {
         return path.contains(api) ?
-                Arrays.stream(path.substring(api.length() + 1).split("/")) :
+                Arrays.stream(path.substring(api.length() + 1).split("/")).map(URLUtils::decode) :
                 Stream.empty();
     }
 
@@ -127,6 +129,7 @@ abstract class AbstractController {
             outputStream.write(jsonBytes);
             outputStream.flush();
         } catch (final Exception e) {
+            LOGGER.log(Level.SEVERE, e.getMessage());
             throw new InvalidRequestException(HTTP_BAD_REQUEST, e.getMessage());
         }
     }
@@ -157,8 +160,11 @@ abstract class AbstractController {
             final MethodNotAllowedException exception = (MethodNotAllowedException) throwable;
             httpExchange.sendResponseHeaders(exception.getCode(), 0);
         } else {
-            final InternalServerErrorException exception = (InternalServerErrorException) throwable;
-            httpExchange.sendResponseHeaders(exception.getCode(), 0);
+            if (throwable instanceof InternalServerErrorException) {
+                httpExchange.sendResponseHeaders(((InternalServerErrorException) throwable).getCode(), 0);
+            } else {
+                httpExchange.sendResponseHeaders(HTTP_INTERNAL_ERROR, 0);
+            }
         }
 
         return response;

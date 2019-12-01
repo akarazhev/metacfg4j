@@ -69,8 +69,12 @@ final class ConfigServiceImpl implements ConfigService {
      */
     @Override
     public void accept(final String name) {
-        if (consumer != null) {
-            get(Stream.of(name)).forEach(config -> consumer.accept(config));
+        if (configRepository instanceof WebConfigRepository) {
+            ((WebConfigRepository) configRepository).accept(name);
+        } else {
+            if (consumer != null) {
+                get(Stream.of(name)).forEach(config -> consumer.accept(config));
+            }
         }
     }
 

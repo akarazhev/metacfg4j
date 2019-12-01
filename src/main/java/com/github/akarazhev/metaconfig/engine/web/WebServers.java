@@ -12,17 +12,18 @@ package com.github.akarazhev.metaconfig.engine.web;
 
 import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.ConfigService;
-import com.github.akarazhev.metaconfig.api.Property;
 import com.github.akarazhev.metaconfig.engine.web.server.Server;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_FACTORY_CLASS_ERROR;
 
 /**
  * Provides factory methods to create a web server.
@@ -30,7 +31,7 @@ import java.util.stream.Stream;
 public final class WebServers {
 
     private WebServers() {
-        throw new AssertionError("Factory class ca not be ");
+        throw new AssertionError(CREATE_FACTORY_CLASS_ERROR);
     }
 
     /**
@@ -42,48 +43,52 @@ public final class WebServers {
     public static WebServer newTestServer() throws Exception {
         return newServer(new ConfigService() {
             private Consumer<Config> consumer;
-            private final Map<String, Config> map = new HashMap<String, Config>() {{
-                put("name", new Config.Builder("name", Collections.singletonList(
-                        new Property.Builder("name", "value").build())).build());
-            }};
+            private final Map<String, Config> dataStorage = new ConcurrentHashMap<>();
 
             @Override
             public Stream<Config> update(final Stream<Config> stream) {
-                final Collection<Config> list = stream.collect(Collectors.toList());
-                for (final Config config : list) {
-                    map.put(config.getName(), config);
+                final Config[] input = stream.toArray(Config[]::new);
+                final Config[] output = new Config[input.length];
+                for (int i = 0; i < input.length; i++) {
+                    if (input[i].getId() == 0) {
+                        input[i] = new Config.Builder(input[i]).id(1).build();
+                    }
+
+                    output[i] = input[i];
+                    dataStorage.put(output[i].getName(), output[i]);
                 }
 
-                return list.stream();
+                return Arrays.stream(output);
             }
 
             @Override
             public Stream<String> getNames() {
-                return map.keySet().stream();
+                return dataStorage.keySet().stream().sorted();
             }
 
             @Override
             public Stream<Config> get() {
-                return map.values().stream();
+                return dataStorage.values().stream().sorted(Comparator.comparing(Config::getName));
             }
 
             @Override
             public Stream<Config> get(final Stream<String> stream) {
                 final Collection<Config> configs = new LinkedList<>();
                 stream.forEach(name -> {
-                    final Config config = map.get(name);
+                    final Config config = dataStorage.get(name);
                     if (config != null) {
                         configs.add(config);
                     }
                 });
-                return configs.stream();
+
+                return configs.stream().sorted(Comparator.comparing(Config::getName));
             }
 
             @Override
             public int remove(final Stream<String> stream) {
-                int size = map.size();
-                stream.forEach(map::remove);
-                return size - map.size();
+                int size = dataStorage.size();
+                stream.forEach(dataStorage::remove);
+                return size - dataStorage.size();
             }
 
             @Override

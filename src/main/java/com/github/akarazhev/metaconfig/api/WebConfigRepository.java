@@ -11,6 +11,7 @@
 package com.github.akarazhev.metaconfig.api;
 
 import com.github.akarazhev.metaconfig.engine.web.WebClient;
+import com.github.akarazhev.metaconfig.extension.URLUtils;
 import com.github.akarazhev.metaconfig.extension.Validator;
 import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
@@ -26,6 +27,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.CONFIG_ACCEPT_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DELETE_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SAVE_CONFIGS_ERROR;
@@ -33,6 +35,7 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_WRONG_ST
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Header.APPLICATION_JSON;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.DELETE;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.GET;
+import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.POST;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.PUT;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.ACCEPT;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.ACCEPT_ALL_HOSTS;
@@ -60,16 +63,8 @@ final class WebConfigRepository implements ConfigRepository {
      * {@inheritDoc}
      */
     @Override
-    public Stream<Config> findByNames(Stream<String> stream) {
-        final Collection<Property> properties = new ArrayList<>(3);
-        this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
-                properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
-        this.config.getProperty(URL).ifPresent(property ->
-                properties.add(new Property.Builder(URL, property.getValue() + "/configs?names=" +
-                        getNames(stream)).build()));
-        properties.add(new Property.Builder(METHOD, GET).build());
-
-        return ((JsonArray) getContent(properties, RECEIVED_CONFIGS_ERROR)).stream().
+    public Stream<Config> findByNames(final Stream<String> stream) {
+        return ((JsonArray) getContent(getProperties(stream, GET), RECEIVED_CONFIGS_ERROR)).stream().
                 map(config -> new Config.Builder((JsonObject) config).build());
     }
 
@@ -92,7 +87,7 @@ final class WebConfigRepository implements ConfigRepository {
      * {@inheritDoc}
      */
     @Override
-    public Stream<Config> saveAndFlush(Stream<Config> stream) {
+    public Stream<Config> saveAndFlush(final Stream<Config> stream) {
         final Collection<Property> properties = new ArrayList<>(6);
         this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
@@ -111,19 +106,39 @@ final class WebConfigRepository implements ConfigRepository {
      * {@inheritDoc}
      */
     @Override
-    public int delete(Stream<String> stream) {
+    public int delete(final Stream<String> stream) {
+        return ((BigDecimal) getContent(getProperties(stream, DELETE), DELETE_CONFIGS_ERROR)).intValue();
+    }
+
+    /**
+     * Accepts a configuration model by the name.
+     *
+     * @param name a configuration name.
+     */
+    public void accept(final String name) {
         final Collection<Property> properties = new ArrayList<>(3);
         this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
         this.config.getProperty(URL).ifPresent(property ->
-                properties.add(new Property.Builder(URL, property.getValue() + "/config/" +
-                        getNames(stream)).build()));
-        properties.add(new Property.Builder(METHOD, DELETE).build());
+                properties.add(new Property.Builder(URL, property.getValue() + "/accept_config/" +
+                        URLUtils.encode(name)).build()));
+        properties.add(new Property.Builder(METHOD, POST).build());
 
-        return ((BigDecimal) getContent(properties, DELETE_CONFIGS_ERROR)).intValue();
+        getContent(properties, CONFIG_ACCEPT_ERROR);
     }
 
-    private String getNames(Stream<String> stream) {
+    private Collection<Property> getProperties(final Stream<String> stream, final String method) {
+        final Collection<Property> properties = new ArrayList<>(3);
+        this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
+                properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
+        this.config.getProperty(URL).ifPresent(property ->
+                properties.add(new Property.Builder(URL, property.getValue() + "/configs?names=" +
+                        getNames(stream)).build()));
+        properties.add(new Property.Builder(METHOD, method).build());
+        return properties;
+    }
+
+    private String getNames(final Stream<String> stream) {
         final String jsonNames = new JsonArray(Arrays.asList(stream.toArray(String[]::new))).toJson();
         return new String(Base64.getEncoder().encode(jsonNames.getBytes()), StandardCharsets.UTF_8);
     }
