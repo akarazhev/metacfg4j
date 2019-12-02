@@ -156,10 +156,10 @@ public final class Config extends AbstractConfig {
      * {@inheritDoc}
      */
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Config config = (Config) o;
+        final Config config = (Config) o;
         return id == config.id &&
                 version == config.version &&
                 updated == config.updated &&

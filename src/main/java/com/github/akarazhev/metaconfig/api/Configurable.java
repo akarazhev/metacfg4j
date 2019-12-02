@@ -100,7 +100,7 @@ interface Configurable extends ExtJsonable {
          * @return properties as a stream.
          */
         Stream<Property> getProperties(final JsonObject jsonObject) {
-            JsonArray jsonProperties = (JsonArray) jsonObject.get("properties");
+            final JsonArray jsonProperties = (JsonArray) jsonObject.get("properties");
             return jsonProperties != null ?
                     jsonProperties.stream().map(json -> new Property.Builder((JsonObject) json).build()) :
                     Stream.empty();
