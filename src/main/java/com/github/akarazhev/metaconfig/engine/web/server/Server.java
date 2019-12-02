@@ -215,7 +215,7 @@ public final class Server implements WebServer {
         serverConfig.getProperty(STORE_PASSWORD).ifPresent(property -> {
             try {
                 keyStore.load(fileInputStream, property.getValue().toCharArray());
-            } catch (IOException | NoSuchAlgorithmException | CertificateException e) {
+            } catch (final IOException | NoSuchAlgorithmException | CertificateException e) {
                 exceptions.add(e);
             }
         });
@@ -223,7 +223,7 @@ public final class Server implements WebServer {
         serverConfig.getProperty(ALIAS).ifPresent(property -> {
             try {
                 LOGGER.log(Level.INFO, keyStore.getCertificate(property.getValue()).toString());
-            } catch (KeyStoreException e) {
+            } catch (final KeyStoreException e) {
                 exceptions.add(e);
             }
         });
@@ -232,7 +232,7 @@ public final class Server implements WebServer {
         serverConfig.getProperty(STORE_PASSWORD).ifPresent(property -> {
             try {
                 keyManagerFactory.init(keyStore, property.getValue().toCharArray());
-            } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
+            } catch (final KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
                 exceptions.add(e);
             }
         });

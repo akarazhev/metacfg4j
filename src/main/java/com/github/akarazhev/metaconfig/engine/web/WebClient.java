@@ -94,7 +94,7 @@ public final class WebClient {
                             if (prop.asBool()) {
                                 try {
                                     acceptAllHosts();
-                                } catch (Exception e) {
+                                } catch (final Exception e) {
                                     exceptions.add(e);
                                 }
                             }

@@ -157,7 +157,7 @@ final class WebConfigRepository implements ConfigRepository {
             } else {
                 throw new IOException(String.format(SERVER_WRONG_STATUS_CODE, code));
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException(error, e);
         }
     }
