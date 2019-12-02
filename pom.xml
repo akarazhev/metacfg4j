@@ -15,7 +15,7 @@
     <groupId>com.github.akarazhev.metacfg</groupId>
     <artifactId>metacfg4j</artifactId>
     <packaging>jar</packaging>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.2-SNAPSHOT</version>
 
     <name>metacfg4j</name>
     <url>http://akarazhev.github.io/metacfg4j</url>
