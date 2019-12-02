@@ -62,7 +62,6 @@ final class MetaConfigTest extends UnitTest {
                             new Property.Builder(Server.Settings.KEY_PASSWORD, "password").build()))
                     .build();
             dbMetaConfig = new MetaConfig.Builder().
-                    defaultConfig().
                     webServer(webServer).
                     dataSource(connectionPool.getDataSource()).
                     build();
@@ -113,6 +112,15 @@ final class MetaConfigTest extends UnitTest {
     @AfterEach
     void afterEach() {
         dbMetaConfig.remove(Stream.of(FIRST_CONFIG, SECOND_CONFIG, NEW_CONFIG));
+    }
+
+    @Test
+    @DisplayName("Build default config")
+    void buildDefaultConfig() {
+        assertThrows(RuntimeException.class, () -> new MetaConfig.Builder().
+                defaultConfig().
+                dataSource(connectionPool.getDataSource()).
+                build());
     }
 
     @Test
