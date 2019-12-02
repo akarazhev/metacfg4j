@@ -24,6 +24,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_FACTORY_CLASS_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.DB_ERROR;
 
 /**
  * Provides factory methods to create a web server.
@@ -50,8 +51,17 @@ public final class WebServers {
                 final Config[] input = stream.toArray(Config[]::new);
                 final Config[] output = new Config[input.length];
                 for (int i = 0; i < input.length; i++) {
-                    if (input[i].getId() == 0) {
-                        input[i] = new Config.Builder(input[i]).id(1).build();
+                    final Config config = dataStorage.get(input[i].getName());
+                    if (config != null) {
+                        if (config.getVersion() == input[i].getVersion()) {
+                            input[i] = new Config.Builder(input[i]).version(input[i].getVersion() + 1).build();
+                        } else {
+                            throw new RuntimeException(DB_ERROR);
+                        }
+                    } else {
+                        if (input[i].getId() == 0) {
+                            input[i] = new Config.Builder(input[i]).id(1).build();
+                        }
                     }
 
                     output[i] = input[i];
@@ -86,7 +96,7 @@ public final class WebServers {
 
             @Override
             public int remove(final Stream<String> stream) {
-                int size = dataStorage.size();
+                final int size = dataStorage.size();
                 stream.forEach(dataStorage::remove);
                 return size - dataStorage.size();
             }
