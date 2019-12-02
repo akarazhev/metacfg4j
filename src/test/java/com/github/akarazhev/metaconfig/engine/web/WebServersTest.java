@@ -27,7 +27,9 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.JSON_TO_CONFIG_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.METHOD_NOT_ALLOWED;
+import static com.github.akarazhev.metaconfig.Constants.Messages.REQUEST_PARAM_NOT_PRESENT;
 import static com.github.akarazhev.metaconfig.Constants.Messages.STRING_TO_JSON_ERROR;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Header.APPLICATION_JSON;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.DELETE;
@@ -219,8 +221,6 @@ final class WebServersTest {
         assertEquals(METHOD_NOT_ALLOWED, jsonContent.get(ERROR));
     }
 
-    // todo continue here
-
     @Test
     @DisplayName("Update a config")
     void updateConfig() throws Exception {
@@ -247,8 +247,34 @@ final class WebServersTest {
     }
 
     @Test
-    @DisplayName("Delete a config")
-    void deleteConfig() throws Exception {
+    @DisplayName("Update a config not in the json format")
+    void updateConfigNotJsonFormat() throws Exception {
+        final Collection<Property> properties = new ArrayList<>(2);
+        properties.add(new Property.Builder("Property_1", "Value_1").build());
+        properties.add(new Property.Builder("Property_2", "Value_2").build());
+        Config config = new Config.Builder("Meta Config", properties).attributes(Collections.singletonMap("key", "value")).build();
+
+        final Collection<Property> props = new ArrayList<>(6);
+        props.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
+        props.add(new Property.Builder(URL, API_URL + "/config").build());
+        props.add(new Property.Builder(METHOD, PUT).build());
+        props.add(new Property.Builder(ACCEPT, APPLICATION_JSON).build());
+        props.add(new Property.Builder(CONTENT_TYPE, APPLICATION_JSON).build());
+        props.add(new Property.Builder(CONTENT, config.toString()).build());
+
+        config = new Config.Builder(CONFIG_NAME, props).build();
+        final WebClient client = new WebClient.Builder(config).build();
+        // Test status code
+        assertEquals(HTTP_BAD_REQUEST, client.getStatusCode());
+        // Get the response
+        final JsonObject jsonObject = client.getJsonContent();
+        assertEquals(false, jsonObject.get(SUCCESS));
+        assertEquals(JSON_TO_CONFIG_ERROR, jsonObject.get(ERROR));
+    }
+
+    @Test
+    @DisplayName("Delete a configs by names")
+    void deleteConfigsByNames() throws Exception {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/configs?names=" +
@@ -263,5 +289,42 @@ final class WebServersTest {
         final JsonObject jsonObject = client.getJsonContent();
         assertEquals(true, jsonObject.get(SUCCESS));
         assertEquals(0, ((BigDecimal) jsonObject.get(RESULT)).intValue());
+    }
+
+    @Test
+    @DisplayName("Delete a config")
+    void deleteConfig() throws Exception {
+        final Collection<Property> properties = new ArrayList<>(3);
+        properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
+        properties.add(new Property.Builder(URL, API_URL + "/configs").build());
+        properties.add(new Property.Builder(METHOD, DELETE).build());
+
+        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
+        final WebClient client = new WebClient.Builder(config).build();
+        // Test status code
+        assertEquals(HTTP_OK, client.getStatusCode());
+        // Get the response
+        final JsonObject jsonContent = client.getJsonContent();
+        assertEquals(false, jsonContent.get(SUCCESS));
+        assertEquals(REQUEST_PARAM_NOT_PRESENT, jsonContent.get(ERROR));
+    }
+
+    @Test
+    @DisplayName("Delete a config not in the json format")
+    void deleteConfigNotJsonFormat() throws Exception {
+        final Collection<Property> properties = new ArrayList<>(3);
+        properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
+        properties.add(new Property.Builder(URL, API_URL + "/configs?names=" +
+                new String(Base64.getEncoder().encode("[name]".getBytes()), StandardCharsets.UTF_8)).build());
+        properties.add(new Property.Builder(METHOD, DELETE).build());
+
+        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
+        final WebClient client = new WebClient.Builder(config).build();
+        // Test status code
+        assertEquals(HTTP_OK, client.getStatusCode());
+        // Get the response
+        final JsonObject jsonContent = client.getJsonContent();
+        assertEquals(false, jsonContent.get(SUCCESS));
+        assertEquals(STRING_TO_JSON_ERROR, jsonContent.get(ERROR));
     }
 }
