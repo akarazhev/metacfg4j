@@ -153,7 +153,7 @@ public final class WebClient {
      *
      * @return the content.
      */
-    String getContent() {
+    private String getContent() {
         return content;
     }
 

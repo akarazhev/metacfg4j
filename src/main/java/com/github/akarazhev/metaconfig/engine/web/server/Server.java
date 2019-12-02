@@ -166,6 +166,10 @@ public final class Server implements WebServer {
         httpsServer.setExecutor(null);
         httpsServer.setHttpsConfigurator(new HttpsConfigurator(getSSLContext(serverConfig)) {
 
+            /**
+             * {@inheritDoc}
+             */
+            @Override
             public void configure(final HttpsParameters params) {
                 try {
                     final SSLContext sslContext = SSLContext.getDefault();
@@ -175,7 +179,7 @@ public final class Server implements WebServer {
                     params.setProtocols(sslEngine.getEnabledProtocols());
                     final SSLParameters defaultSSLParameters = sslContext.getDefaultSSLParameters();
                     params.setSSLParameters(defaultSSLParameters);
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     LOGGER.log(Level.SEVERE, SERVER_CREATE_ERROR);
                     e.printStackTrace();
                 }
