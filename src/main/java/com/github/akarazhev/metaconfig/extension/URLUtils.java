@@ -10,10 +10,9 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.extension;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_UTILS_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.PARAM_DECODING_ERROR;
@@ -31,13 +30,14 @@ public final class URLUtils {
     /**
      * Encodes an URL param.
      *
-     * @param param a param to encode.
+     * @param param   a param to encode.
+     * @param charset a charset.
      * @return an encoded param.
      */
-    public static String encode(final String param) {
+    public static String encode(final String param, final Charset charset) {
         try {
-            return URLEncoder.encode(param, StandardCharsets.UTF_8.toString());
-        } catch (final UnsupportedEncodingException e) {
+            return URLEncoder.encode(param, charset.toString());
+        } catch (final Exception e) {
             throw new RuntimeException(PARAM_ENCODING_ERROR, e);
         }
     }
@@ -45,13 +45,14 @@ public final class URLUtils {
     /**
      * Decodes an URL param.
      *
-     * @param param a param to decode.
+     * @param param   a param to decode.
+     * @param charset a charset.
      * @return a decoded param.
      */
-    public static String decode(final String param) {
+    public static String decode(final String param, final Charset charset) {
         try {
-            return URLDecoder.decode(param, StandardCharsets.UTF_8.toString());
-        } catch (final UnsupportedEncodingException e) {
+            return URLDecoder.decode(param, charset.toString());
+        } catch (final Exception e) {
             throw new RuntimeException(PARAM_DECODING_ERROR, e);
         }
     }
