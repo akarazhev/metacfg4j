@@ -1,6 +1,6 @@
 # metacfg4j
 
-[![Build Status](https://travis-ci.com/akarazhev/metacfg4j.svg?branch=dev)](https://travis-ci.com/akarazhev/metacfg4j)
+[![Build Status](https://travis-ci.com/akarazhev/metacfg4j.svg?branch=master)](https://travis-ci.com/akarazhev/metacfg4j)
 
 The `metacfg4j` project (that stands for the `meta configuration for java`) is a library that can be used as the solution by creating a business abstraction or 
 may extend an existed implementation to provide such software solutions as: various configuration (application, user's and etc.), CRUD services, DSL, MVP.
