@@ -89,6 +89,7 @@ final class AbstractControllerTest {
     @DisplayName("Handle")
     void handle() {
         testController.handle(new HttpExchange() {
+
             @Override
             public Headers getRequestHeaders() {
                 return null;
