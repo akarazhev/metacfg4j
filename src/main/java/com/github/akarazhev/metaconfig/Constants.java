@@ -60,5 +60,7 @@ public final class Constants {
         public static final String SERVER_CREATE_ERROR = "Failed to create HTTPS server.";
         public static final String CERTIFICATE_LOAD_ERROR = "Failed to load the certificate.";
         public static final String SERVER_WRONG_STATUS_CODE = "Server returned the '%d' status code.";
+        public static final String PARAM_ENCODING_ERROR = "Param can not be encoded.";
+        public static final String PARAM_DECODING_ERROR = "Param can not be decoded.";
     }
 }

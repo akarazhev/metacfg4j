@@ -46,7 +46,7 @@ final class ConfigNamesController extends AbstractController {
     /**
      * Wraps and builds the instance of the config names controller.
      */
-    static class Builder extends AbstractBuilder {
+    final static class Builder extends AbstractBuilder {
         /**
          * Constructs a controller with the configuration service param.
          *

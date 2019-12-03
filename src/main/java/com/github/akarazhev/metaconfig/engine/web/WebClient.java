@@ -94,7 +94,7 @@ public final class WebClient {
                             if (prop.asBool()) {
                                 try {
                                     acceptAllHosts();
-                                } catch (Exception e) {
+                                } catch (final Exception e) {
                                     exceptions.add(e);
                                 }
                             }
@@ -153,7 +153,7 @@ public final class WebClient {
      *
      * @return the content.
      */
-    String getContent() {
+    private String getContent() {
         return content;
     }
 

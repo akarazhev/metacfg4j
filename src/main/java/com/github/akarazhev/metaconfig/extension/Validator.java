@@ -52,7 +52,7 @@ public final class Validator<T> {
      *
      * @param object object to be validated
      */
-    private Validator(T object) {
+    private Validator(final T object) {
         this.object = object;
     }
 
@@ -63,7 +63,7 @@ public final class Validator<T> {
      * @param <T>    object's type
      * @return new instance of a validator
      */
-    public static <T> Validator<T> of(T object) {
+    public static <T> Validator<T> of(final T object) {
         return new Validator<>(Objects.requireNonNull(object));
     }
 
@@ -76,7 +76,7 @@ public final class Validator<T> {
      * @param message    error message when object is invalid
      * @return this
      */
-    public Validator<T> validate(Predicate<T> validation, String message) {
+    public Validator<T> validate(final Predicate<T> validation, final String message) {
         if (!validation.test(object)) {
             exceptions.add(new IllegalStateException(message));
         }
@@ -95,7 +95,7 @@ public final class Validator<T> {
      * @param <U>        see {@link Validator#validate(Function, Predicate, String)}
      * @return this
      */
-    public <U> Validator<T> validate(Function<T, U> projection, Predicate<U> validation, String message) {
+    public <U> Validator<T> validate(final Function<T, U> projection, final Predicate<U> validation, final String message) {
         return validate(projection.andThen(validation::test)::apply, message);
     }
 
@@ -110,7 +110,7 @@ public final class Validator<T> {
             return object;
         }
 
-        IllegalStateException exception = new IllegalStateException();
+        final IllegalStateException exception = new IllegalStateException();
         exceptions.forEach(exception::addSuppressed);
         throw exception;
     }

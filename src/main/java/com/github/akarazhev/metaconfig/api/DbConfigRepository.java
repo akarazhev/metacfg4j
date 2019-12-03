@@ -212,7 +212,7 @@ final class DbConfigRepository implements ConfigRepository {
                 statement.executeUpdate(SQL.CREATE_TABLE.PROPERTY_ATTRIBUTES);
                 connection.commit();
             }
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new SQLException(CREATE_CONFIG_TABLE_ERROR, e);
         }
     }
@@ -295,7 +295,7 @@ final class DbConfigRepository implements ConfigRepository {
                             config.getAttributes().ifPresent(map -> {
                                 try {
                                     insert(connection, SQL.INSERT.CONFIG_ATTRIBUTES, configId, map);
-                                } catch (SQLException e) {
+                                } catch (final SQLException e) {
                                     exceptions.add(e);
                                 }
                             });
@@ -374,7 +374,7 @@ final class DbConfigRepository implements ConfigRepository {
                     properties[i].getAttributes().ifPresent(map -> {
                         try {
                             insert(connection, SQL.INSERT.PROPERTY_ATTRIBUTES, propertyId, map);
-                        } catch (SQLException e) {
+                        } catch (final SQLException e) {
                             exceptions.add(e);
                         }
                     });
@@ -410,7 +410,7 @@ final class DbConfigRepository implements ConfigRepository {
                         try {
                             delete(connection, SQL.DELETE.CONFIG_ATTRIBUTES, config.getId());
                             insert(connection, SQL.INSERT.CONFIG_ATTRIBUTES, config.getId(), map);
-                        } catch (SQLException e) {
+                        } catch (final SQLException e) {
                             exceptions.add(e);
                         }
                     });
@@ -613,7 +613,7 @@ final class DbConfigRepository implements ConfigRepository {
             if (connection != null) {
                 try {
                     connection.rollback();
-                } catch (SQLException ex) {
+                } catch (final SQLException ex) {
                     throw new RuntimeException(DB_ROLLBACK_ERROR, e);
                 }
 
@@ -626,7 +626,7 @@ final class DbConfigRepository implements ConfigRepository {
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (SQLException e) {
+                } catch (final SQLException e) {
                     throw new RuntimeException(DB_CONNECTION_ERROR);
                 }
             }

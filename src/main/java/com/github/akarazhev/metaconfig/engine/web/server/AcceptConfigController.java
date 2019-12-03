@@ -52,7 +52,7 @@ final class AcceptConfigController extends AbstractController {
     /**
      * Wraps and builds the instance of the accept controller.
      */
-    static class Builder extends AbstractBuilder {
+    final static class Builder extends AbstractBuilder {
         /**
          * Constructs a controller with the configuration service param.
          *

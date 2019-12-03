@@ -24,6 +24,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_FACTORY_CLASS_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.DB_ERROR;
 
 /**
  * Provides factory methods to create a web server.
@@ -45,13 +46,25 @@ public final class WebServers {
             private Consumer<Config> consumer;
             private final Map<String, Config> dataStorage = new ConcurrentHashMap<>();
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public Stream<Config> update(final Stream<Config> stream) {
                 final Config[] input = stream.toArray(Config[]::new);
                 final Config[] output = new Config[input.length];
                 for (int i = 0; i < input.length; i++) {
-                    if (input[i].getId() == 0) {
-                        input[i] = new Config.Builder(input[i]).id(1).build();
+                    final Config config = dataStorage.get(input[i].getName());
+                    if (config != null) {
+                        if (config.getVersion() == input[i].getVersion()) {
+                            input[i] = new Config.Builder(input[i]).version(input[i].getVersion() + 1).build();
+                        } else {
+                            throw new RuntimeException(DB_ERROR);
+                        }
+                    } else {
+                        if (input[i].getId() == 0) {
+                            input[i] = new Config.Builder(input[i]).id(1).build();
+                        }
                     }
 
                     output[i] = input[i];
@@ -61,16 +74,25 @@ public final class WebServers {
                 return Arrays.stream(output);
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public Stream<String> getNames() {
                 return dataStorage.keySet().stream().sorted();
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public Stream<Config> get() {
                 return dataStorage.values().stream().sorted(Comparator.comparing(Config::getName));
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public Stream<Config> get(final Stream<String> stream) {
                 final Collection<Config> configs = new LinkedList<>();
@@ -84,13 +106,19 @@ public final class WebServers {
                 return configs.stream().sorted(Comparator.comparing(Config::getName));
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public int remove(final Stream<String> stream) {
-                int size = dataStorage.size();
+                final int size = dataStorage.size();
                 stream.forEach(dataStorage::remove);
                 return size - dataStorage.size();
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public void accept(final String name) {
                 if (consumer != null) {
@@ -98,6 +126,9 @@ public final class WebServers {
                 }
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public void addConsumer(final Consumer<Config> consumer) {
                 this.consumer = consumer;

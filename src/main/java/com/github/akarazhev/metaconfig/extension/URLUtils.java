@@ -16,6 +16,8 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_UTILS_CLASS_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.PARAM_DECODING_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.PARAM_ENCODING_ERROR;
 
 /**
  * Encodes and decodes URL params.
@@ -36,10 +38,8 @@ public final class URLUtils {
         try {
             return URLEncoder.encode(param, StandardCharsets.UTF_8.toString());
         } catch (final UnsupportedEncodingException e) {
-            e.printStackTrace();
+            throw new RuntimeException(PARAM_ENCODING_ERROR, e);
         }
-
-        return param;
     }
 
     /**
@@ -52,9 +52,7 @@ public final class URLUtils {
         try {
             return URLDecoder.decode(param, StandardCharsets.UTF_8.toString());
         } catch (final UnsupportedEncodingException e) {
-            e.printStackTrace();
+            throw new RuntimeException(PARAM_DECODING_ERROR, e);
         }
-
-        return param;
     }
 }
