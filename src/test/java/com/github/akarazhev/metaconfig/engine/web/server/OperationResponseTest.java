@@ -11,8 +11,33 @@
 package com.github.akarazhev.metaconfig.engine.web.server;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("Operation response test")
 final class OperationResponseTest {
-    // todo
+
+    @Test
+    @DisplayName("Result is success")
+    void resultIsSuccess() {
+        final OperationResponse response = new OperationResponse.Builder<String>().result("Ok").build();
+        // Check test results
+        assertTrue(response.isSuccess());
+        assertEquals("Ok", response.getResult());
+        assertNull(response.getError());
+    }
+
+    @Test
+    @DisplayName("Result is not success")
+    void resultIsNotSuccess() {
+        final OperationResponse response = new OperationResponse.Builder<String>().error("Error").build();
+        // Check test results
+        assertFalse(response.isSuccess());
+        assertEquals("Error", response.getError());
+        assertNull(response.getResult());
+    }
 }
