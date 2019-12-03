@@ -121,7 +121,7 @@ final class WebConfigRepository implements ConfigRepository {
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
         this.config.getProperty(URL).ifPresent(property ->
                 properties.add(new Property.Builder(URL, property.getValue() + "/accept_config/" +
-                        URLUtils.encode(name)).build()));
+                        URLUtils.encode(name, StandardCharsets.UTF_8)).build()));
         properties.add(new Property.Builder(METHOD, POST).build());
 
         getContent(properties, CONFIG_ACCEPT_ERROR);

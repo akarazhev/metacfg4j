@@ -73,7 +73,7 @@ final class WebServersTest {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL,
-                API_URL + "/accept_config/" + URLUtils.encode("name_1")).build());
+                API_URL + "/accept_config/" + URLUtils.encode("name_1", StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, POST).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
@@ -90,7 +90,7 @@ final class WebServersTest {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL,
-                API_URL + "/accept_config/" + URLUtils.encode("name_1")).build());
+                API_URL + "/accept_config/" + URLUtils.encode("name_1", StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();

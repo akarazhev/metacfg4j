@@ -80,7 +80,8 @@ abstract class AbstractController {
      */
     Stream<String> getPathParams(final String path, final String api) {
         return path.contains(api) ?
-                Arrays.stream(path.substring(api.length() + 1).split("/")).map(URLUtils::decode) :
+                Arrays.stream(path.substring(api.length() + 1).split("/")).map(param ->
+                        URLUtils.decode(param, StandardCharsets.UTF_8)) :
                 Stream.empty();
     }
 
