@@ -24,48 +24,72 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DisplayName("Abstract controller test")
 final class AbstractControllerTest {
 
     private final TestController testController = new TestController.Builder(new ConfigService() {
+
+        /**
+         * {@inheritDoc}
+         */
         @Override
-        public Stream<Config> update(Stream<Config> stream) {
+        public Stream<Config> update(final Stream<Config> stream) {
             return null;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public Stream<String> getNames() {
             return null;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public Stream<Config> get() {
             return null;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
-        public Stream<Config> get(Stream<String> stream) {
+        public Stream<Config> get(final Stream<String> stream) {
             return null;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
-        public int remove(Stream<String> stream) {
+        public int remove(final Stream<String> stream) {
             return 0;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
-        public void accept(String name) {
+        public void accept(final String name) {
             // Empty implementation
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
-        public void addConsumer(Consumer<Config> consumer) {
+        public void addConsumer(final Consumer<Config> consumer) {
             // Empty implementation
         }
     }).build();
@@ -76,6 +100,14 @@ final class AbstractControllerTest {
         final Stream<String> params = testController.getPathParams("path", "api");
         // Check test results
         assertEquals(0, params.count());
+    }
+
+    @Test
+    @DisplayName("Get request param")
+    void getRequestParam() {
+        final Optional<String> param = testController.getRequestParam("path", "api");
+        // Check test results
+        assertFalse(param.isPresent());
     }
 
     @Test
@@ -90,86 +122,137 @@ final class AbstractControllerTest {
     void handle() {
         testController.handle(new HttpExchange() {
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public Headers getRequestHeaders() {
                 return null;
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public Headers getResponseHeaders() {
                 return null;
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public URI getRequestURI() {
                 return null;
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public String getRequestMethod() {
                 return null;
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public HttpContext getHttpContext() {
                 return null;
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public void close() {
                 // Empty implementation
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public InputStream getRequestBody() {
                 return null;
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public OutputStream getResponseBody() {
                 return null;
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
-            public void sendResponseHeaders(int i, long l) throws IOException {
+            public void sendResponseHeaders(final int i, final long l) {
                 // Empty implementation
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public InetSocketAddress getRemoteAddress() {
                 return null;
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public int getResponseCode() {
                 return 0;
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public InetSocketAddress getLocalAddress() {
                 return null;
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public String getProtocol() {
                 return null;
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
-            public Object getAttribute(String s) {
+            public Object getAttribute(final String s) {
                 return null;
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
-            public void setAttribute(String s, Object o) {
+            public void setAttribute(final String s, final Object o) {
                 // Empty implementation
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
-            public void setStreams(InputStream inputStream, OutputStream outputStream) {
+            public void setStreams(final InputStream inputStream, final OutputStream outputStream) {
                 // Empty implementation
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public HttpPrincipal getPrincipal() {
                 return null;
@@ -178,7 +261,7 @@ final class AbstractControllerTest {
     }
 }
 
-class TestController extends AbstractController {
+final class TestController extends AbstractController {
 
     private TestController(final Builder builder) {
         super(builder);
@@ -188,14 +271,14 @@ class TestController extends AbstractController {
      * {@inheritDoc}
      */
     @Override
-    void execute(HttpExchange httpExchange) {
-        throw new RuntimeException();
+    void execute(final HttpExchange httpExchange) {
+        throw new RuntimeException("Error");
     }
 
     /**
      * {@inheritDoc}
      */
-    static class Builder extends AbstractBuilder {
+    final static class Builder extends AbstractBuilder {
         /**
          * {@inheritDoc}
          */

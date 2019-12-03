@@ -104,11 +104,17 @@ public final class ConnectionPools {
         return new ConnectionPool() {
             private final JdbcConnectionPool connectionPool = JdbcConnectionPool.create(url, user, password);
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public void close() {
                 connectionPool.dispose();
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public DataSource getDataSource() {
                 return connectionPool;

@@ -46,6 +46,9 @@ public final class WebServers {
             private Consumer<Config> consumer;
             private final Map<String, Config> dataStorage = new ConcurrentHashMap<>();
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public Stream<Config> update(final Stream<Config> stream) {
                 final Config[] input = stream.toArray(Config[]::new);
@@ -71,16 +74,25 @@ public final class WebServers {
                 return Arrays.stream(output);
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public Stream<String> getNames() {
                 return dataStorage.keySet().stream().sorted();
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public Stream<Config> get() {
                 return dataStorage.values().stream().sorted(Comparator.comparing(Config::getName));
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public Stream<Config> get(final Stream<String> stream) {
                 final Collection<Config> configs = new LinkedList<>();
@@ -94,6 +106,9 @@ public final class WebServers {
                 return configs.stream().sorted(Comparator.comparing(Config::getName));
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public int remove(final Stream<String> stream) {
                 final int size = dataStorage.size();
@@ -101,6 +116,9 @@ public final class WebServers {
                 return size - dataStorage.size();
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public void accept(final String name) {
                 if (consumer != null) {
@@ -108,6 +126,9 @@ public final class WebServers {
                 }
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public void addConsumer(final Consumer<Config> consumer) {
                 this.consumer = consumer;
