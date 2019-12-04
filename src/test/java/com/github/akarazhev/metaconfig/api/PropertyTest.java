@@ -191,8 +191,8 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Compare two properties")
     void compareTwoProperties() {
-        final Property firstProperty = new Property.Builder("Property", new String[]{"Value"}).build();
-        final Property secondProperty = new Property.Builder("Property", new String[]{"Value"}).build();
+        final Property firstProperty = getProperty();
+        final Property secondProperty = getProperty();
         // Check test results
         assertEquals(firstProperty, secondProperty);
     }

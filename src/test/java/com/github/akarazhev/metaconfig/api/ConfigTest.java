@@ -76,8 +76,8 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Compare two configs")
     void compareTwoConfigs() {
-        final Config firstConfig = new Config.Builder("Config", Collections.emptyList()).build();
-        final Config secondConfig = new Config.Builder("Config", Collections.emptyList()).build();
+        final Config firstConfig = getConfig(Collections.emptyList());
+        final Config secondConfig = getConfig(Collections.emptyList());
         // Check test results
         assertEquals(firstConfig, secondConfig);
     }
