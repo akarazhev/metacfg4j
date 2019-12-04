@@ -50,6 +50,8 @@ import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.API.CONFIG_NAMES;
 import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.ALIAS;
 import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.ALIAS_VALUE;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.API_PATH;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.API_PATH_VALUE;
 import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.BACKLOG;
 import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.BACKLOG_VALUE;
 import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.CONFIG_NAME;
@@ -86,6 +88,10 @@ public final class Server implements WebServer {
         public static final String HOSTNAME = "hostname";
         // The hostname value
         static final String HOSTNAME_VALUE = "localhost";
+        // The api path key
+        public static final String API_PATH = "api-path";
+        // The api path value
+        static final String API_PATH_VALUE = "/api/metacfg/";
         // The port key
         public static final String PORT = "port";
         // The port value
@@ -150,6 +156,10 @@ public final class Server implements WebServer {
         final String hostname = serverConfig.getProperty(HOSTNAME).
                 map(Property::getValue).
                 orElse(HOSTNAME_VALUE);
+        // Get the api path
+        final String apiPath = serverConfig.getProperty(API_PATH).
+                map(Property::getValue).
+                orElse(API_PATH_VALUE);
         // Get the port
         final int port = serverConfig.getProperty(PORT).
                 map(property -> (int) property.asLong()).
@@ -160,9 +170,9 @@ public final class Server implements WebServer {
                 orElse(BACKLOG_VALUE);
         // Init the server
         httpsServer = HttpsServer.create(new InetSocketAddress(hostname, port), backlog);
-        httpsServer.createContext(ACCEPT_CONFIG, new AcceptConfigController.Builder(configService).build()::handle);
-        httpsServer.createContext(CONFIG_NAMES, new ConfigNamesController.Builder(configService).build()::handle);
-        httpsServer.createContext(CONFIG, new ConfigController.Builder(configService).build()::handle);
+        httpsServer.createContext(apiPath + ACCEPT_CONFIG, new AcceptConfigController.Builder(apiPath, configService).build()::handle);
+        httpsServer.createContext(apiPath + CONFIG_NAMES, new ConfigNamesController.Builder(apiPath, configService).build()::handle);
+        httpsServer.createContext(apiPath + CONFIG, new ConfigController.Builder(apiPath, configService).build()::handle);
         httpsServer.setExecutor(null);
         httpsServer.setHttpsConfigurator(new HttpsConfigurator(getSSLContext(serverConfig)) {
 

@@ -12,6 +12,7 @@ package com.github.akarazhev.metaconfig.engine.web.server;
 
 import com.github.akarazhev.metaconfig.api.ConfigService;
 import com.github.akarazhev.metaconfig.extension.URLUtils;
+import com.github.akarazhev.metaconfig.extension.Validator;
 import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonException;
 import com.github.cliftonlabs.json_simple.Jsoner;
@@ -40,9 +41,11 @@ import static java.net.HttpURLConnection.HTTP_OK;
 abstract class AbstractController {
     private final static Logger LOGGER = Logger.getLogger(AbstractController.class.getSimpleName());
     final static String REQ_PARAM_NAMES = "names";
+    final String apiPath;
     final ConfigService configService;
 
     AbstractController(final AbstractBuilder abstractBuilder) {
+        this.apiPath = abstractBuilder.apiPath;
         this.configService = abstractBuilder.configService;
     }
 
@@ -175,15 +178,18 @@ abstract class AbstractController {
      * Wraps and builds instances of controllers.
      */
     static abstract class AbstractBuilder {
+        private final String apiPath;
         private final ConfigService configService;
 
         /**
          * Constructs a controller with the configuration service param.
          *
+         * @param apiPath       an api path.
          * @param configService a configuration service.
          */
-        AbstractBuilder(final ConfigService configService) {
-            this.configService = configService;
+        AbstractBuilder(final String apiPath, final ConfigService configService) {
+            this.apiPath = Validator.of(apiPath).get();
+            this.configService = Validator.of(configService).get();
         }
 
         /**

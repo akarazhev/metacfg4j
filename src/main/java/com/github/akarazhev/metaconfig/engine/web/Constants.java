@@ -57,8 +57,8 @@ public final class Constants {
             throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
         }
 
-        public static final String ACCEPT_CONFIG = "/api/metacfg/accept_config";
-        public static final String CONFIG_NAMES = "/api/metacfg/config_names";
-        public static final String CONFIG = "/api/metacfg/config";
+        public static final String ACCEPT_CONFIG = "accept_config";
+        public static final String CONFIG_NAMES = "config_names";
+        public static final String CONFIG = "config";
     }
 }

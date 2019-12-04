@@ -104,13 +104,15 @@ final class ConfigController extends AbstractController {
      * Wraps and builds the instance of the config controller.
      */
     final static class Builder extends AbstractBuilder {
+
         /**
          * Constructs a controller with the configuration service param.
          *
+         * @param apiPath       an api path.
          * @param configService a configuration service.
          */
-        Builder(final ConfigService configService) {
-            super(configService);
+        Builder(final String apiPath, final ConfigService configService) {
+            super(apiPath, configService);
         }
 
         /**
