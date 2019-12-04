@@ -37,7 +37,8 @@ final class AcceptConfigController extends AbstractController {
     @Override
     void execute(final HttpExchange httpExchange) throws IOException {
         if (POST.equals(httpExchange.getRequestMethod())) {
-            final OperationResponse response = getPathParams(httpExchange.getRequestURI().getPath(), ACCEPT_CONFIG).findAny().
+            final OperationResponse response = getPathParams(httpExchange.getRequestURI().getPath(), apiPath +
+                    ACCEPT_CONFIG).findAny().
                     map(param -> {
                         configService.accept(param);
                         return new OperationResponse.Builder<>().result(String.format(CONFIG_ACCEPTED, param)).build();
@@ -53,13 +54,15 @@ final class AcceptConfigController extends AbstractController {
      * Wraps and builds the instance of the accept controller.
      */
     final static class Builder extends AbstractBuilder {
+
         /**
          * Constructs a controller with the configuration service param.
          *
+         * @param apiPath       an api path.
          * @param configService a configuration service.
          */
-        Builder(final ConfigService configService) {
-            super(configService);
+        Builder(final String apiPath, final ConfigService configService) {
+            super(apiPath, configService);
         }
 
         /**

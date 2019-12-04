@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DisplayName("Abstract controller test")
 final class AbstractControllerTest {
 
-    private final TestController testController = new TestController.Builder(new ConfigService() {
+    private final TestController testController = new TestController.Builder("/api/metacfg/", new ConfigService() {
 
         /**
          * {@inheritDoc}
@@ -279,11 +279,12 @@ final class TestController extends AbstractController {
      * {@inheritDoc}
      */
     final static class Builder extends AbstractBuilder {
+
         /**
          * {@inheritDoc}
          */
-        Builder(final ConfigService configService) {
-            super(configService);
+        Builder(final String apiPath, final ConfigService configService) {
+            super(apiPath, configService);
         }
 
         /**

@@ -15,9 +15,9 @@ This is a high-level abstraction based on the low-level API. It has been written
 This library has the implementation of a simple web-client/server, repositories, services, controllers. The web-server provides implementation of REST methods.
 Data is persisted into a DB, by using any configured datasource.
   
-## Usage
+## Configuration and Usage
 
-### Basic Usage
+### Basic Configuration
 
 Add a maven dependency into your project:
 ```xml
@@ -41,7 +41,7 @@ public MetaConfig metaConfig() {
 ```
 NOTE: The web-server will not be started, since it requires the related configuration.
 
-### Advanced Usage
+### Advanced Configuration
 
 You can instantiate the meta configuration with the custom configuration:
 ```java
@@ -50,6 +50,7 @@ public MetaConfig metaConfig() {
     final Config webServer = new Config.Builder(Server.Settings.CONFIG_NAME,
         Arrays.asList(
                 new Property.Builder(Server.Settings.HOSTNAME, "localhost").build(),
+                new Property.Builder(Server.Settings.API_PATH, "/api/metacfg/").build(),
                 new Property.Builder(Server.Settings.PORT, 8000).build(),
                 new Property.Builder(Server.Settings.BACKLOG, 0).build(),
                 new Property.Builder(Server.Settings.KEY_STORE_FILE, "./data/metacfg4j.keystore").build(),
@@ -62,7 +63,7 @@ public MetaConfig metaConfig() {
         webServer(webServer).
         dataSource(getDataSource()).
         build();
-    }
+}
 ```
 
 It's possible to configure the meta configuration as a client:
@@ -103,9 +104,72 @@ The following settings are available:
  * `storePassword` - the store password of a certificate. <br/>
  * `keyPassword` - the key password of a certificate. <br/>
 
-#### REST API
+### Java Usage
 
-The API is available by the https protocol:
+The Java API is available:
+
+```java
+/**
+ * Provides service methods to create, read, update and delete operations.
+ */
+public interface ConfigService {
+    /**
+     * Updates configuration models.
+     *
+     * @param stream   a stream of configuration models.
+     * @return a stream of updated configuration models.
+     */
+    Stream<Config> update(final Stream<Config> stream);
+
+    /**
+     * Returns all configuration names.
+     *
+     * @return a stream of configuration names.
+     */
+    Stream<String> getNames();
+
+    /**
+     * Returns all configuration models.
+     *
+     * @return a stream of configurations models.
+     */
+    Stream<Config> get();
+
+    /**
+     * Returns configuration models by names.
+     *
+     * @param stream a stream of names.
+     * @return a stream of configurations models.
+     */
+    Stream<Config> get(final Stream<String> stream);
+
+    /**
+     * Removes configuration models by names.
+     *
+     * @param stream a stream of names.
+     * @return a number of deleted models.
+     */
+    int remove(final Stream<String> stream);
+
+    /**
+     * Accepts a configuration model by the name.
+     *
+     * @param name a configuration name.
+     */
+    void accept(final String name);
+
+    /**
+     * Adds a consumer to provide an action.
+     *
+     * @param consumer an implementation of the consumer.
+     */
+    void addConsumer(final Consumer<Config> consumer);
+}
+```
+
+### REST Usage
+
+The REST API is available by the https protocol:
 
 `POST api/metacfg/accept_config/CONFIG_NAME` - calls the logic for the config. <br/>
 `GET api/metacfg/config_names` - returns a list of config names. <br/>
