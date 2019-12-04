@@ -99,10 +99,10 @@ The following settings are available:
  * `hostname` - the server hostname. <br/>
  * `port` - the server port. <br/>
  * `backlog` - the server backlog. <br/>
- * `keyStoreFile` - the path to a certificate. <br/>
+ * `key-store-file` - the path to a certificate. <br/>
  * `alias` - the alias of a certificate. <br/>
- * `storePassword` - the store password of a certificate. <br/>
- * `keyPassword` - the key password of a certificate. <br/>
+ * `store-password` - the store password of a certificate. <br/>
+ * `key-password` - the key password of a certificate. <br/>
 
 ### Java Usage
 
