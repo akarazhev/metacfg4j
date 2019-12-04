@@ -182,7 +182,7 @@ The REST API is available by the https protocol:
  &#8658; Java 8+ <br/>
  &#8658; Maven 3.6+ <br/>
  
- ## Contribution
+## Contribution
  
 Contribution is always welcome. Please perform changes and submit pull requests from the `dev` branch instead of `master`.  
 Please set your editor to use spaces instead of tabs, and adhere to the apparent style of the code you are editing.
