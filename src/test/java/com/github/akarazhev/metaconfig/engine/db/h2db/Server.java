@@ -60,7 +60,7 @@ public final class Server implements DbServer {
         // The args key
         public static final String ARGS = "args";
         // The args value
-        static final String[] ARGS_VALUE = new String[]{"-tcp", "-tcpPort", "8043"};
+        public static final String[] ARGS_VALUE = new String[]{"-tcp", "-tcpPort", "8043"};
     }
 
     /**

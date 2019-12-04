@@ -87,35 +87,35 @@ public final class Server implements WebServer {
         // The hostname key
         public static final String HOSTNAME = "hostname";
         // The hostname value
-        static final String HOSTNAME_VALUE = "localhost";
+        public static final String HOSTNAME_VALUE = "localhost";
         // The api path key
         public static final String API_PATH = "api-path";
         // The api path value
-        static final String API_PATH_VALUE = "/api/metacfg/";
+        public static final String API_PATH_VALUE = "/api/metacfg/";
         // The port key
         public static final String PORT = "port";
         // The port value
-        static final int PORT_VALUE = 8000;
+        public static final int PORT_VALUE = 8000;
         // The backlog key
         public static final String BACKLOG = "backlog";
         // The backlog value
         public static final int BACKLOG_VALUE = 0;
-        // The keyStoreFile key
-        public static final String KEY_STORE_FILE = "keyStoreFile";
-        // The keyStoreFile value
-        static final String KEY_STORE_FILE_VALUE = "./data/metacfg4j.keystore";
+        // The key-store-file key
+        public static final String KEY_STORE_FILE = "key-store-file";
+        // The key-store-file value
+        public static final String KEY_STORE_FILE_VALUE = "./data/metacfg4j.keystore";
         // The alias key
         public static final String ALIAS = "alias";
         // The alias value
-        static final String ALIAS_VALUE = "alias";
+        public static final String ALIAS_VALUE = "alias";
         // The store password key
-        public static final String STORE_PASSWORD = "storePassword";
+        public static final String STORE_PASSWORD = "store-password";
         // The store password value
-        static final String STORE_PASSWORD_VALUE = "password";
+        public static final String STORE_PASSWORD_VALUE = "password";
         // The key password key
-        public static final String KEY_PASSWORD = "keyPassword";
+        public static final String KEY_PASSWORD = "key-password";
         // The key password value
-        static final String KEY_PASSWORD_VALUE = "password";
+        public static final String KEY_PASSWORD_VALUE = "password";
     }
 
     /**

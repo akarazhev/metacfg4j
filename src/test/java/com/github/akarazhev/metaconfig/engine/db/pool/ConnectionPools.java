@@ -52,15 +52,15 @@ public final class ConnectionPools {
         // The url key
         public static final String URL = "url";
         // The url value
-        static final String URL_VALUE = "jdbc:h2:./data/metacfg4j";
+        public static final String URL_VALUE = "jdbc:h2:./data/metacfg4j";
         // The user key
         public static final String USER = "user";
         // The user value
-        static final String USER_VALUE = "sa";
+        public static final String USER_VALUE = "sa";
         // The password key
         public static final String PASSWORD = "password";
         // The password value
-        static final String PASSWORD_VALUE = "sa";
+        public static final String PASSWORD_VALUE = "sa";
     }
 
     /**
