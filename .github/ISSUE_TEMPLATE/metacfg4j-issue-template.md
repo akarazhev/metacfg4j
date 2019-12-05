@@ -1,9 +1,9 @@
 ---
-name: metacfg4j issue template
-about: Describe this metacfg4j issue template's purpose here.
-title: Issue title
-labels: ''
-assignees: akarazhev
+- Name: metacfg4j issue template
+- About: Describe this metacfg4j issue template's purpose here.
+- Title: Issue title
+- Labels: ''
+- Assignees: akarazhev
 
 ---
 
