@@ -23,6 +23,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -47,7 +49,13 @@ final class DbConfigRepositoryTest extends UnitTest {
         }
 
         if (configRepository == null) {
-            configRepository = new DbConfigRepository.Builder(connectionPool.getDataSource()).build();
+            final Map<String, String> mapping = new HashMap<>();
+            mapping.put("configs", "CONFIGS");
+            mapping.put("config-attributes", "CONFIG_ATTRIBUTES");
+            mapping.put("properties", "PROPERTIES");
+            mapping.put("property-attributes", "PROPERTY_ATTRIBUTES");
+
+            configRepository = new DbConfigRepository.Builder(connectionPool.getDataSource()).mapping(mapping).build();
         }
     }
 
