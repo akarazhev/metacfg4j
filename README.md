@@ -46,6 +46,12 @@ NOTE: The web-server will not be started, since it requires the related configur
 You can instantiate the meta configuration with the custom configuration:
 ```java
 public MetaConfig metaConfig() {
+    // Create the custom data mapping
+    final Map<String, String> dataMapping = new HashMap<>();
+    dataMapping.put("configs", "CONFIGS");
+    dataMapping.put("config-attributes", "CONFIG_ATTRIBUTES");
+    dataMapping.put("properties", "PROPERTIES");
+    dataMapping.put("property-attributes", "PROPERTY_ATTRIBUTES");
     // Create the web server config
     final Config webServer = new Config.Builder(Server.Settings.CONFIG_NAME,
         Arrays.asList(
@@ -62,6 +68,7 @@ public MetaConfig metaConfig() {
     return new MetaConfig.Builder().
         webServer(webServer).
         dataSource(getDataSource()).
+        dataMapping(dataMapping).
         build();
 }
 ```

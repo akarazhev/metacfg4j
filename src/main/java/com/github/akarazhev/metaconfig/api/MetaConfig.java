@@ -16,6 +16,7 @@ import com.github.akarazhev.metaconfig.extension.Validator;
 
 import javax.sql.DataSource;
 import java.io.Closeable;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -106,6 +107,7 @@ public final class MetaConfig implements ConfigService, Closeable {
     public final static class Builder {
         private Config webClient;
         private Config webConfig;
+        private Map<String, String> dataMapping;
         private DataSource dataSource;
         private boolean isDefaultConfig;
 
@@ -139,6 +141,17 @@ public final class MetaConfig implements ConfigService, Closeable {
         }
 
         /**
+         * Constructs the core configuration class with the custom mapping.
+         *
+         * @param mapping a table mapping.
+         * @return a builder of the core configuration class.
+         */
+        public Builder dataMapping(final Map<String, String> mapping) {
+            this.dataMapping = Validator.of(mapping).get();
+            return this;
+        }
+
+        /**
          * Constructs the core configuration class with an existed data source.
          *
          * @param dataSource a data source.
@@ -168,7 +181,7 @@ public final class MetaConfig implements ConfigService, Closeable {
             try {
                 // Init the repository
                 final ConfigRepository configRepository = dataSource != null ?
-                        new DbConfigRepository.Builder(dataSource).build() :
+                        new DbConfigRepository.Builder(dataSource).mapping(dataMapping).build() :
                         new WebConfigRepository.Builder(webClient).build();
                 // Init the config service
                 final ConfigService configService = new ConfigServiceImpl.Builder(configRepository).build();

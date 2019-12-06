@@ -773,7 +773,7 @@ final class DbConfigRepository implements ConfigRepository {
         /**
          * Constructs a DB config repository with a mapping.
          *
-         * @param mapping table mapping.
+         * @param mapping a table mapping.
          * @return a builder of the DB config repository.
          */
         public Builder mapping(final Map<String, String> mapping) {
