@@ -62,5 +62,6 @@ public final class Constants {
         public static final String SERVER_WRONG_STATUS_CODE = "Server returned the '%d' status code.";
         public static final String PARAM_ENCODING_ERROR = "Param can not be encoded.";
         public static final String PARAM_DECODING_ERROR = "Param can not be decoded.";
+        public static final String PARAM_NOT_PRESENTED= "The '%s' param is not presented.";
     }
 }

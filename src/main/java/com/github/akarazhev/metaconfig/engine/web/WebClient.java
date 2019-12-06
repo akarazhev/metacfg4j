@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.PARAM_NOT_PRESENTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.REQUEST_SEND_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_CONFIG_NAME;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.ACCEPT;
@@ -224,9 +225,9 @@ public final class WebClient {
             // Validate the config
             this.config = Validator.of(config).
                     validate(c -> CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
-                    validate(c -> c.getProperty(METHOD).isPresent(), "Method is not presented.").
-                    validate(c -> c.getProperty(Settings.URL).isPresent(), "URL is not presented").
-                    get();
+                    validate(c -> c.getProperty(METHOD).isPresent(), String.format(PARAM_NOT_PRESENTED, METHOD)).
+                    validate(c -> c.getProperty(Settings.URL).isPresent(), String.format(PARAM_NOT_PRESENTED,
+                            Settings.URL)).get();
         }
 
         /**

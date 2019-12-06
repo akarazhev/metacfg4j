@@ -41,6 +41,7 @@ import java.util.logging.Logger;
 
 import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CERTIFICATE_LOAD_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.PARAM_NOT_PRESENTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_CREATE_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STARTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STOPPED;
@@ -147,10 +148,10 @@ public final class Server implements WebServer {
         // Validate the config
         final Config serverConfig = Validator.of(config).
                 validate(c -> CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
-                validate(c -> c.getProperty(KEY_STORE_FILE).isPresent(), "Key store file is not presented.").
-                validate(c -> c.getProperty(ALIAS).isPresent(), "Alias is not presented.").
-                validate(c -> c.getProperty(STORE_PASSWORD).isPresent(), "Store password is not presented.").
-                validate(c -> c.getProperty(KEY_PASSWORD).isPresent(), "Key password is not presented.").
+                validate(c -> c.getProperty(KEY_STORE_FILE).isPresent(), String.format(PARAM_NOT_PRESENTED, KEY_STORE_FILE)).
+                validate(c -> c.getProperty(ALIAS).isPresent(), String.format(PARAM_NOT_PRESENTED, ALIAS)).
+                validate(c -> c.getProperty(STORE_PASSWORD).isPresent(), String.format(PARAM_NOT_PRESENTED, STORE_PASSWORD)).
+                validate(c -> c.getProperty(KEY_PASSWORD).isPresent(), String.format(PARAM_NOT_PRESENTED, KEY_PASSWORD)).
                 get();
         // Get the hostname
         final String hostname = serverConfig.getProperty(HOSTNAME).

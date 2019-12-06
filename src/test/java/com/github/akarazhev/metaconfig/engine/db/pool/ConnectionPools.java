@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_FACTORY_CLASS_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.PARAM_NOT_PRESENTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_CONFIG_NAME;
 import static com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPools.Settings.CONFIG_NAME;
 import static com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPools.Settings.PASSWORD;
@@ -84,9 +85,9 @@ public final class ConnectionPools {
         // Validate the config
         final Config poolConfig = Validator.of(config).
                 validate(c -> CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
-                validate(c -> c.getProperty(URL).isPresent(), "URL is not presented.").
-                validate(c -> c.getProperty(USER).isPresent(), "User is not presented.").
-                validate(c -> c.getProperty(PASSWORD).isPresent(), "Password is not presented.").
+                validate(c -> c.getProperty(URL).isPresent(), String.format(PARAM_NOT_PRESENTED, URL)).
+                validate(c -> c.getProperty(USER).isPresent(), String.format(PARAM_NOT_PRESENTED,  USER)).
+                validate(c -> c.getProperty(PASSWORD).isPresent(), String.format(PARAM_NOT_PRESENTED, PASSWORD)).
                 get();
         // Get the url
         final String url = poolConfig.getProperty(URL).

@@ -21,6 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.PARAM_NOT_PRESENTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STARTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STOPPED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_CONFIG_NAME;
@@ -83,8 +84,8 @@ public final class Server implements DbServer {
         // Validate the config
         final Config h2DbConfig = Validator.of(config).
                 validate(c -> CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
-                validate(c -> c.getProperty(TYPE).isPresent(), "Type is not presented.").
-                validate(c -> c.getProperty(ARGS).isPresent(), "Args is not presented.").
+                validate(c -> c.getProperty(TYPE).isPresent(), String.format(PARAM_NOT_PRESENTED, TYPE)).
+                validate(c -> c.getProperty(ARGS).isPresent(), String.format(PARAM_NOT_PRESENTED, ARGS)).
                 get();
         // Get the args
         final String[] args = h2DbConfig.getProperty(ARGS).
