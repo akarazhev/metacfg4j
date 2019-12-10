@@ -67,6 +67,18 @@ public final class WebClient {
         public static final String CONFIG_NAME = "web-client";
         // The URL key
         public static final String URL = "url";
+        // The accept config endpoint key
+        public static final String ACCEPT_CONFIG_ENDPOINT = "accept-config-endpoint";
+        // The accept config endpoint value
+        public static final String ACCEPT_CONFIG_ENDPOINT_VALUE = "accept_config";
+        // The config names endpoint key
+        public static final String CONFIG_NAMES_ENDPOINT = "config-names-endpoint";
+        // The config names endpoint value
+        public static final String CONFIG_NAMES_ENDPOINT_VALUE = "config_names";
+        // The config endpoint key
+        public static final String CONFIG_ENDPOINT = "config-endpoint";
+        // The config endpoint value
+        public static final String CONFIG_ENDPOINT_VALUE = "config";
         // The accept all hosts key
         public static final String ACCEPT_ALL_HOSTS = "accept-all-hosts";
         // The method key

@@ -47,6 +47,12 @@ import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.URL;
 import static com.github.akarazhev.metaconfig.engine.web.server.OperationResponse.Fields.ERROR;
 import static com.github.akarazhev.metaconfig.engine.web.server.OperationResponse.Fields.RESULT;
 import static com.github.akarazhev.metaconfig.engine.web.server.OperationResponse.Fields.SUCCESS;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.ACCEPT_CONFIG_ENDPOINT;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.ACCEPT_CONFIG_ENDPOINT_VALUE;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.CONFIG_ENDPOINT;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.CONFIG_ENDPOINT_VALUE;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.CONFIG_NAMES_ENDPOINT;
+import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.CONFIG_NAMES_ENDPOINT_VALUE;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
@@ -73,11 +79,16 @@ final class WebConfigRepository implements ConfigRepository {
      */
     @Override
     public Stream<String> findNames() {
+        // Get the config names endpoint
+        final String configNamesEndpoint = config.getProperty(CONFIG_NAMES_ENDPOINT).
+                map(Property::getValue).
+                orElse(CONFIG_NAMES_ENDPOINT_VALUE);
+        // Set the configuration
         final Collection<Property> properties = new ArrayList<>(3);
         this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
         this.config.getProperty(URL).ifPresent(property ->
-                properties.add(new Property.Builder(URL, property.getValue() + "/config_names").build()));
+                properties.add(new Property.Builder(URL, property.getValue() + "/" + configNamesEndpoint).build()));
         properties.add(new Property.Builder(METHOD, GET).build());
 
         return ((JsonArray) getContent(properties, RECEIVED_CONFIGS_ERROR)).stream().map(Objects::toString);
@@ -88,11 +99,16 @@ final class WebConfigRepository implements ConfigRepository {
      */
     @Override
     public Stream<Config> saveAndFlush(final Stream<Config> stream) {
+        // Get the config endpoint
+        final String configEndpoint = config.getProperty(CONFIG_ENDPOINT).
+                map(Property::getValue).
+                orElse(CONFIG_ENDPOINT_VALUE);
+        // Set the configuration
         final Collection<Property> properties = new ArrayList<>(6);
         this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
         this.config.getProperty(URL).ifPresent(property ->
-                properties.add(new Property.Builder(URL, property.getValue() + "/config").build()));
+                properties.add(new Property.Builder(URL, property.getValue() + "/" + configEndpoint).build()));
         properties.add(new Property.Builder(METHOD, PUT).build());
         properties.add(new Property.Builder(ACCEPT, APPLICATION_JSON).build());
         properties.add(new Property.Builder(CONTENT_TYPE, APPLICATION_JSON).build());
@@ -116,11 +132,16 @@ final class WebConfigRepository implements ConfigRepository {
      * @param name a configuration name.
      */
     public void accept(final String name) {
+        // Get the accept config endpoint
+        final String acceptConfigEndpoint = config.getProperty(ACCEPT_CONFIG_ENDPOINT).
+                map(Property::getValue).
+                orElse(ACCEPT_CONFIG_ENDPOINT_VALUE);
+        // Set the configuration
         final Collection<Property> properties = new ArrayList<>(3);
         this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
         this.config.getProperty(URL).ifPresent(property ->
-                properties.add(new Property.Builder(URL, property.getValue() + "/accept_config/" +
+                properties.add(new Property.Builder(URL, property.getValue() + "/" + acceptConfigEndpoint + "/" +
                         URLUtils.encode(name, StandardCharsets.UTF_8)).build()));
         properties.add(new Property.Builder(METHOD, POST).build());
 
@@ -128,11 +149,16 @@ final class WebConfigRepository implements ConfigRepository {
     }
 
     private Collection<Property> getProperties(final Stream<String> stream, final String method) {
+        // Get the config endpoint
+        final String configEndpoint = config.getProperty(CONFIG_ENDPOINT).
+                map(Property::getValue).
+                orElse(CONFIG_ENDPOINT_VALUE);
+        // Set the configuration
         final Collection<Property> properties = new ArrayList<>(3);
         this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
         this.config.getProperty(URL).ifPresent(property ->
-                properties.add(new Property.Builder(URL, property.getValue() + "/configs?names=" +
+                properties.add(new Property.Builder(URL, property.getValue() + "/" + configEndpoint + "?names=" +
                         getNames(stream)).build())); // todo names can be empty
         properties.add(new Property.Builder(METHOD, method).build());
         return properties;

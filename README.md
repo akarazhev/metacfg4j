@@ -57,6 +57,9 @@ public MetaConfig metaConfig() {
         Arrays.asList(
                 new Property.Builder(Server.Settings.HOSTNAME, "localhost").build(),
                 new Property.Builder(Server.Settings.API_PATH, "/api/metacfg/").build(),
+                new Property.Builder(Server.Settings.ACCEPT_CONFIG_ENDPOINT, "accept_config").build(),
+                new Property.Builder(Server.Settings.CONFIG_NAMES_ENDPOINT, "config_names").build(),
+                new Property.Builder(Server.Settings.CONFIG_ENDPOINT, "config").build(),
                 new Property.Builder(Server.Settings.PORT, 8000).build(),
                 new Property.Builder(Server.Settings.BACKLOG, 0).build(),
                 new Property.Builder(Server.Settings.KEY_STORE_FILE, "./data/metacfg4j.keystore").build(),
@@ -80,6 +83,9 @@ public MetaConfig metaConfig() {
     final Config webClient = new Config.Builder(WebClient.Settings.CONFIG_NAME,
         Arrays.asList(
                 new Property.Builder(WebClient.Settings.URL, "https://localhost:8000/api/metacfg").build(),
+                new Property.Builder(WebClient.Settings.ACCEPT_CONFIG_ENDPOINT, "accept_config").build(),
+                new Property.Builder(WebClient.Settings.CONFIG_NAMES_ENDPOINT, "config_names").build(),
+                new Property.Builder(WebClient.Settings.CONFIG_ENDPOINT, "config").build(),
                 new Property.Builder(WebClient.Settings.ACCEPT_ALL_HOSTS, true).build()))
         .build();
     // Create the meta configuration
