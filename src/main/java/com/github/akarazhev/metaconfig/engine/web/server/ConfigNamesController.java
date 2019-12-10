@@ -51,11 +51,10 @@ final class ConfigNamesController extends AbstractController {
         /**
          * Constructs a controller with the configuration service param.
          *
-         * @param apiPath       an api path.
          * @param configService a configuration service.
          */
-        Builder(final String apiPath, final ConfigService configService) {
-            super(apiPath, configService);
+        Builder(final ConfigService configService) {
+            super("", configService);
         }
 
         /**

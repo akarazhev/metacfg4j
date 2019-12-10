@@ -47,18 +47,4 @@ public final class Constants {
         public static final String GET = "GET";
         public static final String PUT = "PUT";
     }
-
-    /**
-     * API constants for controllers.
-     */
-    public final static class API {
-
-        private API() {
-            throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
-        }
-
-        public static final String ACCEPT_CONFIG = "accept_config";
-        public static final String CONFIG_NAMES = "config_names";
-        public static final String CONFIG = "config";
-    }
 }

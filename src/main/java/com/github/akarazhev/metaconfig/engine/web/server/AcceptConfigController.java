@@ -18,7 +18,6 @@ import java.io.IOException;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.CONFIG_ACCEPTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.PATH_PARAM_NOT_PRESENT;
-import static com.github.akarazhev.metaconfig.engine.web.Constants.API.ACCEPT_CONFIG;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.POST;
 import static java.net.HttpURLConnection.HTTP_BAD_METHOD;
 
@@ -37,8 +36,8 @@ final class AcceptConfigController extends AbstractController {
     @Override
     void execute(final HttpExchange httpExchange) throws IOException {
         if (POST.equals(httpExchange.getRequestMethod())) {
-            final OperationResponse response = getPathParams(httpExchange.getRequestURI().getPath(), apiPath +
-                    ACCEPT_CONFIG).findAny().
+            final OperationResponse response = getPathParams(httpExchange.getRequestURI().getPath(), apiPath).
+                    findAny().
                     map(param -> {
                         configService.accept(param);
                         return new OperationResponse.Builder<>().result(String.format(CONFIG_ACCEPTED, param)).build();
