@@ -16,6 +16,7 @@ import com.github.akarazhev.metaconfig.extension.Validator;
 
 import javax.sql.DataSource;
 import java.io.Closeable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -179,9 +180,11 @@ public final class MetaConfig implements ConfigService, Closeable {
          */
         public MetaConfig build() {
             try {
+                // init a mapping
+                final Map<String, String> mapping = dataMapping != null ? dataMapping : new HashMap<>();
                 // Init the repository
                 final ConfigRepository configRepository = dataSource != null ?
-                        new DbConfigRepository.Builder(dataSource).mapping(dataMapping).build() :
+                        new DbConfigRepository.Builder(dataSource).mapping(mapping).build() :
                         new WebConfigRepository.Builder(webClient).build();
                 // Init the config service
                 final ConfigService configService = new ConfigServiceImpl.Builder(configRepository).build();
