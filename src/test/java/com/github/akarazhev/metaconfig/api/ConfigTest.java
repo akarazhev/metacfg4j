@@ -77,9 +77,15 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Compare a wrong config")
     void compareWrongConfig() {
-        final Config firstConfig = getConfig(Collections.emptyList());
         // Check test results
-        assertNotEquals(firstConfig, new Object());
+        assertNotEquals(getConfig(Collections.emptyList()), getProperty());
+    }
+
+    @Test
+    @DisplayName("Compare a null config")
+    void compareNullConfig() {
+        // Check test results
+        assertNotEquals(getConfig(Collections.emptyList()), null);
     }
 
     @Test

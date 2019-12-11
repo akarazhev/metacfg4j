@@ -192,9 +192,15 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Compare a wrong property")
     void compareWrongProperty() {
-        final Property firstProperty = getProperty();
         // Check test results
-        assertNotEquals(firstProperty, new Object());
+        assertNotEquals(getProperty(), getConfig(Collections.emptyList()));
+    }
+
+    @Test
+    @DisplayName("Compare a null property")
+    void compareNullProperty() {
+        // Check test results
+        assertNotEquals(getProperty(), null);
     }
 
     @Test
