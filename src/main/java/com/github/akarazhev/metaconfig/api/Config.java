@@ -163,10 +163,10 @@ public final class Config extends AbstractConfig {
         return id == config.id &&
                 version == config.version &&
                 updated == config.updated &&
-                name.equals(config.name) &&
+                Objects.equals(name, config.name) &&
                 Objects.equals(description, config.description) &&
-                attributes.equals(config.attributes) &&
-                properties.equals(config.properties);
+                Objects.equals(attributes, config.attributes) &&
+                Objects.equals(properties, config.properties);
     }
 
     /**
