@@ -22,6 +22,7 @@ import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -71,6 +72,22 @@ final class ConfigTest extends UnitTest {
         assertEquals(2, config.getProperties().count());
         assertTrue(config.getProperty("Property-1").isPresent());
         assertTrue(config.getProperty("Property-2").isPresent());
+    }
+
+    @Test
+    @DisplayName("Compare a wrong config")
+    void compareWrongConfig() {
+        final Config firstConfig = getConfig(Collections.emptyList());
+        // Check test results
+        assertNotEquals(firstConfig, new Object());
+    }
+
+    @Test
+    @DisplayName("Compare a config")
+    void compareConfig() {
+        final Config firstConfig = getConfig(Collections.emptyList());
+        // Check test results
+        assertEquals(firstConfig, firstConfig);
     }
 
     @Test

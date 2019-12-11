@@ -189,6 +189,22 @@ final class PropertyTest extends UnitTest {
     }
 
     @Test
+    @DisplayName("Compare a wrong property")
+    void compareWrongProperty() {
+        final Property firstProperty = getProperty();
+        // Check test results
+        assertEquals(firstProperty, new Object());
+    }
+
+    @Test
+    @DisplayName("Compare a property")
+    void compareProperty() {
+        final Property firstProperty = getProperty();
+        // Check test results
+        assertEquals(firstProperty, firstProperty);
+    }
+
+    @Test
     @DisplayName("Compare two properties")
     void compareTwoProperties() {
         final Property firstProperty = getProperty();
