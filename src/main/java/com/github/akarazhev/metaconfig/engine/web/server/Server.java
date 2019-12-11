@@ -176,18 +176,6 @@ public final class Server implements WebServer {
         final String apiPath = serverConfig.getProperty(API_PATH).
                 map(Property::getValue).
                 orElse(API_PATH_VALUE);
-        // Get the accept config endpoint
-        final String acceptConfigEndpoint = serverConfig.getProperty(ACCEPT_CONFIG_ENDPOINT).
-                map(Property::getValue).
-                orElse(ACCEPT_CONFIG_ENDPOINT_VALUE);
-        // Get the config names endpoint
-        final String configNamesEndpoint = serverConfig.getProperty(CONFIG_NAMES_ENDPOINT).
-                map(Property::getValue).
-                orElse(CONFIG_NAMES_ENDPOINT_VALUE);
-        // Get the config endpoint
-        final String configEndpoint = serverConfig.getProperty(CONFIG_ENDPOINT).
-                map(Property::getValue).
-                orElse(CONFIG_ENDPOINT_VALUE);
         // Get the port
         final int port = serverConfig.getProperty(PORT).
                 map(property -> (int) property.asLong()).
@@ -198,10 +186,23 @@ public final class Server implements WebServer {
                 orElse(BACKLOG_VALUE);
         // Init the server
         httpsServer = HttpsServer.create(new InetSocketAddress(hostname, port), backlog);
+        // Get the accept config endpoint
+        final String acceptConfigEndpoint = serverConfig.getProperty(ACCEPT_CONFIG_ENDPOINT).
+                map(Property::getValue).
+                orElse(ACCEPT_CONFIG_ENDPOINT_VALUE);
         final String acceptApi = apiPath + acceptConfigEndpoint;
-        httpsServer.createContext(acceptApi, new AcceptConfigController.Builder(acceptApi, configService).build()::handle);
+        httpsServer.createContext(acceptApi,
+                new AcceptConfigController.Builder(acceptApi, configService).build()::handle);
+        // Get the config names endpoint
+        final String configNamesEndpoint = serverConfig.getProperty(CONFIG_NAMES_ENDPOINT).
+                map(Property::getValue).
+                orElse(CONFIG_NAMES_ENDPOINT_VALUE);
         httpsServer.createContext(apiPath + configNamesEndpoint,
                 new ConfigNamesController.Builder(configService).build()::handle);
+        // Get the config endpoint
+        final String configEndpoint = serverConfig.getProperty(CONFIG_ENDPOINT).
+                map(Property::getValue).
+                orElse(CONFIG_ENDPOINT_VALUE);
         httpsServer.createContext(apiPath + configEndpoint,
                 new ConfigController.Builder(configService).build()::handle);
         httpsServer.setExecutor(null);

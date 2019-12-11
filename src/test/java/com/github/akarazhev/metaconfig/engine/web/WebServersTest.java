@@ -13,6 +13,7 @@ package com.github.akarazhev.metaconfig.engine.web;
 import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.Property;
 import com.github.akarazhev.metaconfig.extension.URLUtils;
+import com.github.cliftonlabs.json_simple.JsonException;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
 import org.junit.jupiter.api.AfterAll;
@@ -176,17 +177,21 @@ final class WebServersTest {
 
     @Test
     @DisplayName("Get configs by names not encoded")
-    void getConfigsByNamesNotEncoded() {
+    void getConfigsByNamesNotEncoded() throws JsonException {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
-        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_ENDPOINT_VALUE +
-                "?names=[\"name_1\", \"name_2\", \"name_3\"]").build());
+        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_ENDPOINT_VALUE + "?names=" +
+                URLUtils.encode("[\"name_1\", \"name_2\", \"name_3\"]", StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
         final WebClient client = new WebClient.Builder(config).build();
         // Test status code
-        assertEquals(HTTP_BAD_REQUEST, client.getStatusCode());
+        assertEquals(HTTP_OK, client.getStatusCode());
+        // Get the response
+        final JsonObject jsonContent = client.getJsonContent();
+        assertEquals(false, jsonContent.get(SUCCESS));
+        assertEquals(STRING_TO_JSON_ERROR, jsonContent.get(ERROR));
     }
 
     @Test
@@ -194,8 +199,8 @@ final class WebServersTest {
     void getConfigsByNamesNotJsonFormat() throws Exception {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
-        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_ENDPOINT_VALUE +
-                "?names=[name_1, name_2, name_3]").build());
+        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_ENDPOINT_VALUE + "?names=" +
+                URLUtils.encode("[name_1, name_2, name_3]", StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
