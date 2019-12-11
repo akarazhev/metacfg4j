@@ -22,6 +22,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,13 +52,7 @@ final class DbConfigRepositoryTest extends UnitTest {
         }
 
         if (configRepository == null) {
-            final Map<String, String> mapping = new HashMap<>();
-            mapping.put("configs", "CONFIGS");
-            mapping.put("config-attributes", "CONFIG_ATTRIBUTES");
-            mapping.put("properties", "PROPERTIES");
-            mapping.put("property-attributes", "PROPERTY_ATTRIBUTES");
-
-            configRepository = new DbConfigRepository.Builder(connectionPool.getDataSource()).mapping(mapping).build();
+            createRepository();
         }
     }
 
@@ -115,6 +112,15 @@ final class DbConfigRepositoryTest extends UnitTest {
     }
 
     @Test
+    @DisplayName("Find configs by names with not existed tables")
+    void findByNamesWithNotExistedTables() throws SQLException {
+        dropTables();
+        // Check test results
+        assertThrows(RuntimeException.class, () -> configRepository.findByNames(Stream.of(FIRST_CONFIG, SECOND_CONFIG)));
+        createRepository();
+    }
+
+    @Test
     @DisplayName("Find configs by names with the closed connection pool")
     void findByNamesWithClosedConnectionPool() throws IOException {
         connectionPool.close();
@@ -135,6 +141,15 @@ final class DbConfigRepositoryTest extends UnitTest {
     }
 
     @Test
+    @DisplayName("Find config names with not existed tables")
+    void findNamesWithNotExistedTables() throws SQLException {
+        dropTables();
+        // Check test results
+        assertThrows(RuntimeException.class, () -> configRepository.findNames());
+        createRepository();
+    }
+
+    @Test
     @DisplayName("Find config names with the closed connection pool")
     void findNamesWithClosedConnectionPool() throws IOException {
         connectionPool.close();
@@ -152,6 +167,36 @@ final class DbConfigRepositoryTest extends UnitTest {
         // Check test results
         assertTrue(newConfig.isPresent());
         assertTrue(newConfig.get().getId() > 0);
+    }
+
+    @Test
+    @DisplayName("Save and flush with not the existed config attributes table")
+    void saveAndFlushWithNotExistedConfigAttributesTable() throws SQLException {
+        dropConfigAttributesTables();
+        // Check test results
+        assertThrows(RuntimeException.class, () ->
+                configRepository.saveAndFlush(Stream.of(getConfigWithProperties(NEW_CONFIG))));
+        createRepository();
+    }
+
+    @Test
+    @DisplayName("Save and flush with not the existed property attributes table")
+    void saveAndFlushWithNotExistedConfigPropertiesTable() throws SQLException {
+        dropPropertyAttributesTables();
+        // Check test results
+        assertThrows(RuntimeException.class, () ->
+                configRepository.saveAndFlush(Stream.of(getConfigWithProperties(NEW_CONFIG))));
+        createRepository();
+    }
+
+    @Test
+    @DisplayName("Save and flush with not existed tables")
+    void saveAndFlushWithNotExistedTables() throws SQLException {
+        dropTables();
+        // Check test results
+        assertThrows(RuntimeException.class, () ->
+                configRepository.saveAndFlush(Stream.of(getConfigWithProperties(NEW_CONFIG))));
+        createRepository();
     }
 
     @Test
@@ -200,9 +245,52 @@ final class DbConfigRepositoryTest extends UnitTest {
     }
 
     @Test
+    @DisplayName("Save and flush with not existed tables")
+    void deleteByNotExistedTables() throws SQLException {
+        dropTables();
+        // Check test results
+        assertThrows(RuntimeException.class, () -> configRepository.delete(Stream.of(NEW_CONFIG)));
+        createRepository();
+    }
+
+    @Test
     @DisplayName("Delete configs by names")
     void deleteByNames() {
         // Check test results
         assertEquals(2, configRepository.delete(Stream.of(FIRST_CONFIG, SECOND_CONFIG)));
+    }
+
+    private static void createRepository() {
+        final Map<String, String> mapping = new HashMap<>();
+        mapping.put("configs", "CONFIGS");
+        mapping.put("config-attributes", "CONFIG_ATTRIBUTES");
+        mapping.put("properties", "PROPERTIES");
+        mapping.put("property-attributes", "PROPERTY_ATTRIBUTES");
+
+        configRepository = new DbConfigRepository.Builder(connectionPool.getDataSource()).mapping(mapping).build();
+    }
+
+    private static void dropConfigAttributesTables() throws SQLException {
+        try (final Connection connection = connectionPool.getDataSource().getConnection();
+             final Statement statement = connection.createStatement()) {
+            statement.executeUpdate("DROP TABLE CONFIG_ATTRIBUTES;");
+        }
+    }
+
+    private static void dropPropertyAttributesTables() throws SQLException {
+        try (final Connection connection = connectionPool.getDataSource().getConnection();
+             final Statement statement = connection.createStatement()) {
+            statement.executeUpdate("DROP TABLE PROPERTY_ATTRIBUTES;");
+        }
+    }
+
+    private static void dropTables() throws SQLException {
+        try (final Connection connection = connectionPool.getDataSource().getConnection();
+             final Statement statement = connection.createStatement()) {
+            statement.executeUpdate("DROP TABLE PROPERTY_ATTRIBUTES;");
+            statement.executeUpdate("DROP TABLE PROPERTIES;");
+            statement.executeUpdate("DROP TABLE CONFIG_ATTRIBUTES;");
+            statement.executeUpdate("DROP TABLE CONFIGS;");
+        }
     }
 }
