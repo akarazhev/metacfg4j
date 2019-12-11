@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -193,7 +194,7 @@ final class PropertyTest extends UnitTest {
     void compareWrongProperty() {
         final Property firstProperty = getProperty();
         // Check test results
-        assertEquals(firstProperty, new Object());
+        assertNotEquals(firstProperty, new Object());
     }
 
     @Test
