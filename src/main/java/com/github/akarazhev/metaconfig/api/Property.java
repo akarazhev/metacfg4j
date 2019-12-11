@@ -219,11 +219,11 @@ public final class Property extends AbstractConfig {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final Property property = (Property) o;
-        return name.equals(property.name) &&
+        return Objects.equals(name, property.name) &&
                 Objects.equals(caption, property.caption) &&
                 Objects.equals(description, property.description) &&
-                type == property.type &&
-                value.equals(property.value) &&
+                Objects.equals(type, property.type) &&
+                Objects.equals(value, property.value) &&
                 Objects.equals(attributes, property.attributes) &&
                 Objects.equals(properties, property.properties);
     }
