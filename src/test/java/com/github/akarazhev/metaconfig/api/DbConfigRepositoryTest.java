@@ -221,6 +221,34 @@ final class DbConfigRepositoryTest extends UnitTest {
     }
 
     @Test
+    @DisplayName("Save and flush by the config id with not the existed config attributes table")
+    void saveAndFlushConfigByIdWithNotExistedConfigAttributesTable() throws SQLException {
+        final Optional<Config> firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
+        // Check test results
+        assertTrue(firstConfig.isPresent());
+        final Config newConfig = new Config.Builder(getConfigWithSubProperties(NEW_CONFIG)).
+                id(firstConfig.get().getId()).
+                build();
+        dropConfigAttributesTables();
+        assertThrows(RuntimeException.class, () -> configRepository.saveAndFlush(Stream.of(newConfig)));
+        createRepository();
+    }
+
+    @Test
+    @DisplayName("Save and flush by the config id with not the existed property attributes table")
+    void saveAndFlushConfigByIdWithNotExistedPropertyAttributesTable() throws SQLException {
+        final Optional<Config> firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
+        // Check test results
+        assertTrue(firstConfig.isPresent());
+        final Config newConfig = new Config.Builder(getConfigWithSubProperties(NEW_CONFIG)).
+                id(firstConfig.get().getId()).
+                build();
+        dropConfigAttributesTables();
+        assertThrows(RuntimeException.class, () -> configRepository.saveAndFlush(Stream.of(newConfig)));
+        createRepository();
+    }
+
+    @Test
     @DisplayName("Optimistic locking error")
     void optimisticLockingError() {
         final Optional<Config> firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
