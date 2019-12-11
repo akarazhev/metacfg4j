@@ -212,10 +212,31 @@ final class PropertyTest extends UnitTest {
     }
 
     @Test
-    @DisplayName("Compare two properties")
-    void compareTwoProperties() {
+    @DisplayName("Compare two simple properties")
+    void compareTwoSimpleProperties() {
         final Property firstProperty = getProperty();
         final Property secondProperty = getProperty();
+        // Check test results
+        assertEquals(firstProperty, secondProperty);
+    }
+
+    @Test
+    @DisplayName("Compare two properties")
+    void compareTwoProperties() {
+        final Property firstProperty = new Property.Builder("Property-1", "Value-1").
+                caption("Caption").
+                description("Description").
+                attribute("key_1", "value_1").
+                attributes(Collections.singletonMap("key_2", "value_2")).
+                property(new String[0], new Property.Builder("Sub-property-1", "Sub-value-1").build()).
+                build();
+        final Property secondProperty =  new Property.Builder("Property-1", "Value-1").
+                caption("Caption").
+                description("Description").
+                attribute("key_1", "value_1").
+                attributes(Collections.singletonMap("key_2", "value_2")).
+                property(new String[0], new Property.Builder("Sub-property-1", "Sub-value-1").build()).
+                build();
         // Check test results
         assertEquals(firstProperty, secondProperty);
     }

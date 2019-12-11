@@ -97,10 +97,37 @@ final class ConfigTest extends UnitTest {
     }
 
     @Test
-    @DisplayName("Compare two configs")
-    void compareTwoConfigs() {
+    @DisplayName("Compare two simple configs")
+    void compareTwoSimpleConfigs() {
         final Config firstConfig = getConfig(Collections.emptyList());
         final Config secondConfig = getConfig(Collections.emptyList());
+        // Check test results
+        assertEquals(firstConfig, secondConfig);
+    }
+
+    @Test
+    @DisplayName("Compare two configs")
+    void compareTwoConfigs() {
+        final Property firstProperty = new Property.Builder("Property-1", "Value-1").build();
+        final Config firstConfig = new Config.Builder("Config", Collections.singletonList(firstProperty)).
+                id(1).
+                description("Description").
+                version(1).
+                updated(UPDATED).
+                attribute("key_1", "value_1").
+                attributes(Collections.singletonMap("key_2", "value_2")).
+                property(new String[0], new Property.Builder("Property-2", "Value-2").build()).
+                build();
+        final Property secondProperty = new Property.Builder("Property-1", "Value-1").build();
+        final Config secondConfig = new Config.Builder("Config", Collections.singletonList(secondProperty)).
+                id(1).
+                description("Description").
+                version(1).
+                updated(UPDATED).
+                attribute("key_1", "value_1").
+                attributes(Collections.singletonMap("key_2", "value_2")).
+                property(new String[0], new Property.Builder("Property-2", "Value-2").build()).
+                build();
         // Check test results
         assertEquals(firstConfig, secondConfig);
     }
