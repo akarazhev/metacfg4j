@@ -10,6 +10,7 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.engine.web;
 
+import com.github.akarazhev.metaconfig.UnitTest;
 import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.Property;
 import com.github.akarazhev.metaconfig.extension.URLUtils;
@@ -56,7 +57,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DisplayName("Web servers test")
-final class WebServersTest {
+final class WebServersTest extends UnitTest {
     private static final String API_URL = "https://localhost:8000/api/metacfg";
     private static WebServer webServer;
 
@@ -69,6 +70,12 @@ final class WebServersTest {
     static void afterAll() {
         webServer.stop();
         webServer = null;
+    }
+
+    @Test
+    @DisplayName("Web servers constructor")
+    void webServersConstructor() throws Exception {
+        assertPrivate(WebServers.class);
     }
 
     @Test

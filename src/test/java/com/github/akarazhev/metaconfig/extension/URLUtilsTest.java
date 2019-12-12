@@ -10,6 +10,7 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.extension;
 
+import com.github.akarazhev.metaconfig.UnitTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +20,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DisplayName("URL utils test")
-final class URLUtilsTest {
+final class URLUtilsTest extends UnitTest {
+
+    @Test
+    @DisplayName("URL utils constructor")
+    void urlUtilsConstructor() throws Exception {
+        assertPrivate(URLUtils.class);
+    }
 
     @Test
     @DisplayName("Encode")

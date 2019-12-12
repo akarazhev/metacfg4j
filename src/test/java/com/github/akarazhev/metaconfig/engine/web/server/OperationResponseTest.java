@@ -10,6 +10,7 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.engine.web.server;
 
+import com.github.akarazhev.metaconfig.UnitTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +20,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("Operation response test")
-final class OperationResponseTest {
+final class OperationResponseTest extends UnitTest {
+
+    @Test
+    @DisplayName("Fields constructor")
+    void fieldsConstructor() throws Exception {
+        assertPrivate(OperationResponse.Fields.class);
+    }
 
     @Test
     @DisplayName("Result is success")

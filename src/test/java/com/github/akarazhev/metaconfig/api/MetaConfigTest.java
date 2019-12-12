@@ -10,6 +10,7 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
+import com.github.akarazhev.metaconfig.UnitTest;
 import com.github.akarazhev.metaconfig.engine.db.DbServer;
 import com.github.akarazhev.metaconfig.engine.db.DbServers;
 import com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPool;
