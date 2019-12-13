@@ -23,6 +23,17 @@ final class ConstantsTest extends UnitTest {
     }
 
     @Test
+    @DisplayName("Mapping constructor")
+    void mappingConstructor() throws Exception {
+        assertPrivate(Constants.Mapping.class);
+    }
+    @Test
+    @DisplayName("Endpoints constructor")
+    void endpointsConstructor() throws Exception {
+        assertPrivate(Constants.Endpoints.class);
+    }
+
+    @Test
     @DisplayName("Messages constructor")
     void messagesConstructor() throws Exception {
         assertPrivate(Constants.Messages.class);

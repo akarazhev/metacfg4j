@@ -40,25 +40,25 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.ACCEPT_CONFIG_ENDPOINT;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.ACCEPT_CONFIG_ENDPOINT_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_ENDPOINT;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_ENDPOINT_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_NAMES_ENDPOINT;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_NAMES_ENDPOINT_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CERTIFICATE_LOAD_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.PARAM_NOT_PRESENTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_CREATE_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STARTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_STOPPED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_CONFIG_NAME;
-import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.ACCEPT_CONFIG_ENDPOINT;
-import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.ACCEPT_CONFIG_ENDPOINT_VALUE;
 import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.ALIAS;
 import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.ALIAS_VALUE;
 import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.API_PATH;
 import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.API_PATH_VALUE;
 import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.BACKLOG;
 import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.BACKLOG_VALUE;
-import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.CONFIG_ENDPOINT;
-import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.CONFIG_ENDPOINT_VALUE;
 import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.CONFIG_NAME;
-import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.CONFIG_NAMES_ENDPOINT;
-import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.CONFIG_NAMES_ENDPOINT_VALUE;
 import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.HOSTNAME;
 import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.HOSTNAME_VALUE;
 import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.KEY_PASSWORD;
@@ -96,18 +96,6 @@ public final class Server implements WebServer {
         public static final String API_PATH = "api-path";
         // The api path value
         public static final String API_PATH_VALUE = "/api/metacfg/";
-        // The accept config endpoint key
-        public static final String ACCEPT_CONFIG_ENDPOINT = "accept-config-endpoint";
-        // The accept config endpoint value
-        public static final String ACCEPT_CONFIG_ENDPOINT_VALUE = "accept_config";
-        // The config names endpoint key
-        public static final String CONFIG_NAMES_ENDPOINT = "config-names-endpoint";
-        // The config names endpoint value
-        public static final String CONFIG_NAMES_ENDPOINT_VALUE = "config_names";
-        // The config endpoint key
-        public static final String CONFIG_ENDPOINT = "config-endpoint";
-        // The config endpoint value
-        public static final String CONFIG_ENDPOINT_VALUE = "config";
         // The port key
         public static final String PORT = "port";
         // The port value

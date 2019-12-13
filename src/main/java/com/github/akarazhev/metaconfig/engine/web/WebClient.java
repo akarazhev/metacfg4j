@@ -67,18 +67,6 @@ public final class WebClient {
         public static final String CONFIG_NAME = "web-client";
         // The URL key
         public static final String URL = "url";
-        // The accept config endpoint key
-        public static final String ACCEPT_CONFIG_ENDPOINT = "accept-config-endpoint";
-        // The accept config endpoint value
-        public static final String ACCEPT_CONFIG_ENDPOINT_VALUE = "accept_config";
-        // The config names endpoint key
-        public static final String CONFIG_NAMES_ENDPOINT = "config-names-endpoint";
-        // The config names endpoint value
-        public static final String CONFIG_NAMES_ENDPOINT_VALUE = "config_names";
-        // The config endpoint key
-        public static final String CONFIG_ENDPOINT = "config-endpoint";
-        // The config endpoint value
-        public static final String CONFIG_ENDPOINT_VALUE = "config";
         // The accept all hosts key
         public static final String ACCEPT_ALL_HOSTS = "accept-all-hosts";
         // The method key
@@ -99,8 +87,8 @@ public final class WebClient {
     private WebClient(final Builder builder) {
         final Config config = builder.config;
         try {
-            Optional<Property> property = config.getProperty(Settings.URL);
-            if (property.isPresent()) {
+            final Optional<Property> urlProperty = config.getProperty(Settings.URL);
+            if (urlProperty.isPresent()) {
                 // Accept all hosts
                 final List<Throwable> exceptions = new ArrayList<>(1);
                 config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(prop -> {
@@ -117,11 +105,12 @@ public final class WebClient {
                     throw new Exception(exceptions.get(0));
                 }
                 // Open a connection
-                final HttpsURLConnection connection = (HttpsURLConnection) new URL(property.get().getValue()).openConnection();
-                property = config.getProperty(METHOD);
-                if (property.isPresent()) {
+                final HttpsURLConnection connection =
+                        (HttpsURLConnection) new URL(urlProperty.get().getValue()).openConnection();
+                final Optional<Property> methodProperty = config.getProperty(METHOD);
+                if (methodProperty.isPresent()) {
                     // Set a method
-                    connection.setRequestMethod(property.get().getValue());
+                    connection.setRequestMethod(methodProperty.get().getValue());
                 }
                 // Set the accept header
                 config.getProperty(ACCEPT).ifPresent(acceptProp ->
@@ -129,12 +118,12 @@ public final class WebClient {
                 // Set the content type
                 config.getProperty(CONTENT_TYPE).ifPresent(contentTypeProp ->
                         connection.setRequestProperty("Content-Type", contentTypeProp.getValue()));
-                property = config.getProperty(CONTENT);
-                if (property.isPresent()) {
+                final Optional<Property> contentProperty = config.getProperty(CONTENT);
+                if (contentProperty.isPresent()) {
                     // Enable the output stream
                     connection.setDoOutput(true);
                     // Write the content type
-                    writeContent(connection, property.get().getValue());
+                    writeContent(connection, contentProperty.get().getValue());
                 }
                 // Get a response code
                 statusCode = connection.getResponseCode();

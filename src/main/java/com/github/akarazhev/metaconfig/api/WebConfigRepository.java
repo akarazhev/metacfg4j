@@ -27,6 +27,12 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.ACCEPT_CONFIG_ENDPOINT;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.ACCEPT_CONFIG_ENDPOINT_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_ENDPOINT;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_ENDPOINT_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_NAMES_ENDPOINT;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_NAMES_ENDPOINT_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CONFIG_ACCEPT_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DELETE_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIGS_ERROR;
@@ -47,12 +53,6 @@ import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.URL;
 import static com.github.akarazhev.metaconfig.engine.web.server.OperationResponse.Fields.ERROR;
 import static com.github.akarazhev.metaconfig.engine.web.server.OperationResponse.Fields.RESULT;
 import static com.github.akarazhev.metaconfig.engine.web.server.OperationResponse.Fields.SUCCESS;
-import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.ACCEPT_CONFIG_ENDPOINT;
-import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.ACCEPT_CONFIG_ENDPOINT_VALUE;
-import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.CONFIG_ENDPOINT;
-import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.CONFIG_ENDPOINT_VALUE;
-import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.CONFIG_NAMES_ENDPOINT;
-import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.CONFIG_NAMES_ENDPOINT_VALUE;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
@@ -191,7 +191,7 @@ final class WebConfigRepository implements ConfigRepository {
     /**
      * Wraps and builds the instance of the web config repository.
      */
-    public final static class Builder {
+    final static class Builder {
         private final Config config;
 
         /**
