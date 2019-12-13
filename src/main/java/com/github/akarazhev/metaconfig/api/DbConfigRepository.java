@@ -757,7 +757,7 @@ final class DbConfigRepository implements ConfigRepository {
     /**
      * Wraps and builds the instance of the DB config repository.
      */
-    public final static class Builder {
+    final static class Builder {
         private final DataSource dataSource;
         private Map<String, String> mapping;
 
@@ -776,7 +776,7 @@ final class DbConfigRepository implements ConfigRepository {
          * @param mapping a table mapping.
          * @return a builder of the DB config repository.
          */
-        public Builder mapping(final Map<String, String> mapping) {
+        Builder mapping(final Map<String, String> mapping) {
             this.mapping = Validator.of(mapping).
                     validate(m -> {
                         if (m.containsKey(SQL.MAPPING.CONFIGS)) {
@@ -818,7 +818,7 @@ final class DbConfigRepository implements ConfigRepository {
          *
          * @return a builder of the DB config repository.
          */
-        public ConfigRepository build() {
+        ConfigRepository build() {
             return new DbConfigRepository(this);
         }
     }

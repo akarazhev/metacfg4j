@@ -89,7 +89,7 @@ final class ConfigServiceImpl implements ConfigService {
     /**
      * Wraps and builds the instance of the config service.
      */
-    public final static class Builder {
+    final static class Builder {
         private final ConfigRepository configRepository;
 
         /**
@@ -97,7 +97,7 @@ final class ConfigServiceImpl implements ConfigService {
          *
          * @param configRepository a config repository.
          */
-        public Builder(final ConfigRepository configRepository) {
+        Builder(final ConfigRepository configRepository) {
             this.configRepository = configRepository;
         }
 
@@ -106,7 +106,7 @@ final class ConfigServiceImpl implements ConfigService {
          *
          * @return a builder of the config service.
          */
-        public ConfigService build() {
+        ConfigService build() {
             return new ConfigServiceImpl(this);
         }
     }

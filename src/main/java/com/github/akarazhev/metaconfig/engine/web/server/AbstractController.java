@@ -55,7 +55,7 @@ abstract class AbstractController {
      * @param httpExchange a http exchange.
      * @see HttpExchange for more information.
      */
-    void handle(HttpExchange httpExchange) {
+    void handle(final HttpExchange httpExchange) {
         try {
             execute(httpExchange);
         } catch (final Exception e) {
