@@ -45,12 +45,12 @@ public final class Constants {
             throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
         }
 
-        public static final String ACCEPT_CONFIG_ENDPOINT = "accept-config-endpoint";
-        public static final String ACCEPT_CONFIG_ENDPOINT_VALUE = "accept_config";
-        public static final String CONFIG_NAMES_ENDPOINT = "config-names-endpoint";
-        public static final String CONFIG_NAMES_ENDPOINT_VALUE = "config_names";
-        public static final String CONFIG_ENDPOINT = "config-endpoint";
-        public static final String CONFIG_ENDPOINT_VALUE = "config";
+        public static final String ACCEPT_CONFIG = "accept-config-endpoint";
+        public static final String ACCEPT_CONFIG_VALUE = "accept_config";
+        public static final String CONFIG_NAMES = "config-names-endpoint";
+        public static final String CONFIG_NAMES_VALUE = "config_names";
+        public static final String CONFIG = "config-endpoint";
+        public static final String CONFIG_VALUE = "config";
     }
 
     /**

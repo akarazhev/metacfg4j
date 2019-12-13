@@ -40,12 +40,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
-import static com.github.akarazhev.metaconfig.Constants.Endpoints.ACCEPT_CONFIG_ENDPOINT;
-import static com.github.akarazhev.metaconfig.Constants.Endpoints.ACCEPT_CONFIG_ENDPOINT_VALUE;
-import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_ENDPOINT;
-import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_ENDPOINT_VALUE;
-import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_NAMES_ENDPOINT;
-import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_NAMES_ENDPOINT_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.ACCEPT_CONFIG;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.ACCEPT_CONFIG_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_NAMES;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_NAMES_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CERTIFICATE_LOAD_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.PARAM_NOT_PRESENTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_CREATE_ERROR;
@@ -175,22 +175,22 @@ public final class Server implements WebServer {
         // Init the server
         httpsServer = HttpsServer.create(new InetSocketAddress(hostname, port), backlog);
         // Get the accept config endpoint
-        final String acceptConfigEndpoint = serverConfig.getProperty(ACCEPT_CONFIG_ENDPOINT).
+        final String acceptConfigEndpoint = serverConfig.getProperty(ACCEPT_CONFIG).
                 map(Property::getValue).
-                orElse(ACCEPT_CONFIG_ENDPOINT_VALUE);
+                orElse(ACCEPT_CONFIG_VALUE);
         final String acceptApi = apiPath + acceptConfigEndpoint;
         httpsServer.createContext(acceptApi,
                 new AcceptConfigController.Builder(acceptApi, configService).build()::handle);
         // Get the config names endpoint
-        final String configNamesEndpoint = serverConfig.getProperty(CONFIG_NAMES_ENDPOINT).
+        final String configNamesEndpoint = serverConfig.getProperty(CONFIG_NAMES).
                 map(Property::getValue).
-                orElse(CONFIG_NAMES_ENDPOINT_VALUE);
+                orElse(CONFIG_NAMES_VALUE);
         httpsServer.createContext(apiPath + configNamesEndpoint,
                 new ConfigNamesController.Builder(configService).build()::handle);
         // Get the config endpoint
-        final String configEndpoint = serverConfig.getProperty(CONFIG_ENDPOINT).
+        final String configEndpoint = serverConfig.getProperty(CONFIG).
                 map(Property::getValue).
-                orElse(CONFIG_ENDPOINT_VALUE);
+                orElse(CONFIG_VALUE);
         httpsServer.createContext(apiPath + configEndpoint,
                 new ConfigController.Builder(configService).build()::handle);
         httpsServer.setExecutor(null);

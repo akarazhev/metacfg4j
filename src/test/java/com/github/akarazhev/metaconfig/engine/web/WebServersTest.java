@@ -29,9 +29,9 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 
-import static com.github.akarazhev.metaconfig.Constants.Endpoints.ACCEPT_CONFIG_ENDPOINT_VALUE;
-import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_ENDPOINT_VALUE;
-import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_NAMES_ENDPOINT_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.ACCEPT_CONFIG_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_NAMES_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.JSON_TO_CONFIG_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.METHOD_NOT_ALLOWED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.REQUEST_PARAM_NOT_PRESENT;
@@ -83,7 +83,7 @@ final class WebServersTest extends UnitTest {
     void acceptConfig() throws Exception {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
-        properties.add(new Property.Builder(URL, API_URL + "/" + ACCEPT_CONFIG_ENDPOINT_VALUE + "/" +
+        properties.add(new Property.Builder(URL, API_URL + "/" + ACCEPT_CONFIG_VALUE + "/" +
                 URLUtils.encode("name_1", StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, POST).build());
 
@@ -100,7 +100,7 @@ final class WebServersTest extends UnitTest {
     void acceptConfigWrongMethod() throws Exception {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
-        properties.add(new Property.Builder(URL, API_URL + "/" + ACCEPT_CONFIG_ENDPOINT_VALUE + "/" +
+        properties.add(new Property.Builder(URL, API_URL + "/" + ACCEPT_CONFIG_VALUE + "/" +
                 URLUtils.encode("name_1", StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
@@ -119,7 +119,7 @@ final class WebServersTest extends UnitTest {
     void getConfigNames() throws Exception {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
-        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_NAMES_ENDPOINT_VALUE).build());
+        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_NAMES_VALUE).build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
@@ -135,7 +135,7 @@ final class WebServersTest extends UnitTest {
     void getConfigNamesWrongMethod() throws Exception {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
-        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_NAMES_ENDPOINT_VALUE).build());
+        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_NAMES_VALUE).build());
         properties.add(new Property.Builder(METHOD, POST).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
@@ -153,7 +153,7 @@ final class WebServersTest extends UnitTest {
     void getConfigs() throws Exception {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
-        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_ENDPOINT_VALUE).build());
+        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE).build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
@@ -169,7 +169,7 @@ final class WebServersTest extends UnitTest {
     void getConfigsByNames() throws Exception {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
-        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_ENDPOINT_VALUE + "?names=" +
+        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE + "?names=" +
                 new String(Base64.getEncoder().encode("[\"name_1\", \"name_2\", \"name_3\"]".getBytes()),
                         StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, GET).build());
@@ -187,7 +187,7 @@ final class WebServersTest extends UnitTest {
     void getConfigsByNamesNotEncoded() throws JsonException {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
-        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_ENDPOINT_VALUE + "?names=" +
+        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE + "?names=" +
                 URLUtils.encode("[\"name_1\", \"name_2\", \"name_3\"]", StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
@@ -206,7 +206,7 @@ final class WebServersTest extends UnitTest {
     void getConfigsByNamesNotJsonFormat() throws Exception {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
-        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_ENDPOINT_VALUE + "?names=" +
+        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE + "?names=" +
                 URLUtils.encode("[name_1, name_2, name_3]", StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
@@ -225,7 +225,7 @@ final class WebServersTest extends UnitTest {
     void getConfigsWrongMethod() throws Exception {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
-        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_ENDPOINT_VALUE).build());
+        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE).build());
         properties.add(new Property.Builder(METHOD, POST).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
@@ -249,7 +249,7 @@ final class WebServersTest extends UnitTest {
 
         final Collection<Property> props = new ArrayList<>(6);
         props.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
-        props.add(new Property.Builder(URL, API_URL + "/" + CONFIG_ENDPOINT_VALUE).build());
+        props.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE).build());
         props.add(new Property.Builder(METHOD, PUT).build());
         props.add(new Property.Builder(ACCEPT, APPLICATION_JSON).build());
         props.add(new Property.Builder(CONTENT_TYPE, APPLICATION_JSON).build());
@@ -296,7 +296,7 @@ final class WebServersTest extends UnitTest {
     void deleteConfigsByNames() throws Exception {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
-        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_ENDPOINT_VALUE + "?names=" +
+        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE + "?names=" +
                 new String(Base64.getEncoder().encode("[\"name\"]".getBytes()), StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, DELETE).build());
 
@@ -315,7 +315,7 @@ final class WebServersTest extends UnitTest {
     void deleteConfig() throws Exception {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
-        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_ENDPOINT_VALUE).build());
+        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE).build());
         properties.add(new Property.Builder(METHOD, DELETE).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
@@ -333,7 +333,7 @@ final class WebServersTest extends UnitTest {
     void deleteConfigNotJsonFormat() throws Exception {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
-        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_ENDPOINT_VALUE + "?names=" +
+        properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE + "?names=" +
                 new String(Base64.getEncoder().encode("[name]".getBytes()), StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, DELETE).build());
 
