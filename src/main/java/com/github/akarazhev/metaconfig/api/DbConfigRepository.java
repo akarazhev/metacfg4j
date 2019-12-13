@@ -28,6 +28,10 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static com.github.akarazhev.metaconfig.Constants.Mapping.CONFIGS_TABLE;
+import static com.github.akarazhev.metaconfig.Constants.Mapping.CONFIG_ATTRIBUTES_TABLE;
+import static com.github.akarazhev.metaconfig.Constants.Mapping.PROPERTIES_TABLE;
+import static com.github.akarazhev.metaconfig.Constants.Mapping.PROPERTY_ATTRIBUTES_TABLE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DB_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SAVE_CONFIGS_ERROR;
 import static java.util.AbstractMap.SimpleEntry;
@@ -63,9 +67,9 @@ final class DbConfigRepository implements ConfigRepository {
         final String[] names = stream.toArray(String[]::new);
         if (names.length > 0) {
             try {
-                final String sql = String.format(SQL.SELECT.CONFIGS, mapping.get(SQL.MAPPING.CONFIGS),
-                        mapping.get(SQL.MAPPING.CONFIG_ATTRIBUTES), mapping.get(SQL.MAPPING.PROPERTIES),
-                        mapping.get(SQL.MAPPING.PROPERTY_ATTRIBUTES));
+                final String sql = String.format(SQL.SELECT.CONFIGS, mapping.get(CONFIGS_TABLE),
+                        mapping.get(CONFIG_ATTRIBUTES_TABLE), mapping.get(PROPERTIES_TABLE),
+                        mapping.get(PROPERTY_ATTRIBUTES_TABLE));
                 try (final Connection connection = dataSource.getConnection();
                      final PreparedStatement statement = connection.prepareStatement(JDBCUtils.getSql(sql, names))) {
                     JDBCUtils.setStatement(statement, names);
@@ -145,7 +149,7 @@ final class DbConfigRepository implements ConfigRepository {
     @Override
     public Stream<String> findNames() {
         try {
-            final String sql = String.format(SQL.SELECT.NAMES, mapping.get(SQL.MAPPING.CONFIGS));
+            final String sql = String.format(SQL.SELECT.NAMES, mapping.get(CONFIGS_TABLE));
             try (final Connection connection = dataSource.getConnection();
                  final Statement statement = connection.createStatement();
                  final ResultSet resultSet = statement.executeQuery(sql)) {
@@ -247,7 +251,7 @@ final class DbConfigRepository implements ConfigRepository {
     private Config[] insert(final Connection connection, final Config[] configs) throws SQLException {
         if (configs.length > 0) {
             final Config[] inserted = new Config[configs.length];
-            final String configsSql = String.format(SQL.INSERT.CONFIGS, mapping.get(SQL.MAPPING.CONFIGS));
+            final String configsSql = String.format(SQL.INSERT.CONFIGS, mapping.get(CONFIGS_TABLE));
             try (final PreparedStatement statement =
                          connection.prepareStatement(configsSql, Statement.RETURN_GENERATED_KEYS)) {
                 for (final Config config : configs) {
@@ -267,7 +271,7 @@ final class DbConfigRepository implements ConfigRepository {
                             config.getAttributes().ifPresent(map -> {
                                 try {
                                     final String attributesSql = String.format(SQL.INSERT.CONFIG_ATTRIBUTES,
-                                            mapping.get(SQL.MAPPING.CONFIG_ATTRIBUTES));
+                                            mapping.get(CONFIG_ATTRIBUTES_TABLE));
                                     insert(connection, attributesSql, configId, map);
                                 } catch (final SQLException e) {
                                     exceptions.add(e);
@@ -311,7 +315,7 @@ final class DbConfigRepository implements ConfigRepository {
     private void insert(final Connection connection, final int configId, final Property[] properties)
             throws SQLException {
         if (properties.length > 0) {
-            final String sql = String.format(SQL.INSERT.PROPERTIES, mapping.get(SQL.MAPPING.PROPERTIES));
+            final String sql = String.format(SQL.INSERT.PROPERTIES, mapping.get(PROPERTIES_TABLE));
             try (final PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                 for (final Property property : properties) {
                     JDBCUtils.setBatchStatement(statement, configId, property);
@@ -325,7 +329,7 @@ final class DbConfigRepository implements ConfigRepository {
     private void insert(final Connection connection, final SimpleEntry<Integer, Integer> confPropIds,
                         final Property[] properties) throws SQLException {
         if (properties.length > 0) {
-            final String sql = String.format(SQL.INSERT.SUB_PROPERTIES, mapping.get(SQL.MAPPING.PROPERTIES));
+            final String sql = String.format(SQL.INSERT.SUB_PROPERTIES, mapping.get(PROPERTIES_TABLE));
             try (final PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                 for (final Property property : properties) {
                     JDBCUtils.setBatchStatement(statement, confPropIds, property);
@@ -348,7 +352,7 @@ final class DbConfigRepository implements ConfigRepository {
                     properties[i].getAttributes().ifPresent(map -> {
                         try {
                             final String sql = String.format(SQL.INSERT.PROPERTY_ATTRIBUTES,
-                                    mapping.get(SQL.MAPPING.PROPERTY_ATTRIBUTES));
+                                    mapping.get(PROPERTY_ATTRIBUTES_TABLE));
                             insert(connection, sql, propertyId, map);
                         } catch (final SQLException e) {
                             exceptions.add(e);
@@ -371,7 +375,7 @@ final class DbConfigRepository implements ConfigRepository {
     private Config[] update(final Connection connection, final Config[] configs) throws SQLException {
         if (configs.length > 0) {
             final Config[] updated = new Config[configs.length];
-            final String sql = String.format(SQL.UPDATE.CONFIGS, mapping.get(SQL.MAPPING.CONFIGS));
+            final String sql = String.format(SQL.UPDATE.CONFIGS, mapping.get(CONFIGS_TABLE));
             try (final PreparedStatement statement = connection.prepareStatement(sql)) {
                 final Map<Integer, Integer> idVersion = new HashMap<>();
                 final Collection<Throwable> exceptions = new LinkedList<>();
@@ -385,7 +389,7 @@ final class DbConfigRepository implements ConfigRepository {
                     final Property[] properties = config.getProperties().toArray(Property[]::new);
                     config.getAttributes().ifPresent(map -> {
                         try {
-                            final String name = mapping.get(SQL.MAPPING.CONFIG_ATTRIBUTES);
+                            final String name = mapping.get(CONFIG_ATTRIBUTES_TABLE);
                             delete(connection, String.format(SQL.DELETE.CONFIG_ATTRIBUTES, name), config.getId());
                             insert(connection, String.format(SQL.INSERT.CONFIG_ATTRIBUTES, name), config.getId(), map);
                         } catch (final SQLException e) {
@@ -393,7 +397,7 @@ final class DbConfigRepository implements ConfigRepository {
                         }
                     });
                     // Update config properties
-                    delete(connection, String.format(SQL.DELETE.PROPERTIES, mapping.get(SQL.MAPPING.PROPERTIES)),
+                    delete(connection, String.format(SQL.DELETE.PROPERTIES, mapping.get(PROPERTIES_TABLE)),
                             config.getId());
                     insert(connection, config.getId(), properties);
                     idVersion.put(config.getId(), version);
@@ -427,7 +431,7 @@ final class DbConfigRepository implements ConfigRepository {
     }
 
     private int getVersion(final Connection connection, final int id) throws SQLException {
-        final String sql = String.format(SQL.SELECT.VERSION, SQL.MAPPING.CONFIGS);
+        final String sql = String.format(SQL.SELECT.VERSION, CONFIGS_TABLE);
         try (final PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, id);
 
@@ -444,7 +448,7 @@ final class DbConfigRepository implements ConfigRepository {
     private int delete(final Connection connection, final String[] names) throws SQLException {
         if (names.length > 0) {
             try {
-                final String sql = String.format(SQL.DELETE.CONFIGS, mapping.get(SQL.MAPPING.CONFIGS));
+                final String sql = String.format(SQL.DELETE.CONFIGS, mapping.get(CONFIGS_TABLE));
                 try (final PreparedStatement statement = connection.prepareStatement(JDBCUtils.getSql(sql, names))) {
                     JDBCUtils.setStatement(statement, names);
                     final int deleted = statement.executeUpdate();
@@ -536,18 +540,6 @@ final class DbConfigRepository implements ConfigRepository {
                             "WHERE `C`.`NAME` = ?";
         }
 
-        final static class MAPPING {
-
-            private MAPPING() {
-                throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
-            }
-
-            static final String CONFIGS = "configs";
-            static final String CONFIG_ATTRIBUTES = "config-attributes";
-            static final String PROPERTIES = "properties";
-            static final String PROPERTY_ATTRIBUTES = "property-attributes";
-        }
-
         final static class CREATE_TABLE {
 
             private CREATE_TABLE() {
@@ -611,13 +603,13 @@ final class DbConfigRepository implements ConfigRepository {
         private static void createTables(final Connection connection, final Map<String, String> mapping) throws SQLException {
             try {
                 try (final Statement statement = connection.createStatement()) {
-                    statement.executeUpdate(String.format(SQL.CREATE_TABLE.CONFIGS, mapping.get(SQL.MAPPING.CONFIGS)));
+                    statement.executeUpdate(String.format(SQL.CREATE_TABLE.CONFIGS, mapping.get(CONFIGS_TABLE)));
                     statement.executeUpdate(String.format(SQL.CREATE_TABLE.CONFIG_ATTRIBUTES,
-                            mapping.get(SQL.MAPPING.CONFIGS), mapping.get(SQL.MAPPING.CONFIG_ATTRIBUTES)));
+                            mapping.get(CONFIGS_TABLE), mapping.get(CONFIG_ATTRIBUTES_TABLE)));
                     statement.executeUpdate(String.format(SQL.CREATE_TABLE.PROPERTIES,
-                            mapping.get(SQL.MAPPING.PROPERTIES), mapping.get(SQL.MAPPING.CONFIGS)));
+                            mapping.get(PROPERTIES_TABLE), mapping.get(CONFIGS_TABLE)));
                     statement.executeUpdate(String.format(SQL.CREATE_TABLE.PROPERTY_ATTRIBUTES,
-                            mapping.get(SQL.MAPPING.PROPERTY_ATTRIBUTES), mapping.get(SQL.MAPPING.PROPERTIES)));
+                            mapping.get(PROPERTY_ATTRIBUTES_TABLE), mapping.get(PROPERTIES_TABLE)));
                     connection.commit();
                 }
             } catch (final SQLException e) {
@@ -628,16 +620,16 @@ final class DbConfigRepository implements ConfigRepository {
         private static Map<String, String> createMapping(final Map<String, String> mapping) {
             if (mapping == null) {
                 final Map<String, String> defaultMapping = new HashMap<>();
-                defaultMapping.put(SQL.MAPPING.CONFIGS, "CONFIGS");
-                defaultMapping.put(SQL.MAPPING.CONFIG_ATTRIBUTES, "CONFIG_ATTRIBUTES");
-                defaultMapping.put(SQL.MAPPING.PROPERTIES, "PROPERTIES");
-                defaultMapping.put(SQL.MAPPING.PROPERTY_ATTRIBUTES, "PROPERTY_ATTRIBUTES");
+                defaultMapping.put(CONFIGS_TABLE, "CONFIGS");
+                defaultMapping.put(CONFIG_ATTRIBUTES_TABLE, "CONFIG_ATTRIBUTES");
+                defaultMapping.put(PROPERTIES_TABLE, "PROPERTIES");
+                defaultMapping.put(PROPERTY_ATTRIBUTES_TABLE, "PROPERTY_ATTRIBUTES");
                 return defaultMapping;
             } else {
-                mapping.putIfAbsent(SQL.MAPPING.CONFIGS, "CONFIGS");
-                mapping.putIfAbsent(SQL.MAPPING.CONFIG_ATTRIBUTES, "CONFIG_ATTRIBUTES");
-                mapping.putIfAbsent(SQL.MAPPING.PROPERTIES, "PROPERTIES");
-                mapping.putIfAbsent(SQL.MAPPING.PROPERTY_ATTRIBUTES, "PROPERTY_ATTRIBUTES");
+                mapping.putIfAbsent(CONFIGS_TABLE, "CONFIGS");
+                mapping.putIfAbsent(CONFIG_ATTRIBUTES_TABLE, "CONFIG_ATTRIBUTES");
+                mapping.putIfAbsent(PROPERTIES_TABLE, "PROPERTIES");
+                mapping.putIfAbsent(PROPERTY_ATTRIBUTES_TABLE, "PROPERTY_ATTRIBUTES");
             }
 
             return mapping;
@@ -778,38 +770,10 @@ final class DbConfigRepository implements ConfigRepository {
          */
         Builder mapping(final Map<String, String> mapping) {
             this.mapping = Validator.of(mapping).
-                    validate(m -> {
-                        if (m.containsKey(SQL.MAPPING.CONFIGS)) {
-                            final String configs = m.get(SQL.MAPPING.CONFIGS);
-                            return configs != null && configs.length() > 0;
-                        }
-
-                        return true;
-                    }, SQL.MAPPING.CONFIGS + " mapping is wrong.").
-                    validate(m -> {
-                        if (m.containsKey(SQL.MAPPING.CONFIG_ATTRIBUTES)) {
-                            final String configs = m.get(SQL.MAPPING.CONFIG_ATTRIBUTES);
-                            return configs != null && configs.length() > 0;
-                        }
-
-                        return true;
-                    }, SQL.MAPPING.CONFIG_ATTRIBUTES + " mapping is wrong.").
-                    validate(m -> {
-                        if (m.containsKey(SQL.MAPPING.PROPERTIES)) {
-                            final String configs = m.get(SQL.MAPPING.PROPERTIES);
-                            return configs != null && configs.length() > 0;
-                        }
-
-                        return true;
-                    }, SQL.MAPPING.PROPERTIES + " mapping is wrong.").
-                    validate(m -> {
-                        if (m.containsKey(SQL.MAPPING.PROPERTY_ATTRIBUTES)) {
-                            final String configs = m.get(SQL.MAPPING.PROPERTY_ATTRIBUTES);
-                            return configs != null && configs.length() > 0;
-                        }
-
-                        return true;
-                    }, SQL.MAPPING.PROPERTY_ATTRIBUTES + " mapping is wrong.").get();
+                    validate(m -> validate(m, CONFIGS_TABLE), CONFIGS_TABLE + " mapping is wrong.").
+                    validate(m -> validate(m, CONFIG_ATTRIBUTES_TABLE), CONFIG_ATTRIBUTES_TABLE + " mapping is wrong.").
+                    validate(m -> validate(m, PROPERTIES_TABLE), PROPERTIES_TABLE + " mapping is wrong.").
+                    validate(m -> validate(m, PROPERTY_ATTRIBUTES_TABLE), PROPERTY_ATTRIBUTES_TABLE + " mapping is wrong.").get();
             return this;
         }
 
@@ -820,6 +784,15 @@ final class DbConfigRepository implements ConfigRepository {
          */
         ConfigRepository build() {
             return new DbConfigRepository(this);
+        }
+
+        private boolean validate(final Map<String, String> mapping, final String key) {
+            if (mapping.containsKey(key)) {
+                final String configs = mapping.get(key);
+                return configs != null && configs.length() > 0;
+            }
+
+            return true;
         }
     }
 }
