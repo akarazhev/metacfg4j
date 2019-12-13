@@ -57,9 +57,9 @@ public MetaConfig metaConfig() {
         Arrays.asList(
                 new Property.Builder(Server.Settings.HOSTNAME, "localhost").build(),
                 new Property.Builder(Server.Settings.API_PATH, "/api/metacfg/").build(),
-                new Property.Builder(Constants.Endpoints.ACCEPT_CONFIG_ENDPOINT, "accept_config").build(),
-                new Property.Builder(Constants.Endpoints.CONFIG_NAMES_ENDPOINT, "config_names").build(),
-                new Property.Builder(Constants.Endpoints.CONFIG_ENDPOINT, "config").build(),
+                new Property.Builder(Constants.Endpoints.ACCEPT_CONFIG, "accept_config").build(),
+                new Property.Builder(Constants.Endpoints.CONFIG_NAMES, "config_names").build(),
+                new Property.Builder(Constants.Endpoints.CONFIG, "config").build(),
                 new Property.Builder(Server.Settings.PORT, 8000).build(),
                 new Property.Builder(Server.Settings.BACKLOG, 0).build(),
                 new Property.Builder(Server.Settings.KEY_STORE_FILE, "./data/metacfg4j.keystore").build(),

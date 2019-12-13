@@ -27,12 +27,12 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import static com.github.akarazhev.metaconfig.Constants.Endpoints.ACCEPT_CONFIG_ENDPOINT;
-import static com.github.akarazhev.metaconfig.Constants.Endpoints.ACCEPT_CONFIG_ENDPOINT_VALUE;
-import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_ENDPOINT;
-import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_ENDPOINT_VALUE;
-import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_NAMES_ENDPOINT;
-import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_NAMES_ENDPOINT_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.ACCEPT_CONFIG;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.ACCEPT_CONFIG_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_NAMES;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_NAMES_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CONFIG_ACCEPT_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DELETE_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIGS_ERROR;
@@ -83,7 +83,7 @@ final class WebConfigRepository implements ConfigRepository {
         final Collection<Property> properties = new ArrayList<>(3);
         this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
-        setProperties(GET, CONFIG_NAMES_ENDPOINT, CONFIG_NAMES_ENDPOINT_VALUE, properties);
+        setProperties(GET, CONFIG_NAMES, CONFIG_NAMES_VALUE, properties);
 
         return ((JsonArray) getContent(properties, RECEIVED_CONFIGS_ERROR)).stream().map(Objects::toString);
     }
@@ -97,7 +97,7 @@ final class WebConfigRepository implements ConfigRepository {
         final Collection<Property> properties = new ArrayList<>(6);
         this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
-        setProperties(PUT, CONFIG_ENDPOINT, CONFIG_ENDPOINT_VALUE, properties);
+        setProperties(PUT, CONFIG, CONFIG_VALUE, properties);
         properties.add(new Property.Builder(ACCEPT, APPLICATION_JSON).build());
         properties.add(new Property.Builder(CONTENT_TYPE, APPLICATION_JSON).build());
         properties.add(new Property.Builder(CONTENT, Jsoner.serialize(stream.toArray(Config[]::new))).build());
@@ -126,9 +126,9 @@ final class WebConfigRepository implements ConfigRepository {
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
         this.config.getProperty(URL).ifPresent(property ->
                 properties.add(new Property.Builder(URL, property.getValue() + "/" +
-                        config.getProperty(ACCEPT_CONFIG_ENDPOINT).
+                        config.getProperty(ACCEPT_CONFIG).
                                 map(Property::getValue).
-                                orElse(ACCEPT_CONFIG_ENDPOINT_VALUE) + "/" +
+                                orElse(ACCEPT_CONFIG_VALUE) + "/" +
                         URLUtils.encode(name, StandardCharsets.UTF_8)).build()));
         properties.add(new Property.Builder(METHOD, POST).build());
 
@@ -142,9 +142,9 @@ final class WebConfigRepository implements ConfigRepository {
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
         this.config.getProperty(URL).ifPresent(property ->
                 properties.add(new Property.Builder(URL, property.getValue() + "/" +
-                        config.getProperty(CONFIG_ENDPOINT).
+                        config.getProperty(CONFIG).
                                 map(Property::getValue).
-                                orElse(CONFIG_ENDPOINT_VALUE) + "?names=" +
+                                orElse(CONFIG_VALUE) + "?names=" +
                         getNames(stream)).build()));
         properties.add(new Property.Builder(METHOD, method).build());
         return properties;
