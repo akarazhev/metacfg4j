@@ -302,24 +302,28 @@ final class DbConfigRepositoryTest extends UnitTest {
     private static void dropConfigAttributesTables() throws SQLException {
         try (final Connection connection = connectionPool.getDataSource().getConnection();
              final Statement statement = connection.createStatement()) {
-            statement.executeUpdate("DROP TABLE CONFIG_ATTRIBUTES;");
+            execute(statement, "CONFIG_ATTRIBUTES");
         }
     }
 
     private static void dropPropertyAttributesTables() throws SQLException {
         try (final Connection connection = connectionPool.getDataSource().getConnection();
              final Statement statement = connection.createStatement()) {
-            statement.executeUpdate("DROP TABLE PROPERTY_ATTRIBUTES;");
+            execute(statement, "PROPERTY_ATTRIBUTES");
         }
     }
 
     private static void dropTables() throws SQLException {
         try (final Connection connection = connectionPool.getDataSource().getConnection();
              final Statement statement = connection.createStatement()) {
-            statement.executeUpdate("DROP TABLE PROPERTY_ATTRIBUTES;");
-            statement.executeUpdate("DROP TABLE PROPERTIES;");
-            statement.executeUpdate("DROP TABLE CONFIG_ATTRIBUTES;");
-            statement.executeUpdate("DROP TABLE CONFIGS;");
+            execute(statement, "PROPERTY_ATTRIBUTES");
+            execute(statement, "PROPERTIES");
+            execute(statement, "CONFIG_ATTRIBUTES");
+            execute(statement, "CONFIGS");
         }
+    }
+
+    private static void execute(final Statement statement, final String table) throws SQLException {
+        statement.executeUpdate("DROP TABLE " + table + ";");
     }
 }
