@@ -260,14 +260,14 @@ final class MetaConfigTest extends UnitTest {
     }
 
     @Test
-    @DisplayName("Accept config by the name")
-    void acceptByName() {
-        dbMetaConfig.accept(FIRST_CONFIG);
+    @DisplayName("Accept config by names")
+    void acceptByNames() {
+        dbMetaConfig.accept(Stream.of(FIRST_CONFIG));
     }
 
     @Test
-    @DisplayName("Accept config by the different name")
-    void acceptByDifferentName() {
+    @DisplayName("Accept config by names")
+    void acceptByDifferentNames() {
         final StringBuilder message = new StringBuilder();
         dbMetaConfig.addConsumer(config -> {
             if (FIRST_CONFIG.equals(config.getName())) {
@@ -275,14 +275,14 @@ final class MetaConfigTest extends UnitTest {
             }
         });
 
-        webMetaConfig.accept(NEW_CONFIG);
+        webMetaConfig.accept(Stream.of(NEW_CONFIG));
         // Check test results
         assertEquals(0, message.length());
     }
 
     @Test
-    @DisplayName("Accept config by the name with consumer")
-    void acceptByNameWithConsumer() {
+    @DisplayName("Accept config by names with consumer")
+    void acceptByNamesWithConsumer() {
         final StringBuilder message = new StringBuilder();
         dbMetaConfig.addConsumer(config -> {
             if (FIRST_CONFIG.equals(config.getName())) {
@@ -290,7 +290,7 @@ final class MetaConfigTest extends UnitTest {
             }
         });
 
-        webMetaConfig.accept(FIRST_CONFIG);
+        webMetaConfig.accept(Stream.of(FIRST_CONFIG));
         // Check test results
         assertEquals(FIRST_CONFIG, message.toString());
     }

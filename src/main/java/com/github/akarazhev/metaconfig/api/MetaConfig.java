@@ -79,8 +79,8 @@ public final class MetaConfig implements ConfigService, Closeable {
      * {@inheritDoc}
      */
     @Override
-    public void accept(final String name) {
-        configService.accept(name);
+    public void accept(final Stream<String> stream) {
+        configService.accept(stream);
     }
 
     /**

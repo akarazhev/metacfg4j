@@ -99,7 +99,7 @@ abstract class AbstractController {
         return query != null ?
                 Arrays.stream(query.split("&")).
                         filter(q -> q.contains(param)).
-                        map(p -> p.split("=")[1]).
+                        map(p -> URLUtils.decode(p.split("=")[1], StandardCharsets.UTF_8)).
                         findFirst() :
                 Optional.empty();
     }

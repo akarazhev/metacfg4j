@@ -81,7 +81,7 @@ final class AbstractControllerTest {
          * {@inheritDoc}
          */
         @Override
-        public void accept(final String name) {
+        public void accept(final Stream<String> stream) {
             // Empty implementation
         }
 

@@ -165,11 +165,11 @@ public interface ConfigService {
     int remove(final Stream<String> stream);
 
     /**
-     * Accepts a configuration model by the name.
+     * Accepts a configuration model by names.
      *
-     * @param name a configuration name.
+     * @param stream a stream of names.
      */
-    void accept(final String name);
+    void accept(final Stream<String> stream);
 
     /**
      * Adds a consumer to provide an action.
@@ -184,7 +184,7 @@ public interface ConfigService {
 
 The REST API is available by the https protocol:
 
-`POST api/metacfg/accept_config/CONFIG_NAME` - calls the logic for the config. <br/>
+`POST api/metacfg/accept_config/CONFIG_NAMES_IN_BASE64` - calls the logic for configs. <br/>
 `GET api/metacfg/config_names` - returns a list of config names. <br/>
 `GET api/metacfg/config?names=CONFIG_NAMES_IN_BASE64` - returns a list of configs. <br/>
 `PUT api/metacfg/config` - creates or updates a config. <br/>

@@ -18,6 +18,7 @@ import java.io.IOException;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.CONFIG_ACCEPTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.PATH_PARAM_NOT_PRESENT;
+import static com.github.akarazhev.metaconfig.Constants.Messages.STRING_TO_JSON_ERROR;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.POST;
 import static java.net.HttpURLConnection.HTTP_BAD_METHOD;
 
@@ -39,8 +40,12 @@ final class AcceptConfigController extends AbstractController {
             final OperationResponse response = getPathParams(httpExchange.getRequestURI().getPath(), apiPath).
                     findAny().
                     map(param -> {
-                        configService.accept(param);
-                        return new OperationResponse.Builder<>().result(String.format(CONFIG_ACCEPTED, param)).build();
+                        try {
+                            configService.accept(getValues(param));
+                            return new OperationResponse.Builder<>().result(String.format(CONFIG_ACCEPTED, param)).build();
+                        } catch (final Exception e) {
+                            return new OperationResponse.Builder<>().error(STRING_TO_JSON_ERROR).build();
+                        }
                     }).
                     orElseGet(() -> new OperationResponse.Builder<>().error(PATH_PARAM_NOT_PRESENT).build());
             writeResponse(httpExchange, response);

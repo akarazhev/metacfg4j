@@ -120,9 +120,9 @@ public final class WebServers {
              * {@inheritDoc}
              */
             @Override
-            public void accept(final String name) {
+            public void accept(final Stream<String> stream) {
                 if (consumer != null) {
-                    get(Stream.of(name)).findAny().ifPresent(config -> consumer.accept(config));
+                    get(stream).findAny().ifPresent(config -> consumer.accept(config));
                 }
             }
 

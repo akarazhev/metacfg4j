@@ -11,7 +11,6 @@
 package com.github.akarazhev.metaconfig.api;
 
 import com.github.akarazhev.metaconfig.engine.web.WebClient;
-import com.github.akarazhev.metaconfig.extension.URLUtils;
 import com.github.akarazhev.metaconfig.extension.Validator;
 import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
@@ -115,11 +114,11 @@ final class WebConfigRepository implements ConfigRepository {
     }
 
     /**
-     * Accepts a configuration model by the name.
+     * Accepts a configuration model by names.
      *
-     * @param name a configuration name.
+     * @param stream a stream of names.
      */
-    public void accept(final String name) {
+    public void accept(final Stream<String> stream) {
         // Set the configuration
         final Collection<Property> properties = new ArrayList<>(3);
         this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
@@ -129,7 +128,7 @@ final class WebConfigRepository implements ConfigRepository {
                         config.getProperty(ACCEPT_CONFIG).
                                 map(Property::getValue).
                                 orElse(ACCEPT_CONFIG_VALUE) + "/" +
-                        URLUtils.encode(name, StandardCharsets.UTF_8)).build()));
+                        getAsArray(stream)).build()));
         properties.add(new Property.Builder(METHOD, POST).build());
 
         getContent(properties, CONFIG_ACCEPT_ERROR);
@@ -145,7 +144,7 @@ final class WebConfigRepository implements ConfigRepository {
                         config.getProperty(CONFIG).
                                 map(Property::getValue).
                                 orElse(CONFIG_VALUE) + "?names=" +
-                        getNames(stream)).build()));
+                        getAsArray(stream)).build()));
         properties.add(new Property.Builder(METHOD, method).build());
         return properties;
     }
@@ -160,7 +159,7 @@ final class WebConfigRepository implements ConfigRepository {
         properties.add(new Property.Builder(METHOD, method).build());
     }
 
-    private String getNames(final Stream<String> stream) {
+    private String getAsArray(final Stream<String> stream) {
         final String jsonNames = new JsonArray(Arrays.asList(stream.toArray(String[]::new))).toJson();
         return new String(Base64.getEncoder().encode(jsonNames.getBytes()), StandardCharsets.UTF_8);
     }
