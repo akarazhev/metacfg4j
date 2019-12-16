@@ -20,7 +20,7 @@ public interface ConfigService {
     /**
      * Updates configuration models.
      *
-     * @param stream   a stream of configuration models.
+     * @param stream a stream of configuration models.
      * @return a stream of updated configuration models.
      */
     Stream<Config> update(final Stream<Config> stream);
@@ -56,11 +56,11 @@ public interface ConfigService {
     int remove(final Stream<String> stream);
 
     /**
-     * Accepts a configuration model by the name.
+     * Accepts a configuration model by names.
      *
-     * @param name a configuration name.
+     * @param stream a stream of names.
      */
-    void accept(final String name);
+    void accept(final Stream<String> stream);
 
     /**
      * Adds a consumer to provide an action.

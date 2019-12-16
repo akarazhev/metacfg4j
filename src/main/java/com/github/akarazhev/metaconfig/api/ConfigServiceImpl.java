@@ -68,12 +68,12 @@ final class ConfigServiceImpl implements ConfigService {
      * {@inheritDoc}
      */
     @Override
-    public void accept(final String name) {
+    public void accept(final Stream<String> stream) {
         if (configRepository instanceof WebConfigRepository) {
-            ((WebConfigRepository) configRepository).accept(name);
+            ((WebConfigRepository) configRepository).accept(stream);
         } else {
             if (consumer != null) {
-                get(Stream.of(name)).forEach(config -> consumer.accept(config));
+                get(stream).forEach(config -> consumer.accept(config));
             }
         }
     }

@@ -84,7 +84,8 @@ final class WebServersTest extends UnitTest {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/" + ACCEPT_CONFIG_VALUE + "/" +
-                URLUtils.encode("name_1", StandardCharsets.UTF_8)).build());
+                new String(Base64.getEncoder().encode("[\"name_1\", \"name_2\", \"name_3\"]".getBytes()),
+                        StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, POST).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
@@ -96,12 +97,51 @@ final class WebServersTest extends UnitTest {
     }
 
     @Test
+    @DisplayName("Accept a config not encoded")
+    void acceptConfigNotEncoded() throws Exception {
+        final Collection<Property> properties = new ArrayList<>(3);
+        properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
+        properties.add(new Property.Builder(URL, API_URL + "/" + ACCEPT_CONFIG_VALUE + "/" +
+                URLUtils.encode("[\"name_1\", \"name_2\", \"name_3\"]", StandardCharsets.UTF_8)).build());
+        properties.add(new Property.Builder(METHOD, POST).build());
+
+        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
+        final WebClient client = new WebClient.Builder(config).build();
+        // Test status code
+        assertEquals(HTTP_OK, client.getStatusCode());
+        // Get the response
+        final JsonObject jsonContent = client.getJsonContent();
+        assertEquals(false, jsonContent.get(SUCCESS));
+        assertEquals(STRING_TO_JSON_ERROR, jsonContent.get(ERROR));
+    }
+
+    @Test
+    @DisplayName("Accept a config not in the json format")
+    void acceptConfigNotJsonFormat() throws Exception {
+        final Collection<Property> properties = new ArrayList<>(3);
+        properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
+        properties.add(new Property.Builder(URL, API_URL + "/" + ACCEPT_CONFIG_VALUE + "/" +
+                URLUtils.encode("[name_1, name_2, name_3]", StandardCharsets.UTF_8)).build());
+        properties.add(new Property.Builder(METHOD, POST).build());
+
+        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
+        final WebClient client = new WebClient.Builder(config).build();
+        // Test status code
+        assertEquals(HTTP_OK, client.getStatusCode());
+        // Get the response
+        final JsonObject jsonContent = client.getJsonContent();
+        assertEquals(false, jsonContent.get(SUCCESS));
+        assertEquals(STRING_TO_JSON_ERROR, jsonContent.get(ERROR));
+    }
+
+    @Test
     @DisplayName("Accept a config with a wrong method")
     void acceptConfigWrongMethod() throws Exception {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/" + ACCEPT_CONFIG_VALUE + "/" +
-                URLUtils.encode("name_1", StandardCharsets.UTF_8)).build());
+                new String(Base64.getEncoder().encode("[\"name_1\", \"name_2\", \"name_3\"]".getBytes()),
+                        StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
