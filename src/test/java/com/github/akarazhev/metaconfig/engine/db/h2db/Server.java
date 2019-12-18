@@ -49,19 +49,19 @@ public final class Server implements DbServer {
         }
 
         // The configuration name
-        public static final String CONFIG_NAME = "db-server";
+        static final String CONFIG_NAME = "db-server";
         // The type key
-        public static final String TYPE = "type";
+        static final String TYPE = "type";
         // The type tcp value
-        public static final String TYPE_TCP = "tcp";
+        static final String TYPE_TCP = "tcp";
         // The type pg value
-        public static final String TYPE_PG = "pg";
+        static final String TYPE_PG = "pg";
         // The type web value
-        public static final String TYPE_WEB = "web";
+        static final String TYPE_WEB = "web";
         // The args key
-        public static final String ARGS = "args";
+        static final String ARGS = "args";
         // The args value
-        public static final String[] ARGS_VALUE = new String[]{"-tcp", "-tcpPort", "8043"};
+        static final String[] ARGS_VALUE = new String[]{"-tcp", "-tcpPort", "8043"};
     }
 
     /**
