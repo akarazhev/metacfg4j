@@ -22,7 +22,7 @@ Data is persisted into a DB, by using any configured datasource.
 Add a maven dependency into your project:
 ```xml
 <dependency>
-    <groupId>com.github.akarazhev.metacfg</groupId>
+    <groupId>com.github.akarazhev</groupId>
     <artifactId>metacfg4j</artifactId>
     <version>1.5-SNAPSHOT</version>
 </dependency>
