@@ -49,9 +49,9 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:git://github.com/akarazhev/metacfg4j.git</connection>
-        <developerConnection>scm:git:git@github.com:akarazhev/akarazhev.git</developerConnection>
         <url>https://github.com/akarazhev/metacfg4j</url>
+        <connection>scm:git:git://github.com/akarazhev/metacfg4j.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:akarazhev/metacfg4j.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
