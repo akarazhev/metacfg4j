@@ -12,7 +12,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.akarazhev.metacfg</groupId>
+    <groupId>com.github.akarazhev</groupId>
     <artifactId>metacfg4j</artifactId>
     <packaging>jar</packaging>
     <version>1.5</version>
@@ -27,6 +27,8 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.surefire.plugin>2.22.2</maven.surefire.plugin>
         <maven.assembly.plugin>3.2.0</maven.assembly.plugin>
+        <maven.deploy.plugin>2.8.2</maven.deploy.plugin>
+        <maven.gpg.plugin>1.6</maven.gpg.plugin>
         <jacoco.maven.plugin>0.8.5</jacoco.maven.plugin>
         <junit.version>5.5.2</junit.version>
         <h2db.version>1.4.200</h2db.version>
@@ -41,6 +43,13 @@
         </license>
     </licenses>
 
+    <scm>
+        <url>https://github.com/akarazhev/metacfg4j</url>
+        <connection>scm:git:git://github.com/akarazhev/metacfg4j.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:akarazhev/metacfg4j.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
     <developers>
         <developer>
             <name>Andrey Karazhev</name>
@@ -48,10 +57,13 @@
     </developers>
 
     <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
         <repository>
-            <id>metacfg4j</id>
-            <name>GitHub Meta Configuration For Java Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/akarazhev/metacfg4j</url>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
         </repository>
     </distributionManagement>
 
@@ -124,6 +136,33 @@
                         <phase>test</phase>
                         <goals>
                             <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>${maven.gpg.plugin}</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>${maven.deploy.plugin}</version>
+                <executions>
+                    <execution>
+                        <id>default-deploy</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>deploy</goal>
                         </goals>
                     </execution>
                 </executions>
