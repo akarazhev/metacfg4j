@@ -15,7 +15,7 @@
     <groupId>com.github.akarazhev.metacfg</groupId>
     <artifactId>metacfg4j</artifactId>
     <packaging>jar</packaging>
-    <version>1.5</version>
+    <version>1.5-SNAPSHOT</version>
 
     <name>metacfg4j</name>
     <url>http://akarazhev.github.io/metacfg4j</url>
@@ -27,6 +27,13 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.surefire.plugin>2.22.2</maven.surefire.plugin>
         <maven.assembly.plugin>3.2.0</maven.assembly.plugin>
+        <maven.deploy.plugin>2.8.2</maven.deploy.plugin>
+        <maven.release.plugin>2.5.3</maven.release.plugin>
+        <maven.scm.provider.gitexe>1.9.5</maven.scm.provider.gitexe>
+        <nexus.staging.maven.plugin>1.6.7</nexus.staging.maven.plugin>
+        <maven.source.plugin>3.0.1</maven.source.plugin>
+        <maven.javadoc.plugin>2.10.4</maven.javadoc.plugin>
+        <maven.gpg.plugin>1.6</maven.gpg.plugin>
         <jacoco.maven.plugin>0.8.5</jacoco.maven.plugin>
         <junit.version>5.5.2</junit.version>
         <h2db.version>1.4.200</h2db.version>
@@ -41,6 +48,13 @@
         </license>
     </licenses>
 
+    <scm>
+        <connection>scm:git:git://github.com/akarazhev/metacfg4j.git</connection>
+        <developerConnection>scm:git:git@github.com:akarazhev/akarazhev.git</developerConnection>
+        <url>https://github.com/akarazhev/metacfg4j</url>
+        <tag>HEAD</tag>
+    </scm>
+
     <developers>
         <developer>
             <name>Andrey Karazhev</name>
@@ -48,10 +62,13 @@
     </developers>
 
     <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
         <repository>
-            <id>metacfg4j</id>
-            <name>GitHub Meta Configuration For Java Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/akarazhev/metacfg4j</url>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
         </repository>
     </distributionManagement>
 
@@ -128,6 +145,107 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>${maven.deploy.plugin}</version>
+                <executions>
+                    <execution>
+                        <id>default-deploy</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>deploy</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>${maven.release.plugin}</version>
+                <configuration>
+                    <localCheckout>true</localCheckout>
+                    <pushChanges>false</pushChanges>
+                    <mavenExecutorId>forked-path</mavenExecutorId>
+                    <arguments>-Dgpg.passphrase=${gpg.passphrase}</arguments>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.scm</groupId>
+                        <artifactId>maven-scm-provider-gitexe</artifactId>
+                        <version>${maven.scm.provider.gitexe}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>${nexus.staging.maven.plugin}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>${maven.source.plugin}</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven.javadoc.plugin}</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadoc</id>
+                        <goals>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- GPG Signature on release -->
+        <profile>
+            <id>release-sign-artifacts</id>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${maven.gpg.plugin}</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
