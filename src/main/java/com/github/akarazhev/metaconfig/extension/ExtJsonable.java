@@ -18,7 +18,7 @@ import java.io.StringWriter;
 import static com.github.akarazhev.metaconfig.Constants.Messages.STRING_TO_JSON_ERROR;
 
 /**
- * Extends the basic interface of <code>Jsonable<code/>.
+ * Extends the basic interface of <code>Jsonable</code>.
  *
  * @see Jsonable for more information.
  */
