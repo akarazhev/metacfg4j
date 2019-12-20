@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
- * Implements the interface of <code>Configurable<code/>
+ * Implements the interface of <code>Configurable</code>
  * and provides additional functionality for getting properties.
  */
 abstract class AbstractConfig implements Configurable {

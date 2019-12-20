@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
- * Extends the basic interface of <code>ExtJsonable<code/>
+ * Extends the basic interface of <code>ExtJsonable</code>
  * and provides functionality for getting attributes and properties.
  *
  * @see ExtJsonable for more information.
