@@ -37,17 +37,18 @@ final class AcceptConfigController extends AbstractController {
     @Override
     void execute(final HttpExchange httpExchange) throws IOException {
         if (POST.equals(httpExchange.getRequestMethod())) {
-            final OperationResponse response = getPathParams(httpExchange.getRequestURI().getPath(), apiPath).
+            final OperationResponse<String> response = getPathParams(httpExchange.getRequestURI().getPath(), apiPath).
                     findAny().
                     map(param -> {
                         try {
                             configService.accept(getValues(param));
-                            return new OperationResponse.Builder<>().result(String.format(CONFIG_ACCEPTED, param)).build();
+                            final String result = String.format(CONFIG_ACCEPTED, param);
+                            return new OperationResponse.Builder<String>().result(result).build();
                         } catch (final Exception e) {
-                            return new OperationResponse.Builder<>().error(STRING_TO_JSON_ERROR).build();
+                            return new OperationResponse.Builder<String>().error(STRING_TO_JSON_ERROR).build();
                         }
                     }).
-                    orElseGet(() -> new OperationResponse.Builder<>().error(PATH_PARAM_NOT_PRESENT).build());
+                    orElseGet(() -> new OperationResponse.Builder<String>().error(PATH_PARAM_NOT_PRESENT).build());
             writeResponse(httpExchange, response);
         } else {
             throw new MethodNotAllowedException(HTTP_BAD_METHOD, Constants.Messages.METHOD_NOT_ALLOWED);

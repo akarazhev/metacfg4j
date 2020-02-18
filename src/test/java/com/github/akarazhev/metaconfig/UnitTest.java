@@ -133,7 +133,7 @@ public class UnitTest {
     }
 
     protected <T> void assertPrivate(Class<T> clazz) throws NoSuchMethodException {
-        final Constructor constructor = clazz.getDeclaredConstructor();
+        final Constructor<T> constructor = clazz.getDeclaredConstructor();
         assertTrue(Modifier.isPrivate(constructor.getModifiers()));
 
         constructor.setAccessible(true);

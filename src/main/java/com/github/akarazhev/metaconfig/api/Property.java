@@ -99,7 +99,7 @@ public final class Property extends AbstractConfig {
      */
     public boolean asBool() {
         if (Type.BOOL.equals(type)) {
-            return Boolean.valueOf(value);
+            return Boolean.parseBoolean(value);
         }
 
         throw new ClassCastException("Property has the different type: " + type);
@@ -112,7 +112,7 @@ public final class Property extends AbstractConfig {
      */
     public double asDouble() {
         if (Type.DOUBLE.equals(type)) {
-            return Double.valueOf(value);
+            return Double.parseDouble(value);
         }
 
         throw new ClassCastException("Property has the different type: " + type);
@@ -125,7 +125,7 @@ public final class Property extends AbstractConfig {
      */
     public long asLong() {
         if (Type.LONG.equals(type)) {
-            return Long.valueOf(value);
+            return Long.parseLong(value);
         }
 
         throw new ClassCastException("Property has the different type: " + type);

@@ -15,6 +15,7 @@ import com.github.akarazhev.metaconfig.api.ConfigService;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.GET;
@@ -35,8 +36,9 @@ final class ConfigNamesController extends AbstractController {
     @Override
     void execute(final HttpExchange httpExchange) throws IOException {
         if (GET.equals(httpExchange.getRequestMethod())) {
-            final OperationResponse response =
-                    new OperationResponse.Builder<>().result(configService.getNames().collect(Collectors.toList())).build();
+            List<String> names = configService.getNames().collect(Collectors.toList());
+            final OperationResponse<List<String>> response =
+                    new OperationResponse.Builder<List<String>>().result(names).build();
             writeResponse(httpExchange, response);
         } else {
             throw new MethodNotAllowedException(HTTP_BAD_METHOD, Constants.Messages.METHOD_NOT_ALLOWED);

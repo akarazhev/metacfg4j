@@ -25,7 +25,6 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -54,22 +53,20 @@ final class ConfigController extends AbstractController {
     void execute(final HttpExchange httpExchange) throws IOException {
         final URI uri = httpExchange.getRequestURI();
         final String method = httpExchange.getRequestMethod();
-        final Supplier<OperationResponse> requestParamNotPresent =
-                () -> new OperationResponse.Builder<>().error(REQUEST_PARAM_NOT_PRESENT).build();
         if (GET.equals(method)) {
-            final OperationResponse response = getRequestParam(uri.getQuery(), REQ_PARAM_NAMES).
+            final OperationResponse<Collection<Config>> response = getRequestParam(uri.getQuery(), REQ_PARAM_NAMES).
                     map(param -> {
                         try {
                             final Collection<Config> configs =
                                     configService.get(getValues(param)).collect(Collectors.toList());
-                            return new OperationResponse.Builder<>().result(configs).build();
+                            return new OperationResponse.Builder<Collection<Config>>().result(configs).build();
                         } catch (final Exception e) {
-                            return new OperationResponse.Builder<>().error(STRING_TO_JSON_ERROR).build();
+                            return new OperationResponse.Builder<Collection<Config>>().error(STRING_TO_JSON_ERROR).build();
                         }
                     }).
                     orElseGet(() -> {
                         final Collection<Config> configs = configService.get().collect(Collectors.toList());
-                        return new OperationResponse.Builder<>().result(configs).build();
+                        return new OperationResponse.Builder<Collection<Config>>().result(configs).build();
                     });
             writeResponse(httpExchange, response);
         } else if (PUT.equals(method)) {
@@ -85,15 +82,15 @@ final class ConfigController extends AbstractController {
                 throw new InvalidRequestException(HTTP_BAD_REQUEST, JSON_TO_CONFIG_ERROR);
             }
         } else if (DELETE.equals(method)) {
-            final OperationResponse response = getRequestParam(uri.getQuery(), REQ_PARAM_NAMES).
+            final OperationResponse<Integer> response = getRequestParam(uri.getQuery(), REQ_PARAM_NAMES).
                     map(param -> {
                         try {
-                            return new OperationResponse.Builder<>().result(configService.remove(getValues(param))).build();
+                            return new OperationResponse.Builder<Integer>().result(configService.remove(getValues(param))).build();
                         } catch (final Exception e) {
-                            return new OperationResponse.Builder<>().error(STRING_TO_JSON_ERROR).build();
+                            return new OperationResponse.Builder<Integer>().error(STRING_TO_JSON_ERROR).build();
                         }
                     }).
-                    orElseGet(requestParamNotPresent);
+                    orElseGet(() -> new OperationResponse.Builder<Integer>().error(REQUEST_PARAM_NOT_PRESENT).build());
             writeResponse(httpExchange, response);
         } else {
             throw new MethodNotAllowedException(HTTP_BAD_METHOD, Constants.Messages.METHOD_NOT_ALLOWED);
