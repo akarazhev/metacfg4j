@@ -121,6 +121,7 @@ abstract class AbstractController {
      *
      * @param httpExchange a http exchange.
      * @param response     an operation response.
+     * @param <T>          a type of result.
      * @throws IOException when a controller encounters a problem.
      * @see HttpExchange for more information.
      */
