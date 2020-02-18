@@ -85,7 +85,8 @@ final class ConfigController extends AbstractController {
             final OperationResponse<Integer> response = getRequestParam(uri.getQuery(), REQ_PARAM_NAMES).
                     map(param -> {
                         try {
-                            return new OperationResponse.Builder<Integer>().result(configService.remove(getValues(param))).build();
+                            final int result = configService.remove(getValues(param));
+                            return new OperationResponse.Builder<Integer>().result(result).build();
                         } catch (final Exception e) {
                             return new OperationResponse.Builder<Integer>().error(STRING_TO_JSON_ERROR).build();
                         }
