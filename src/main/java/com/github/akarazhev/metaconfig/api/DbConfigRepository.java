@@ -28,23 +28,23 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Mapping.CONFIGS_TABLE;
 import static com.github.akarazhev.metaconfig.Constants.Mapping.CONFIG_ATTRIBUTES_TABLE;
 import static com.github.akarazhev.metaconfig.Constants.Mapping.PROPERTIES_TABLE;
 import static com.github.akarazhev.metaconfig.Constants.Mapping.PROPERTY_ATTRIBUTES_TABLE;
-import static com.github.akarazhev.metaconfig.Constants.Messages.DB_ERROR;
-import static com.github.akarazhev.metaconfig.Constants.Messages.SAVE_CONFIGS_ERROR;
-import static java.util.AbstractMap.SimpleEntry;
-import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_ATTRIBUTES_ERROR;
-import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_CONFIG_TABLE_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_UTILS_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DB_CONNECTION_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.DB_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DB_ROLLBACK_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DELETE_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_ATTRIBUTES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_CONFIG_PROPERTIES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIGS_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.SAVE_CONFIGS_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_ATTRIBUTES_ERROR;
+import static java.util.AbstractMap.SimpleEntry;
 
 /**
  * {@inheritDoc}
@@ -272,7 +272,7 @@ final class DbConfigRepository implements ConfigRepository {
                                 try {
                                     final String attributesSql = String.format(SQL.INSERT.CONFIG_ATTRIBUTES,
                                             mapping.get(CONFIG_ATTRIBUTES_TABLE));
-                                    insert(connection, attributesSql, configId, map);
+                                    executeBatch(connection, attributesSql, configId, map, INSERT_ATTRIBUTES_ERROR);
                                 } catch (final SQLException e) {
                                     exceptions.add(e);
                                 }
@@ -299,14 +299,14 @@ final class DbConfigRepository implements ConfigRepository {
         return new Config[0];
     }
 
-    private void insert(final Connection connection, final String sql, final int id, final Map<String, String> map)
-            throws SQLException {
-        if (map.size() > 0) {
+    private void executeBatch(final Connection connection, final String sql, final int id,
+                              final Map<String, String> attributes, final String error) throws SQLException {
+        if (attributes.size() > 0) {
             try (final PreparedStatement statement = connection.prepareStatement(sql)) {
-                JDBCUtils.setBatchStatement(statement, id, map);
+                JDBCUtils.setBatchStatement(statement, id, attributes);
 
-                if (statement.executeBatch().length != map.size()) {
-                    throw new SQLException(INSERT_ATTRIBUTES_ERROR);
+                if (statement.executeBatch().length != attributes.size()) {
+                    throw new SQLException(error);
                 }
             }
         }
@@ -353,7 +353,7 @@ final class DbConfigRepository implements ConfigRepository {
                         try {
                             final String sql = String.format(SQL.INSERT.PROPERTY_ATTRIBUTES,
                                     mapping.get(PROPERTY_ATTRIBUTES_TABLE));
-                            insert(connection, sql, propertyId, map);
+                            executeBatch(connection, sql, propertyId, map, INSERT_ATTRIBUTES_ERROR);
                         } catch (final SQLException e) {
                             exceptions.add(e);
                         }
@@ -387,19 +387,15 @@ final class DbConfigRepository implements ConfigRepository {
                     statement.addBatch();
                     // Update config attributes
                     final Property[] properties = config.getProperties().toArray(Property[]::new);
-                    config.getAttributes().ifPresent(map -> {
+                    config.getAttributes().ifPresent(attributes -> {
                         try {
-                            final String name = mapping.get(CONFIG_ATTRIBUTES_TABLE);
-                            delete(connection, String.format(SQL.DELETE.CONFIG_ATTRIBUTES, name), config.getId());
-                            insert(connection, String.format(SQL.INSERT.CONFIG_ATTRIBUTES, name), config.getId(), map);
+                            update(connection, mapping.get(CONFIG_ATTRIBUTES_TABLE), config.getId(), attributes);
                         } catch (final SQLException e) {
                             exceptions.add(e);
                         }
                     });
                     // Update config properties
-                    delete(connection, String.format(SQL.DELETE.PROPERTIES, mapping.get(PROPERTIES_TABLE)),
-                            config.getId());
-                    insert(connection, config.getId(), properties);
+                    update(connection, mapping.get(PROPERTIES_TABLE), config.getId(), properties);
                     idVersion.put(config.getId(), version);
                 }
 
@@ -428,6 +424,40 @@ final class DbConfigRepository implements ConfigRepository {
         }
 
         return new Config[0];
+    }
+
+    private void update(final Connection connection, final String table, final int id,
+                        final Map<String, String> updatedAttributes) throws SQLException {
+        final Map<String, String> existedAttributes =
+                getAttributes(connection, String.format(SQL.SELECT.CONFIG_ATTRIBUTES, table), id);
+        // TODO:
+        executeBatch(connection, String.format(SQL.DELETE.CONFIG_ATTRIBUTES, table), id, existedAttributes,
+                UPDATE_ATTRIBUTES_ERROR);
+        executeBatch(connection, String.format(SQL.INSERT.CONFIG_ATTRIBUTES, table), id, updatedAttributes,
+                UPDATE_ATTRIBUTES_ERROR);
+    }
+
+    private void update(final Connection connection, final String table, final int id, final Property[] properties)
+            throws SQLException {
+        // TODO:
+        delete(connection, String.format(SQL.DELETE.PROPERTIES, table), id);
+        insert(connection, id, properties);
+    }
+
+    private Map<String, String> getAttributes(final Connection connection, final String sql, final int id)
+            throws SQLException {
+        final Map<String, String> attributes = new HashMap<>();
+        try (final PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, id);
+
+            try (final ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    attributes.put(resultSet.getString(1), resultSet.getString(2));
+                }
+            }
+        }
+
+        return attributes;
     }
 
     private int getVersion(final Connection connection, final int id) throws SQLException {
@@ -516,7 +546,7 @@ final class DbConfigRepository implements ConfigRepository {
             static final String CONFIGS =
                     "DELETE FROM `%s` AS `C` WHERE `C`.`NAME` = ?";
             static final String CONFIG_ATTRIBUTES =
-                    "DELETE FROM `%s` AS `CA` WHERE `CA`.`CONFIG_ID` = ?;";
+                    "DELETE FROM `%s` AS `CA` WHERE `CA`.`CONFIG_ID` = ? AND `CA`.`KEY` = ? AND `CA`.`VALUE` = ?;";
             static final String PROPERTIES =
                     "DELETE FROM `%s` AS `P` WHERE `P`.`CONFIG_ID` = ?;";
         }
@@ -528,6 +558,7 @@ final class DbConfigRepository implements ConfigRepository {
             }
 
             static final String NAMES = "SELECT `NAME` FROM `%s` ORDER BY `NAME`;";
+            static final String CONFIG_ATTRIBUTES = "SELECT `KEY`, `VALUE` FROM `%s` WHERE `CONFIG_ID` = ?;";
             static final String VERSION = "SELECT `VERSION` FROM `%s` WHERE `ID` = ?;";
             static final String CONFIGS =
                     "SELECT `C`.`ID`, `C`.`NAME`, `C`.`DESCRIPTION`, `C`.`VERSION`, `C`.`UPDATED`, `CA`.`KEY`, " +
