@@ -461,7 +461,7 @@ final class DbConfigRepository implements ConfigRepository {
     }
 
     private int getVersion(final Connection connection, final int id) throws SQLException {
-        final String sql = String.format(SQL.SELECT.VERSION, CONFIGS_TABLE);
+        final String sql = String.format(SQL.SELECT.VERSION, mapping.get(CONFIGS_TABLE));
         try (final PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, id);
 
