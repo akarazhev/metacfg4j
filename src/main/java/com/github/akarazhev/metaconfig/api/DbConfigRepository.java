@@ -430,11 +430,26 @@ final class DbConfigRepository implements ConfigRepository {
                         final Map<String, String> updatedAttributes) throws SQLException {
         final Map<String, String> existedAttributes =
                 getAttributes(connection, String.format(SQL.SELECT.CONFIG_ATTRIBUTES, table), id);
-        // TODO:
-        executeBatch(connection, String.format(SQL.DELETE.CONFIG_ATTRIBUTES, table), id, existedAttributes,
-                UPDATE_ATTRIBUTES_ERROR);
-        executeBatch(connection, String.format(SQL.INSERT.CONFIG_ATTRIBUTES, table), id, updatedAttributes,
-                UPDATE_ATTRIBUTES_ERROR);
+        executeBatch(connection, String.format(SQL.DELETE.CONFIG_ATTRIBUTES, table), id,
+                getDiffAttrs(existedAttributes, updatedAttributes), UPDATE_ATTRIBUTES_ERROR);
+        executeBatch(connection, String.format(SQL.INSERT.CONFIG_ATTRIBUTES, table), id,
+                getDiffAttrs(updatedAttributes, existedAttributes), UPDATE_ATTRIBUTES_ERROR);
+    }
+
+    private Map<String, String> getDiffAttrs(final Map<String, String> input, final Map<String, String> output) {
+        final Map<String, String> map = new HashMap<>();
+        for (final String key : input.keySet()) {
+            final String value = input.get(key);
+            if (!output.containsKey(key)) {
+                map.put(key, value);
+            } else {
+                if (!value.equals(output.get(key))) {
+                    map.put(key, value);
+                }
+            }
+        }
+
+        return map;
     }
 
     private void update(final Connection connection, final String table, final int id, final Property[] properties)
