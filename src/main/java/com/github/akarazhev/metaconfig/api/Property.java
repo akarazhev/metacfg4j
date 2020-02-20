@@ -26,10 +26,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_ID_VALUE;
+
 /**
  * The property model that contains parameters, attributes and properties.
  */
 public final class Property extends AbstractConfig {
+    private final long id;
     private final String name;
     private final String caption;
     private final String description;
@@ -47,6 +50,7 @@ public final class Property extends AbstractConfig {
     }
 
     private Property(final Builder builder) {
+        this.id = builder.id;
         this.name = builder.name;
         this.caption = builder.caption;
         this.description = builder.description;
@@ -54,6 +58,15 @@ public final class Property extends AbstractConfig {
         this.value = builder.value;
         this.attributes = builder.attributes;
         this.properties = builder.properties;
+    }
+
+    /**
+     * Returns an id of the property.
+     *
+     * @return a property id.
+     */
+    public long getId() {
+        return id;
     }
 
     /**
@@ -201,6 +214,7 @@ public final class Property extends AbstractConfig {
     @Override
     public void toJson(final Writer writer) throws IOException {
         final JsonObject json = new JsonObject();
+        json.put("id", id);
         json.put("name", name);
         json.put("caption", caption);
         json.put("description", description);
@@ -219,7 +233,8 @@ public final class Property extends AbstractConfig {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final Property property = (Property) o;
-        return Objects.equals(name, property.name) &&
+        return id == property.id &&
+                Objects.equals(name, property.name) &&
                 Objects.equals(caption, property.caption) &&
                 Objects.equals(description, property.description) &&
                 Objects.equals(type, property.type) &&
@@ -233,7 +248,7 @@ public final class Property extends AbstractConfig {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(name, caption, description, type, value, attributes, properties);
+        return Objects.hash(id, name, caption, description, type, value, attributes, properties);
     }
 
     /**
@@ -242,7 +257,8 @@ public final class Property extends AbstractConfig {
     @Override
     public String toString() {
         return "Property{" +
-                "name='" + name + '\'' +
+                "id=" + id +
+                ", name='" + name + '\'' +
                 ", caption='" + caption + '\'' +
                 ", description='" + description + '\'' +
                 ", type=" + type +
@@ -258,6 +274,7 @@ public final class Property extends AbstractConfig {
      * Wraps and builds the instance of the property model.
      */
     public final static class Builder extends ConfigBuilder {
+        private long id = 0;
         private final String name;
         private String caption;
         private String description;
@@ -271,6 +288,7 @@ public final class Property extends AbstractConfig {
          */
         public Builder(final Property property) {
             final Property prototype = Validator.of(property).get();
+            this.id = prototype.id;
             this.name = prototype.name;
             this.caption = prototype.caption;
             this.description = prototype.description;
@@ -287,6 +305,7 @@ public final class Property extends AbstractConfig {
          */
         public Builder(final JsonObject jsonObject) {
             final JsonObject prototype = Validator.of(jsonObject).get();
+            this.id = getLong(prototype, "id");
             this.name = Validator.of((String) prototype.get("name")).get();
             this.caption = (String) prototype.get("caption");
             this.description = (String) prototype.get("description");
@@ -294,6 +313,22 @@ public final class Property extends AbstractConfig {
             this.value = Validator.of((String) prototype.get("value")).get();
             getAttributes(prototype).ifPresent(this.attributes::putAll);
             this.properties.addAll(getProperties(prototype).collect(Collectors.toList()));
+        }
+
+        /**
+         * Constructs a property model with the id parameter.
+         *
+         * @param id a property id.
+         * @return a builder of the property model.
+         */
+        public Builder id(final long id) {
+            if (id > 0) {
+                this.id = id;
+            } else {
+                throw new IllegalArgumentException(WRONG_ID_VALUE);
+            }
+
+            return this;
         }
 
         /**

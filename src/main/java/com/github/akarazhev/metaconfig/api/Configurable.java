@@ -15,6 +15,7 @@ import com.github.akarazhev.metaconfig.extension.Validator;
 import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -119,6 +120,18 @@ interface Configurable extends ExtJsonable {
             } else {
                 this.properties.addAll(Validator.of(properties).get());
             }
+        }
+
+        /**
+         * Returns a value of the parameter name.
+         *
+         * @param jsonObject a raw json object.
+         * @param name       a parameter name.
+         * @return a value.
+         */
+        long getLong(final JsonObject jsonObject, final String name) {
+            final Object value = jsonObject.get(name);
+            return value != null ? ((BigDecimal) value).longValue() : 0;
         }
 
         private void setProperties(final Collection<Property> target, final int index, final String[] paths,

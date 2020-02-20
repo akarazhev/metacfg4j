@@ -15,7 +15,6 @@ import com.github.cliftonlabs.json_simple.JsonObject;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.math.BigDecimal;
 import java.time.Clock;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,7 +32,7 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_VERSION_V
  * The configuration model that contains parameters, attributes and properties.
  */
 public final class Config extends AbstractConfig {
-    private final int id;
+    private final long id;
     private final String name;
     private final String description;
     private final int version;
@@ -56,7 +55,7 @@ public final class Config extends AbstractConfig {
      *
      * @return a configuration id.
      */
-    public int getId() {
+    public long getId() {
         return id;
     }
 
@@ -194,7 +193,7 @@ public final class Config extends AbstractConfig {
      * Wraps and builds the instance of the configuration model.
      */
     public final static class Builder extends ConfigBuilder {
-        private int id = 0;
+        private long id = 0;
         private final String name;
         private String description;
         private int version = 1;
@@ -223,20 +222,14 @@ public final class Config extends AbstractConfig {
          */
         public Builder(final JsonObject jsonObject) {
             final JsonObject prototype = Validator.of(jsonObject).get();
-            final Object id = prototype.get("id");
-            if (id != null) {
-                this.id = ((BigDecimal) id).intValue();
-            }
+            this.id = getLong(prototype, "id");
             this.name = Validator.of((String) prototype.get("name")).get();
             this.description = (String) prototype.get("description");
-            final Object version = prototype.get("version");
-            if (version != null) {
-                this.version = ((BigDecimal) version).intValue();
+            final long version = getLong(prototype, "version");
+            if (version > 0) {
+                this.version = (int) version;
             }
-            final Object updated = prototype.get("updated");
-            if (updated != null) {
-                this.updated = ((BigDecimal) updated).longValue();
-            }
+            this.updated = getLong(prototype, "updated");
             getAttributes(prototype).ifPresent(this.attributes::putAll);
             this.properties.addAll(getProperties(prototype).collect(Collectors.toList()));
         }
@@ -258,7 +251,7 @@ public final class Config extends AbstractConfig {
          * @param id a configuration id.
          * @return a builder of the configuration model.
          */
-        public Builder id(final int id) {
+        public Builder id(final long id) {
             if (id > 0) {
                 this.id = id;
             } else {
