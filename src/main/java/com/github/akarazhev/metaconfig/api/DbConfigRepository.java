@@ -312,6 +312,19 @@ final class DbConfigRepository implements ConfigRepository {
         }
     }
 
+    private void executeBatch(final Connection connection, final String sql, final int id,
+                              final Map<String, String> attributes) throws SQLException {
+        if (attributes.size() > 0) {
+            try (final PreparedStatement statement = connection.prepareStatement(sql)) {
+                JDBCUtils.setBatchStatement(statement, attributes, id);
+
+                if (statement.executeBatch().length != attributes.size()) {
+                    throw new SQLException(UPDATE_ATTRIBUTES_ERROR);
+                }
+            }
+        }
+    }
+
     private void insert(final Connection connection, final int configId, final Property[] properties)
             throws SQLException {
         if (properties.length > 0) {
@@ -427,29 +440,33 @@ final class DbConfigRepository implements ConfigRepository {
     }
 
     private void update(final Connection connection, final String table, final int id,
-                        final Map<String, String> updatedAttributes) throws SQLException {
-        final Map<String, String> existedAttributes =
+                        final Map<String, String> updated) throws SQLException {
+        final Map<String, String> toInsert = new HashMap<>();
+        final Map<String, String> toUpdate = new HashMap<>();
+        final Map<String, String> toDelete = new HashMap<>();
+        final Map<String, String> existed =
                 getAttributes(connection, String.format(SQL.SELECT.CONFIG_ATTRIBUTES, table), id);
-        executeBatch(connection, String.format(SQL.DELETE.CONFIG_ATTRIBUTES, table), id,
-                getDiffAttrs(existedAttributes, updatedAttributes), UPDATE_ATTRIBUTES_ERROR);
-        executeBatch(connection, String.format(SQL.INSERT.CONFIG_ATTRIBUTES, table), id,
-                getDiffAttrs(updatedAttributes, existedAttributes), UPDATE_ATTRIBUTES_ERROR);
+
+        update(existed, updated, toDelete, toUpdate);
+        update(updated, existed, toInsert, toUpdate);
+
+        executeBatch(connection, String.format(SQL.INSERT.CONFIG_ATTRIBUTES, table), id, toInsert, UPDATE_ATTRIBUTES_ERROR);
+        executeBatch(connection, String.format(SQL.UPDATE.CONFIG_ATTRIBUTES, table), id, toUpdate);
+        executeBatch(connection, String.format(SQL.DELETE.CONFIG_ATTRIBUTES, table), id, toDelete, UPDATE_ATTRIBUTES_ERROR);
     }
 
-    private Map<String, String> getDiffAttrs(final Map<String, String> input, final Map<String, String> output) {
-        final Map<String, String> map = new HashMap<>();
-        for (final String key : input.keySet()) {
-            final String value = input.get(key);
-            if (!output.containsKey(key)) {
-                map.put(key, value);
+    private void update(final Map<String, String> source, final Map<String, String> target,
+                        final Map<String, String> replace, final Map<String, String> update) {
+        for (final String key : source.keySet()) {
+            final String value = source.get(key);
+            if (!target.containsKey(key)) {
+                replace.put(key, value);
             } else {
-                if (!value.equals(output.get(key))) {
-                    map.put(key, value);
+                if (!value.equals(target.get(key))) {
+                    update.put(key, value);
                 }
             }
         }
-
-        return map;
     }
 
     private void update(final Connection connection, final String table, final int id, final Property[] properties)
@@ -550,6 +567,7 @@ final class DbConfigRepository implements ConfigRepository {
             static final String CONFIGS =
                     "UPDATE `%s` SET `NAME` = ?, `DESCRIPTION` = ?, `VERSION` = ?, `UPDATED` = ? " +
                             "WHERE `ID` = ? AND `VERSION` = ?;";
+            static final String CONFIG_ATTRIBUTES = "UPDATE `%s` SET `KEY` = ?, `VALUE` = ? WHERE `ID` = ?;";
         }
 
         final static class DELETE {
@@ -734,6 +752,16 @@ final class DbConfigRepository implements ConfigRepository {
         private static void setStatement(final PreparedStatement statement, final String[] names) throws SQLException {
             for (int i = 0; i < names.length; i++) {
                 statement.setString(i + 1, names[i]);
+            }
+        }
+
+        private static void setBatchStatement(final PreparedStatement statement, final Map<String, String> map,
+                                              final int id) throws SQLException {
+            for (final String key : map.keySet()) {
+                statement.setString(1, key);
+                statement.setString(2, map.get(key));
+                statement.setInt(3, id);
+                statement.addBatch();
             }
         }
 
