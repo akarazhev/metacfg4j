@@ -489,9 +489,10 @@ final class DbConfigRepository implements ConfigRepository {
         if (properties.length > 0) {
             final Collection<Long> ids = getIds(connection, String.format(SQL.SELECT.PROPERTIES_IDENTIFIERS, table), id);
             // TODO: perform update
-//            insert(connection, id, properties);
-//            delete(connection, String.format(SQL.DELETE.PROPERTY, table), id);
             delete(connection, String.format(SQL.DELETE.PROPERTIES, table), id);
+            insert(connection, id, properties);
+//            delete(connection, String.format(SQL.DELETE.PROPERTY, table), id);
+            // TODO: perform update
         } else {
             delete(connection, String.format(SQL.DELETE.PROPERTIES, table), id);
         }
