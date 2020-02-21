@@ -351,6 +351,19 @@ public final class Config extends AbstractConfig {
         }
 
         /**
+         * Constructs a configuration model with properties.
+         * It replaces all properties.
+         *
+         * @param properties configuration properties.
+         * @return a builder of the configuration model.
+         */
+        public Builder properties(final Collection<Property> properties) {
+            this.properties.clear();
+            this.properties.addAll(Validator.of(properties).get());
+            return this;
+        }
+
+        /**
          * Builds a configuration model with required parameters.
          *
          * @return a builder of the configuration model.

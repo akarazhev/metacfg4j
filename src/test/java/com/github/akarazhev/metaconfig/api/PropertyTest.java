@@ -63,7 +63,7 @@ final class PropertyTest extends UnitTest {
                 attributes(Collections.singletonMap("key", "value")).
                 property(new String[0], firstSubProperty).
                 properties(new String[0], Collections.singletonList(secondSubProperty)).
-                properties(Collections.singletonList(thirdSubProperty)).
+                properties(new String[0], Collections.singletonList(thirdSubProperty)).
                 build();
         // Check test results
         assertEquals("Property", property.getName());

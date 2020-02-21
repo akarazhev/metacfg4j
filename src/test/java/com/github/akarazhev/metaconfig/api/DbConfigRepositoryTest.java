@@ -168,6 +168,9 @@ final class DbConfigRepositoryTest extends UnitTest {
         // Check test results
         assertTrue(newConfig.isPresent());
         assertTrue(newConfig.get().getId() > 0);
+        newConfig.get().getProperties().forEach(property -> {
+            assertTrue(property.getId() > 0);
+        });
     }
 
     @Test

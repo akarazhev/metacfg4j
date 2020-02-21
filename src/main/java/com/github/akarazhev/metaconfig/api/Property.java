@@ -474,11 +474,13 @@ public final class Property extends AbstractConfig {
 
         /**
          * Constructs a property model with properties.
+         * It replaces all properties.
          *
          * @param properties property properties.
          * @return a builder of the property model.
          */
         public Builder properties(final Collection<Property> properties) {
+            this.properties.clear();
             this.properties.addAll(Validator.of(properties).get());
             return this;
         }

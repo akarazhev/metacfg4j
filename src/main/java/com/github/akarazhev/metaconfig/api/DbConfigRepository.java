@@ -204,8 +204,7 @@ final class DbConfigRepository implements ConfigRepository {
 
     private Collection<Property> getLinkedProps(final Map<Long, Property> properties,
                                                 final Collection<SimpleEntry<Long, Long>> links) {
-        final Comparator<SimpleEntry<Long, Long>> comparing =
-                Comparator.comparing(SimpleEntry::getValue);
+        final Comparator<SimpleEntry<Long, Long>> comparing = Comparator.comparing(SimpleEntry::getValue);
         final Map<Long, Property> linkedProps = new HashMap<>(properties);
         final Collection<SimpleEntry<Long, Long>> sortedLinks = new ArrayList<>(links);
         sortedLinks.stream().
@@ -265,22 +264,23 @@ final class DbConfigRepository implements ConfigRepository {
                         final Collection<Throwable> exceptions = new LinkedList<>();
                         for (int i = 0; i < configs.length; i++) {
                             resultSet.absolute(i + 1);
-                            final long id = resultSet.getInt(1);
-                            final Config config = new Config.Builder(configs[i]).id(id).build();
-                            final Property[] properties = config.getProperties().toArray(Property[]::new);
+                            final long configId = resultSet.getInt(1);
+                            final Property[] properties = configs[i].getProperties().toArray(Property[]::new);
                             // Create config attributes
-                            config.getAttributes().ifPresent(map -> {
+                            configs[i].getAttributes().ifPresent(map -> {
                                 try {
                                     final String attributesSql = String.format(SQL.INSERT.CONFIG_ATTRIBUTES,
                                             mapping.get(CONFIG_ATTRIBUTES_TABLE));
-                                    executeBatch(connection, attributesSql, id, map, INSERT_ATTRIBUTES_ERROR);
+                                    executeBatch(connection, attributesSql, configId, map, INSERT_ATTRIBUTES_ERROR);
                                 } catch (final SQLException e) {
                                     exceptions.add(e);
                                 }
                             });
-                            // Create config properties
-                            insert(connection, id, properties);
-                            inserted[i] = config;
+                            // Update a config
+                            inserted[i] = new Config.Builder(configs[i]).
+                                    id(configId).
+                                    properties(insert(connection, configId, properties)).
+                                    build();
                         }
 
                         if (exceptions.size() > 0) {
@@ -326,37 +326,40 @@ final class DbConfigRepository implements ConfigRepository {
         }
     }
 
-    private void insert(final Connection connection, final long id, final Property[] properties) throws SQLException {
+    private Collection<Property> insert(final Connection connection, final long id, final Property[] properties)
+            throws SQLException {
         if (properties.length > 0) {
             final String sql = String.format(SQL.INSERT.PROPERTIES, mapping.get(PROPERTIES_TABLE));
             try (final PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                // TODO: set the property id
                 for (final Property property : properties) {
                     JDBCUtils.setBatchStatement(statement, id, property);
                 }
 
-                insert(connection, statement, id, properties);
+                return insert(connection, statement, id, properties);
             }
         }
+
+        return Arrays.asList(properties);
     }
 
-    private void insert(final Connection connection, final SimpleEntry<Long, Long> confPropIds,
-                        final Property[] properties) throws SQLException {
+    private Collection<Property> insert(final Connection connection, final SimpleEntry<Long, Long> confPropIds,
+                                        final Property[] properties) throws SQLException {
         if (properties.length > 0) {
             final String sql = String.format(SQL.INSERT.SUB_PROPERTIES, mapping.get(PROPERTIES_TABLE));
             try (final PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                // TODO: set the property id
                 for (final Property property : properties) {
                     JDBCUtils.setBatchStatement(statement, confPropIds, property);
                 }
 
-                insert(connection, statement, confPropIds.getKey(), properties);
+                return insert(connection, statement, confPropIds.getKey(), properties);
             }
         }
+
+        return Arrays.asList(properties);
     }
 
-    private void insert(final Connection connection, final PreparedStatement statement, final long configId,
-                        final Property[] properties) throws SQLException {
+    private Collection<Property> insert(final Connection connection, final PreparedStatement statement,
+                                        final long configId, final Property[] properties) throws SQLException {
         if (statement.executeBatch().length == properties.length) {
             try (final ResultSet resultSet = statement.getGeneratedKeys()) {
                 final Collection<Throwable> exceptions = new LinkedList<>();
@@ -373,9 +376,11 @@ final class DbConfigRepository implements ConfigRepository {
                             exceptions.add(e);
                         }
                     });
-                    // Create property properties
-                    insert(connection, new SimpleEntry<>(configId, propertyId),
-                            properties[i].getProperties().toArray(Property[]::new));
+                    // Update a property
+                    properties[i] = new Property.Builder(properties[i]).
+                            properties(insert(connection, new SimpleEntry<>(configId, propertyId),
+                                    properties[i].getProperties().toArray(Property[]::new))).
+                            id(propertyId).build();
                 }
 
                 if (exceptions.size() > 0) {
@@ -385,6 +390,8 @@ final class DbConfigRepository implements ConfigRepository {
         } else {
             throw new SQLException(INSERT_CONFIG_PROPERTIES_ERROR);
         }
+
+        return Arrays.asList(properties);
     }
 
     private Config[] update(final Connection connection, final Config[] configs) throws SQLException {
