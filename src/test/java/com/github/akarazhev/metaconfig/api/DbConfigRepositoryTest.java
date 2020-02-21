@@ -161,16 +161,25 @@ final class DbConfigRepositoryTest extends UnitTest {
     }
 
     @Test
-    @DisplayName("Save and flush a new config")
-    void saveAndFlushNewConfig() {
+    @DisplayName("Save and flush a new config with properties")
+    void saveAndFlushNewConfigWithProperties() {
         final Optional<Config> newConfig =
                 configRepository.saveAndFlush(Stream.of(getConfigWithProperties(NEW_CONFIG))).findFirst();
         // Check test results
         assertTrue(newConfig.isPresent());
         assertTrue(newConfig.get().getId() > 0);
-        newConfig.get().getProperties().forEach(property -> {
-            assertTrue(property.getId() > 0);
-        });
+        newConfig.get().getProperties().forEach(property -> assertTrue(property.getId() > 0));
+    }
+
+    @Test
+    @DisplayName("Save and flush a new config with sub properties")
+    void saveAndFlushNewConfigWithSubProperties() {
+        final Optional<Config> newConfig =
+                configRepository.saveAndFlush(Stream.of(getConfigWithSubProperties(NEW_CONFIG))).findFirst();
+        // Check test results
+        assertTrue(newConfig.isPresent());
+        assertTrue(newConfig.get().getId() > 0);
+        newConfig.get().getProperties().forEach(property -> assertTrue(property.getId() > 0));
     }
 
     @Test
