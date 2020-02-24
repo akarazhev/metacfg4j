@@ -83,7 +83,7 @@ public final class Constants {
         public static final String SAVE_CONFIGS_ERROR = "Config(s) instances can not be saved.";
         public static final String INSERT_ATTRIBUTES_ERROR = "Attributes can not be inserted.";
         public static final String UPDATE_ATTRIBUTES_ERROR = "Attributes can not be updated.";
-        public static final String INSERT_CONFIG_PROPERTIES_ERROR = "Config property/properties can not be inserted.";
+        public static final String SAVE_PROPERTIES_ERROR = "Propert(y/ies) instances can not be saved.";
         public static final String RECEIVED_CONFIGS_ERROR = "Config instances can not be received.";
         public static final String DELETE_CONFIGS_ERROR = "Config(s) can not be deleted.";
         public static final String DB_ERROR = "Database error.";
