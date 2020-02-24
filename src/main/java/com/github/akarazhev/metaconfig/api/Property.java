@@ -272,13 +272,11 @@ public final class Property extends AbstractConfig {
     @Override
     public String toString() {
         return "Property{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
+                "name='" + name + '\'' +
                 ", caption='" + caption + '\'' +
                 ", description='" + description + '\'' +
                 ", type=" + type +
                 ", value='" + value + '\'' +
-                ", updated='" + updated + '\'' +
                 '}';
     }
 
