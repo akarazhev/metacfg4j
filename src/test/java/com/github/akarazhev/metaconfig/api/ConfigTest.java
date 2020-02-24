@@ -62,11 +62,11 @@ final class ConfigTest extends UnitTest {
     void createConfigWithParameters() {
         final Config config = getConfig(Collections.singletonList(getProperty()));
         // Check test results
-        assertEquals(1, config.getId());
+        assertEquals(100, config.getId());
         assertEquals("Config", config.getName());
         assertTrue(config.getDescription().isPresent());
         assertEquals("Description", config.getDescription().get());
-        assertEquals(1, config.getVersion());
+        assertEquals(2, config.getVersion());
         assertEquals(UPDATED, config.getUpdated());
         assertTrue(config.getAttributes().isPresent());
         assertEquals(2, config.getAttributes().get().size());

@@ -35,9 +35,9 @@ public class UnitTest {
 
     protected Config getConfig(final Collection<Property> properties) {
         return new Config.Builder("Config", properties).
-                id(1).
+                id(100).
                 description("Description").
-                version(1).
+                version(2).
                 updated(UPDATED).
                 attribute("key_1", "value_1").
                 attributes(Collections.singletonMap("key_2", "value_2")).
@@ -47,8 +47,10 @@ public class UnitTest {
 
     protected Property getProperty() {
         return new Property.Builder("Property-1", "Value-1").
+                id(200).
                 caption("Caption").
                 description("Description").
+                updated(UPDATED).
                 attribute("key_1", "value_1").
                 attributes(Collections.singletonMap("key_2", "value_2")).
                 property(new String[0], new Property.Builder("Sub-property-1", "Sub-value-1").build()).

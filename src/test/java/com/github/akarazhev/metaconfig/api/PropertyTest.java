@@ -34,11 +34,15 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Create a property")
     void createProperty() {
-        final Property property = new Property.Builder("Property", "Value").build();
+        final Property property = new Property.Builder("Property", "Value").
+                id(200).
+                build();
         // Check test results
+        assertEquals(200, property.getId());
         assertEquals("Property", property.getName());
         assertEquals(Property.Type.STRING, property.getType());
         assertEquals("Value", property.getValue());
+        assertTrue(property.getUpdated() > 0);
         assertThrows(ClassCastException.class, property::asBool);
         assertThrows(ClassCastException.class, property::asDouble);
         assertThrows(ClassCastException.class, property::asLong);
@@ -49,6 +53,16 @@ final class PropertyTest extends UnitTest {
         assertTrue(property.getAttributes().get().isEmpty());
         assertFalse(property.getAttribute("key").isPresent());
         assertEquals(0, property.getAttributeKeys().count());
+    }
+
+    @Test
+    @DisplayName("Create a property exception")
+    void createPropertyException() {
+        // Check test results
+        assertThrows(IllegalArgumentException.class,
+                () -> new Property.Builder("Value", 0).id(0).build());
+        assertThrows(IllegalArgumentException.class,
+                () -> new Property.Builder("Value", 0).updated(0).build());
     }
 
     @Test

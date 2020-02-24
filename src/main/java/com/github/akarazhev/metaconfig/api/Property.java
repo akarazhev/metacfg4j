@@ -17,6 +17,7 @@ import com.github.cliftonlabs.json_simple.Jsoner;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.time.Clock;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_ID_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_UPDATED_VALUE;
 
 /**
  * The property model that contains parameters, attributes and properties.
@@ -38,6 +40,7 @@ public final class Property extends AbstractConfig {
     private final String description;
     private final Type type;
     private final String value;
+    private final long updated;
     private final Map<String, String> attributes;
     private final Collection<Property> properties;
 
@@ -56,6 +59,7 @@ public final class Property extends AbstractConfig {
         this.description = builder.description;
         this.type = builder.type;
         this.value = builder.value;
+        this.updated = builder.updated;
         this.attributes = builder.attributes;
         this.properties = builder.properties;
     }
@@ -169,6 +173,15 @@ public final class Property extends AbstractConfig {
     }
 
     /**
+     * Returns an updating time of the configuration.
+     *
+     * @return a configuration updated time value.
+     */
+    public long getUpdated() {
+        return updated;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -220,6 +233,7 @@ public final class Property extends AbstractConfig {
         json.put("description", description);
         json.put("type", type.name());
         json.put("value", value);
+        json.put("updated", updated);
         json.put("attributes", attributes);
         json.put("properties", properties);
         json.toJson(writer);
@@ -234,6 +248,7 @@ public final class Property extends AbstractConfig {
         if (o == null || getClass() != o.getClass()) return false;
         final Property property = (Property) o;
         return id == property.id &&
+                updated == property.updated &&
                 Objects.equals(name, property.name) &&
                 Objects.equals(caption, property.caption) &&
                 Objects.equals(description, property.description) &&
@@ -248,7 +263,7 @@ public final class Property extends AbstractConfig {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, caption, description, type, value, attributes, properties);
+        return Objects.hash(id, name, caption, description, type, value, updated, attributes, properties);
     }
 
     /**
@@ -263,6 +278,7 @@ public final class Property extends AbstractConfig {
                 ", description='" + description + '\'' +
                 ", type=" + type +
                 ", value='" + value + '\'' +
+                ", updated='" + updated + '\'' +
                 '}';
     }
 
@@ -280,6 +296,7 @@ public final class Property extends AbstractConfig {
         private String description;
         private final Type type;
         private final String value;
+        private long updated = Clock.systemDefaultZone().millis();
 
         /**
          * Constructs a property model based on the property object.
@@ -294,6 +311,7 @@ public final class Property extends AbstractConfig {
             this.description = prototype.description;
             this.type = prototype.type;
             this.value = prototype.value;
+            this.updated = prototype.updated;
             this.attributes.putAll(prototype.attributes);
             this.properties.addAll(prototype.properties);
         }
@@ -311,24 +329,9 @@ public final class Property extends AbstractConfig {
             this.description = (String) prototype.get("description");
             this.type = Type.valueOf(Validator.of((String) prototype.get("type")).get());
             this.value = Validator.of((String) prototype.get("value")).get();
+            this.updated = getLong(prototype, "updated");
             getAttributes(prototype).ifPresent(this.attributes::putAll);
             this.properties.addAll(getProperties(prototype).collect(Collectors.toList()));
-        }
-
-        /**
-         * Constructs a property model with the id parameter.
-         *
-         * @param id a property id.
-         * @return a builder of the property model.
-         */
-        public Builder id(final long id) {
-            if (id > 0) {
-                this.id = id;
-            } else {
-                throw new IllegalArgumentException(WRONG_ID_VALUE);
-            }
-
-            return this;
         }
 
         /**
@@ -405,6 +408,22 @@ public final class Property extends AbstractConfig {
         }
 
         /**
+         * Constructs a property model with the id parameter.
+         *
+         * @param id a property id.
+         * @return a builder of the property model.
+         */
+        public Builder id(final long id) {
+            if (id > 0) {
+                this.id = id;
+            } else {
+                throw new IllegalArgumentException(WRONG_ID_VALUE);
+            }
+
+            return this;
+        }
+
+        /**
          * Constructs a property model with the caption parameter.
          *
          * @param caption a property caption.
@@ -423,6 +442,22 @@ public final class Property extends AbstractConfig {
          */
         public Builder description(final String description) {
             this.description = description;
+            return this;
+        }
+
+        /**
+         * Constructs a property model with the updated parameter.
+         *
+         * @param updated a property updated.
+         * @return a builder of the property model.
+         */
+        public Builder updated(final long updated) {
+            if (updated > 0) {
+                this.updated = updated;
+            } else {
+                throw new IllegalArgumentException(WRONG_UPDATED_VALUE);
+            }
+
             return this;
         }
 
