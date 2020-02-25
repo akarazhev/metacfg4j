@@ -246,6 +246,10 @@ final class DbConfigRepository implements ConfigRepository {
             System.arraycopy(inserted, 0, savedConfigs, pos, inserted.length);
         }
 
+        if (savedConfigs.length > 0) {
+            connection.commit();
+        }
+
         return savedConfigs;
     }
 
@@ -291,8 +295,6 @@ final class DbConfigRepository implements ConfigRepository {
                 } else {
                     throw new SQLException(SAVE_CONFIGS_ERROR);
                 }
-
-                connection.commit();
             }
 
             return inserted;
@@ -425,7 +427,6 @@ final class DbConfigRepository implements ConfigRepository {
                 }
 
                 JDBCUtils.execute(statement, configs.length, exceptions, SAVE_CONFIGS_ERROR);
-                connection.commit();
             }
 
             return updated;
@@ -502,7 +503,7 @@ final class DbConfigRepository implements ConfigRepository {
             }
             // Update properties
             if (toUpdate.size() > 0) {
-                update(connection, table, idUpdated, toUpdate.toArray(new Property[0]));
+                update(connection, table, toUpdate.toArray(new Property[0]));
             }
         } else {
             delete(connection, String.format(SQL.DELETE.PROPERTIES, table), id);
@@ -511,13 +512,15 @@ final class DbConfigRepository implements ConfigRepository {
         return properties;
     }
 
-    private Collection<Property> getToUpdate(final Connection connection, final long id,
-                                             final Map<Long, Long> idUpdated, final Property[] properties)
-            throws SQLException {
+    private Collection<Property> getToUpdate(final Connection connection, final long id, final Map<Long, Long> idUpdated,
+                                             final Property[] properties) throws SQLException {
         final Collection<Property> toUpdate = new LinkedList<>();
         for (int i = 0; i < properties.length; i++) {
             if (properties[i].getId() > 0) {
-                toUpdate.add(properties[i]);
+                final Long updated = idUpdated.get(properties[i].getId());
+                if (updated != null && properties[i].getUpdated() > updated) {
+                    toUpdate.add(properties[i]);
+                }
             } else {
                 properties[i] = insert(connection, id, properties[i])[0];
             }
@@ -530,9 +533,8 @@ final class DbConfigRepository implements ConfigRepository {
         return toUpdate;
     }
 
-    private Collection<Property> getToUpdate(final Connection connection, final long id,
-                                             final Map<Long, Long> idUpdated, final Property property)
-            throws SQLException {
+    private Collection<Property> getToUpdate(final Connection connection, final long id, final Map<Long, Long> idUpdated,
+                                             final Property property) throws SQLException {
         final Collection<Property> toUpdate = new LinkedList<>();
         final Property[] properties = property.getProperties().toArray(Property[]::new);
         if (properties.length > 0) {
@@ -542,35 +544,26 @@ final class DbConfigRepository implements ConfigRepository {
         return toUpdate;
     }
 
-    private void update(final Connection connection, final String table, final Map<Long, Long> idUpdated,
-                        final Property[] properties) throws SQLException {
+    private void update(final Connection connection, final String table, final Property[] properties)
+            throws SQLException {
         if (properties.length > 0) {
             final String sql = String.format(SQL.UPDATE.PROPERTIES, table);
             try (final PreparedStatement statement = connection.prepareStatement(sql)) {
-                int count = 0;
                 final Collection<Throwable> exceptions = new LinkedList<>();
                 for (Property property : properties) {
-                    final Long updated = idUpdated.get(property.getId());
-                    // Update only an updated property
-                    if (updated != null && property.getUpdated() > updated) {
-                        JDBCUtils.setBatch(statement, property);
-                        // Update property attributes
-                        property.getAttributes().ifPresent(attributes -> {
-                            try {
-                                updateProperty(connection, mapping.get(PROPERTY_ATTRIBUTES_TABLE), property.getId(),
-                                        attributes);
-                            } catch (final SQLException e) {
-                                exceptions.add(e);
-                            }
-                        });
-                        count++;
-                    }
+                    JDBCUtils.setBatch(statement, property);
+                    // Update property attributes
+                    property.getAttributes().ifPresent(attributes -> {
+                        try {
+                            updateProperty(connection, mapping.get(PROPERTY_ATTRIBUTES_TABLE), property.getId(),
+                                    attributes);
+                        } catch (final SQLException e) {
+                            exceptions.add(e);
+                        }
+                    });
                 }
 
-                if (count > 0) {
-                    JDBCUtils.execute(statement, properties.length, exceptions, SAVE_PROPERTIES_ERROR);
-                    connection.commit();
-                }
+                JDBCUtils.execute(statement, properties.length, exceptions, SAVE_PROPERTIES_ERROR);
             }
         }
     }
