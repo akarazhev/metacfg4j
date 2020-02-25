@@ -221,6 +221,38 @@ final class DbConfigRepositoryTest extends UnitTest {
     }
 
     @Test
+    @DisplayName("Save and flush an updated new config with property")
+    void saveAndFlushUpdatedNewConfigWithProperty() {
+        final Config config = new Config.Builder(NEW_CONFIG, Collections.singletonList(getProperty())).
+                attribute("key_1", "value_1").
+                attribute("key_2", "value_2").
+                attribute("key_3", "value_3").build();
+        final Optional<Config> newConfig = configRepository.saveAndFlush(Stream.of(config)).findFirst();
+        // Check test results
+        assertTrue(newConfig.isPresent());
+        assertTrue(newConfig.get().getId() > 0);
+        newConfig.get().getProperties().forEach(property -> assertTrue(property.getId() > 0));
+
+        assertTrue(newConfig.get().getProperty("Property-1").isPresent());
+        final Property firstProperty = new Property.Builder("Value", 1000).
+                id(newConfig.get().getProperty("Property-1").get().getId()).
+                caption("Caption").
+                attribute("key_1", "value-1").
+                attribute("key_4", "value_4").
+                description("Description").build();
+        final Config updateConfig = new Config.Builder(NEW_CONFIG, Collections.singletonList(firstProperty)).
+                id(newConfig.get().getId()).
+                description("Description").
+                attribute("key_1", "value-1").
+                attribute("key_4", "value_4").build();
+        final Optional<Config> updatedConfig = configRepository.saveAndFlush(Stream.of(updateConfig)).findFirst();
+        // Check test results
+        assertTrue(updatedConfig.isPresent());
+        assertTrue(updatedConfig.get().getId() > 0);
+        updatedConfig.get().getProperties().forEach(property -> assertTrue(property.getId() > 0));
+    }
+
+    @Test
     @DisplayName("Save and flush with not the existed config attributes table")
     void saveAndFlushWithNotExistedConfigAttributesTable() throws SQLException {
         dropConfigAttributesTables();
