@@ -17,6 +17,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,6 +56,29 @@ public class UnitTest {
                 attributes(Collections.singletonMap("key_2", "value_2")).
                 property(new String[0], new Property.Builder("Sub-property-1", "Sub-value-1").build()).
                 build();
+    }
+
+    protected Collection<Property> getProperties(final int start, final int length) {
+        final Collection<Property> properties = new ArrayList<>(length);
+        for (int i = start; i < start + length; i++) {
+            properties.add(new Property.Builder("Property-" + i, "Value-" + i).
+                    caption("Caption-" + i).
+                    description("Description-" + i).
+                    attribute("key_" + i, "value_" + i).
+                    build());
+        }
+
+        return properties;
+    }
+
+    protected Config getLargeConfig(final int size) {
+        final Config.Builder builder = new Config.Builder(NEW_CONFIG, getProperties(0, size)).
+                description("Description").attribute("key_1", "value_1");
+        for (int i = 0; i < size; i++) {
+            builder.properties(new String[]{"Property-" + i}, getProperties(i, size));
+        }
+
+        return builder.build();
     }
 
     protected Config getConfigWithSubProperties(final String name) {

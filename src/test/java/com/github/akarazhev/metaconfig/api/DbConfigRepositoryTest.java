@@ -172,6 +172,44 @@ final class DbConfigRepositoryTest extends UnitTest {
     }
 
     @Test
+    @DisplayName("Save and read a large config with properties")
+    void saveAndReadLargeConfigWithProperties() {
+        // Save a large config
+        System.out.println("Start saveAndFlush");
+        long time = System.currentTimeMillis();
+        Optional<Config> config = configRepository.saveAndFlush(Stream.of(getLargeConfig(500))).findFirst();
+        System.out.println("End saveAndFlush in " + (System.currentTimeMillis() - time) + " ms.");
+        assertTrue(config.isPresent());
+        // Read a large config
+        System.out.println("Start findByNames");
+        time = System.currentTimeMillis();
+        config = configRepository.findByNames(Stream.of(config.get().getName())).findFirst();
+        System.out.println("End findByNames in " + (System.currentTimeMillis() - time) + " ms.");
+        assertTrue(config.isPresent());
+    }
+
+    @Test
+    @DisplayName("Save and flush an updated large config with properties")
+    void saveAndFlushUpdatedLargeConfigWithProperties() {
+        // Save a large config
+        System.out.println("Start saveAndFlush");
+        long time = System.currentTimeMillis();
+        final Optional<Config> largeConfig = configRepository.saveAndFlush(Stream.of(getLargeConfig(100))).findFirst();
+        System.out.println("End saveAndFlush in " + (System.currentTimeMillis() - time) + " ms.");
+        // Check test results
+        assertTrue(largeConfig.isPresent());
+        // Update a large config
+        final Config config = new Config.Builder(largeConfig.get()).
+                properties(getProperties(1, 50)).
+                build();
+        time = System.currentTimeMillis();
+        System.out.println("Start saveAndFlush");
+        final Optional<Config> updatedConfig = configRepository.saveAndFlush(Stream.of(config)).findFirst();
+        System.out.println("End saveAndFlush in " + (System.currentTimeMillis() - time) + " ms.");
+        assertTrue(updatedConfig.isPresent());
+    }
+
+    @Test
     @DisplayName("Save and flush a new config with sub properties")
     void saveAndFlushNewConfigWithSubProperties() {
         final Optional<Config> newConfig =
