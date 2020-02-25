@@ -223,7 +223,10 @@ final class DbConfigRepositoryTest extends UnitTest {
     @Test
     @DisplayName("Save and flush an updated new config with property")
     void saveAndFlushUpdatedNewConfigWithProperty() {
-        final Config config = new Config.Builder(NEW_CONFIG, Collections.singletonList(getProperty())).build();
+        final Config config = new Config.Builder(NEW_CONFIG, Collections.singletonList(getProperty())).
+                attribute("key_1", "value_1").
+                attribute("key_2", "value_2").
+                attribute("key_3", "value_3").build();
         final Optional<Config> newConfig = configRepository.saveAndFlush(Stream.of(config)).findFirst();
         // Check test results
         assertTrue(newConfig.isPresent());
@@ -235,11 +238,13 @@ final class DbConfigRepositoryTest extends UnitTest {
                 id(newConfig.get().getProperty("Property-1").get().getId()).
                 caption("Caption").
                 attribute("key_1", "value-1").
+                attribute("key_4", "value_4").
                 description("Description").build();
         final Config updateConfig = new Config.Builder(NEW_CONFIG, Collections.singletonList(firstProperty)).
                 id(newConfig.get().getId()).
                 description("Description").
-                attribute("key", "value").build();
+                attribute("key_1", "value-1").
+                attribute("key_4", "value_4").build();
         final Optional<Config> updatedConfig = configRepository.saveAndFlush(Stream.of(updateConfig)).findFirst();
         // Check test results
         assertTrue(updatedConfig.isPresent());
