@@ -121,10 +121,11 @@ abstract class AbstractController {
      *
      * @param httpExchange a http exchange.
      * @param response     an operation response.
+     * @param <T>          a type of result.
      * @throws IOException when a controller encounters a problem.
      * @see HttpExchange for more information.
      */
-    void writeResponse(final HttpExchange httpExchange, final OperationResponse response) throws IOException {
+    <T> void writeResponse(final HttpExchange httpExchange, final OperationResponse<T> response) throws IOException {
         try {
             httpExchange.getResponseHeaders().put("Content-Type", Collections.singletonList(APPLICATION_JSON));
             final byte[] jsonBytes = response.toJson().getBytes();
@@ -152,8 +153,9 @@ abstract class AbstractController {
         }
     }
 
-    private OperationResponse getErrorResponse(final Throwable throwable, final HttpExchange httpExchange) throws IOException {
-        final OperationResponse response = new OperationResponse.Builder<>().error(throwable.getMessage()).build();
+    private <T> OperationResponse<T> getErrorResponse(final Throwable throwable, final HttpExchange httpExchange)
+            throws IOException {
+        final OperationResponse<T> response = new OperationResponse.Builder<T>().error(throwable.getMessage()).build();
         if (throwable instanceof InvalidRequestException) {
             final InvalidRequestException exception = (InvalidRequestException) throwable;
             httpExchange.sendResponseHeaders(exception.getCode(), 0);

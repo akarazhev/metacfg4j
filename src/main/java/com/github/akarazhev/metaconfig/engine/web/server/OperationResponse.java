@@ -106,7 +106,7 @@ public final class OperationResponse<T> implements ExtJsonable {
          * @param result an operation response result.
          * @return a builder of the operation response model.
          */
-        Builder result(final T result) {
+        Builder<T> result(final T result) {
             this.success = true;
             this.result = Validator.of(result).get();
             return this;
@@ -118,7 +118,7 @@ public final class OperationResponse<T> implements ExtJsonable {
          * @param error an operation response error.
          * @return a builder of the operation response model.
          */
-        Builder error(final String error) {
+        Builder<T> error(final String error) {
             this.success = false;
             this.error = Validator.of(error).get();
             return this;
