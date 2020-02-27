@@ -15,7 +15,7 @@
     <groupId>com.github.akarazhev</groupId>
     <artifactId>metacfg4j</artifactId>
     <packaging>jar</packaging>
-    <version>1.6-SNAPSHOT</version>
+    <version>1.7-SNAPSHOT</version>
 
     <name>metacfg4j</name>
     <description>The metacfg4j project is a library that can be used as the solution for:
@@ -34,9 +34,9 @@
         <maven.javadoc.plugin>3.1.1</maven.javadoc.plugin>
         <maven.source.plugin>3.2.0</maven.source.plugin>
         <jacoco.maven.plugin>0.8.5</jacoco.maven.plugin>
-        <junit.version>5.5.2</junit.version>
+        <junit.version>5.6.0</junit.version>
         <h2db.version>1.4.200</h2db.version>
-        <json.simple.version>3.1.0</json.simple.version>
+        <json.simple.version>3.1.1</json.simple.version>
     </properties>
 
     <licenses>
