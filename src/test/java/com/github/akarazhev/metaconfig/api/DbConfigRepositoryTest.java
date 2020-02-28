@@ -177,7 +177,7 @@ final class DbConfigRepositoryTest extends UnitTest {
         // Save a large config
         System.out.println("Start saveAndFlush");
         long time = System.currentTimeMillis();
-        Optional<Config> config = configRepository.saveAndFlush(Stream.of(getLargeConfig(500))).findFirst();
+        Optional<Config> config = configRepository.saveAndFlush(Stream.of(getLargeConfig(100))).findFirst();
         System.out.println("End saveAndFlush in " + (System.currentTimeMillis() - time) + " ms.");
         assertTrue(config.isPresent());
         // Read a large config
