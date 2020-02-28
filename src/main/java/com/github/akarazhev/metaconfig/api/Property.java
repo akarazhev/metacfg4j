@@ -21,6 +21,8 @@ import java.time.Clock;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -29,11 +31,13 @@ import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_ID_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_UPDATED_VALUE;
+import static com.github.akarazhev.metaconfig.api.Configurable.ConfigBuilder.getLong;
+import static com.github.akarazhev.metaconfig.api.Configurable.ConfigBuilder.setProperties;
 
 /**
  * The property model that contains parameters, attributes and properties.
  */
-public final class Property extends AbstractConfig {
+public final class Property implements Configurable {
     private final long id;
     private final String name;
     private final String caption;
@@ -218,7 +222,7 @@ public final class Property extends AbstractConfig {
      */
     @Override
     public Optional<Property> getProperty(final String... paths) {
-        return getProperty(0, paths, getProperties());
+        return Configurable.getProperty(0, paths, getProperties());
     }
 
     /**
@@ -287,14 +291,26 @@ public final class Property extends AbstractConfig {
     /**
      * Wraps and builds the instance of the property model.
      */
-    public final static class Builder extends ConfigBuilder {
-        private long id = 0;
-        private final String name;
+    public final static class Builder {
+        private final Map<String, String> attributes;
+        private final Collection<Property> properties;
         private String caption;
         private String description;
-        private final Type type;
-        private final String value;
-        private long updated = Clock.systemDefaultZone().millis();
+        private long id;
+        private String name;
+        private Type type;
+        private String value;
+        private long updated;
+
+        /**
+         * Constructs a default property model.
+         */
+        public Builder() {
+            this.id = 0;
+            this.updated = Clock.systemDefaultZone().millis();
+            this.attributes = new HashMap<>();
+            this.properties = new LinkedList<>();
+        }
 
         /**
          * Constructs a property model based on the property object.
@@ -302,6 +318,7 @@ public final class Property extends AbstractConfig {
          * @param property a property model.
          */
         public Builder(final Property property) {
+            this();
             final Property prototype = Validator.of(property).get();
             this.id = prototype.id;
             this.name = prototype.name;
@@ -320,6 +337,7 @@ public final class Property extends AbstractConfig {
          * @param jsonObject a json object with the property model.
          */
         public Builder(final JsonObject jsonObject) {
+            this();
             final JsonObject prototype = Validator.of(jsonObject).get();
             this.id = getLong(prototype, "id");
             this.name = Validator.of((String) prototype.get("name")).get();
@@ -328,8 +346,8 @@ public final class Property extends AbstractConfig {
             this.type = Type.valueOf(Validator.of((String) prototype.get("type")).get());
             this.value = Validator.of((String) prototype.get("value")).get();
             this.updated = getLong(prototype, "updated");
-            getAttributes(prototype).ifPresent(this.attributes::putAll);
-            this.properties.addAll(getProperties(prototype).collect(Collectors.toList()));
+            ConfigBuilder.getAttributes(prototype).ifPresent(this.attributes::putAll);
+            this.properties.addAll(ConfigBuilder.getProperties(prototype).collect(Collectors.toList()));
         }
 
         /**
@@ -339,6 +357,7 @@ public final class Property extends AbstractConfig {
          * @param value a string property value.
          */
         public Builder(final String name, final String value) {
+            this();
             this.name = Validator.of(name).get();
             this.type = Type.STRING;
             this.value = Validator.of(value).get();
@@ -352,6 +371,7 @@ public final class Property extends AbstractConfig {
          * @param value a property value.
          */
         public Builder(final String name, final String type, final String value) {
+            this();
             this.name = Validator.of(name).get();
             this.type = Type.valueOf(Validator.of(type).get());
             this.value = Validator.of(value).get();
@@ -364,6 +384,7 @@ public final class Property extends AbstractConfig {
          * @param value a boolean property value.
          */
         public Builder(final String name, final boolean value) {
+            this();
             this.name = Validator.of(name).get();
             this.type = Type.BOOL;
             this.value = String.valueOf(value);
@@ -376,6 +397,7 @@ public final class Property extends AbstractConfig {
          * @param value a double property value.
          */
         public Builder(final String name, final double value) {
+            this();
             this.name = Validator.of(name).get();
             this.type = Type.DOUBLE;
             this.value = String.valueOf(value);
@@ -388,6 +410,7 @@ public final class Property extends AbstractConfig {
          * @param value a long property value.
          */
         public Builder(final String name, final long value) {
+            this();
             this.name = Validator.of(name).get();
             this.type = Type.LONG;
             this.value = String.valueOf(value);
@@ -400,6 +423,7 @@ public final class Property extends AbstractConfig {
          * @param value an array property value.
          */
         public Builder(final String name, final String... value) {
+            this();
             this.name = Validator.of(name).get();
             this.type = Type.STRING_ARRAY;
             this.value = new JsonArray(Arrays.asList(Validator.of(value).get())).toJson();
@@ -501,7 +525,7 @@ public final class Property extends AbstractConfig {
          * @return a builder of the property model.
          */
         public Builder properties(final String[] paths, final Collection<Property> properties) {
-            setProperties(paths, properties);
+            setProperties(this.properties, paths, properties);
             return this;
         }
 

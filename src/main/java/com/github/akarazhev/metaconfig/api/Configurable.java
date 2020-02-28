@@ -18,7 +18,6 @@ import com.github.cliftonlabs.json_simple.JsonObject;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -68,19 +67,37 @@ interface Configurable extends ExtJsonable {
     Optional<Property> getProperty(final String... paths);
 
     /**
-     * Provides methods for getting attributes and properties from json objects.
+     * Returns a property by paths.
+     *
+     * @param index  a current path.
+     * @param paths  paths
+     * @param source a current property stream.
+     * @return a property.
      */
-    class ConfigBuilder {
-        final Map<String, String> attributes = new HashMap<>();
-        final Collection<Property> properties = new LinkedList<>();
+    static Optional<Property> getProperty(final int index, final String[] paths, final Stream<Property> source) {
+        if (index < paths.length) {
+            final Optional<Property> current = source.
+                    filter(property -> paths[index].equals(property.getName())).findFirst();
+            if (current.isPresent()) {
+                return index == paths.length - 1 ?
+                        current : getProperty(index + 1, paths, current.get().getProperties());
+            }
+        }
 
+        return Optional.empty();
+    }
+
+    /**
+     * Provides methods to make building of configuration and property objects easier.
+     */
+    final class ConfigBuilder {
         /**
          * Returns attributes which belong to configurations.
          *
          * @param jsonObject a raw json object.
          * @return attributes as a map.
          */
-        Optional<Map<String, String>> getAttributes(final JsonObject jsonObject) {
+        static Optional<Map<String, String>> getAttributes(final JsonObject jsonObject) {
             final JsonObject jsonAttributes = (JsonObject) jsonObject.get("attributes");
             if (jsonAttributes != null) {
                 final Map<String, String> attributes = new HashMap<>();
@@ -100,26 +117,11 @@ interface Configurable extends ExtJsonable {
          * @param jsonObject a raw json object.
          * @return properties as a stream.
          */
-        Stream<Property> getProperties(final JsonObject jsonObject) {
+        static Stream<Property> getProperties(final JsonObject jsonObject) {
             final JsonArray jsonProperties = (JsonArray) jsonObject.get("properties");
             return jsonProperties != null ?
                     jsonProperties.stream().map(json -> new Property.Builder((JsonObject) json).build()) :
                     Stream.empty();
-        }
-
-        /**
-         * Sets properties which belong to configurations.
-         *
-         * @param paths      path to properties.
-         * @param properties properties to set.
-         */
-        void setProperties(final String[] paths, final Collection<Property> properties) {
-            final String[] propertyPaths = Validator.of(paths).get();
-            if (propertyPaths.length > 0) {
-                setProperties(this.properties, 0, paths, properties);
-            } else {
-                this.properties.addAll(Validator.of(properties).get());
-            }
         }
 
         /**
@@ -129,13 +131,29 @@ interface Configurable extends ExtJsonable {
          * @param name       a parameter name.
          * @return a value.
          */
-        long getLong(final JsonObject jsonObject, final String name) {
+        static long getLong(final JsonObject jsonObject, final String name) {
             final Object value = jsonObject.get(name);
             return value != null ? ((BigDecimal) value).longValue() : 0;
         }
 
-        private void setProperties(final Collection<Property> target, final int index, final String[] paths,
-                                   final Collection<Property> source) {
+        /**
+         * Sets properties which belong to configurations.
+         *
+         * @param paths  path to properties.
+         * @param source properties to set.
+         */
+        static void setProperties(final Collection<Property> target, final String[] paths,
+                                  final Collection<Property> source) {
+            final String[] propertyPaths = Validator.of(paths).get();
+            if (propertyPaths.length > 0) {
+                setProperties(target, 0, paths, source);
+            } else {
+                target.addAll(Validator.of(source).get());
+            }
+        }
+
+        private static void setProperties(final Collection<Property> target, final int index, final String[] paths,
+                                          final Collection<Property> source) {
             if (index < paths.length) {
                 final int nextIndex = index + 1;
                 final Optional<Property> current = target.stream().
