@@ -159,11 +159,11 @@ interface Configurable extends ExtJsonable {
                 final Optional<Property> current = target.stream().
                         filter(property -> paths[index].equals(property.getName())).findFirst();
                 if (current.isPresent()) {
-                    setProperties(current.get().getProps(), nextIndex, paths, source);
+                    setProperties(current.get().properties(), nextIndex, paths, source);
                 } else {
                     final Property newProperty = new Property.Builder(paths[index], "").build();
                     target.add(newProperty);
-                    setProperties(newProperty.getProps(), nextIndex, paths, source);
+                    setProperties(newProperty.properties(), nextIndex, paths, source);
                 }
             } else {
                 target.addAll(source);

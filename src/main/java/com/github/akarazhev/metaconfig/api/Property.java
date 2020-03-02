@@ -284,7 +284,7 @@ public final class Property implements Configurable {
                 '}';
     }
 
-    Collection<Property> getProps() {
+    Collection<Property> properties() {
         return properties;
     }
 
@@ -292,15 +292,15 @@ public final class Property implements Configurable {
      * Wraps and builds the instance of the property model.
      */
     public final static class Builder {
-        private final Map<String, String> attributes;
-        private final Collection<Property> properties;
-        private String caption;
-        private String description;
         private long id;
         private String name;
+        private final Map<String, String> attributes;
+        private final Collection<Property> properties;
         private Type type;
         private String value;
         private long updated;
+        private String caption;
+        private String description;
 
         /**
          * Constructs a default property model.

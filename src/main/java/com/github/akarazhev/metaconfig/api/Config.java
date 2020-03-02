@@ -197,13 +197,13 @@ public final class Config implements Configurable {
      * Wraps and builds the instance of the configuration model.
      */
     public final static class Builder {
-        private final Map<String, String> attributes;
-        private final Collection<Property> properties;
-        private String description;
         private long id;
         private String name;
+        private final Map<String, String> attributes;
         private int version;
         private long updated;
+        private final Collection<Property> properties;
+        private String description;
 
         /**
          * Constructs a default configuration model.
