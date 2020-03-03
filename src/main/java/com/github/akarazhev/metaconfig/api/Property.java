@@ -284,6 +284,11 @@ public final class Property implements Configurable {
                 '}';
     }
 
+    /**
+     * It is only used by the builder and must not be used directly.
+     *
+     * @return a reference to properties.
+     */
     Collection<Property> properties() {
         return properties;
     }
