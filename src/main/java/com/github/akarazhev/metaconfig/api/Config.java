@@ -197,24 +197,13 @@ public final class Config implements Configurable {
      * Wraps and builds the instance of the configuration model.
      */
     public final static class Builder {
-        private long id;
+        private final Map<String, String> attributes = new HashMap<>();
         private String name;
-        private final Map<String, String> attributes;
-        private int version;
-        private long updated;
-        private final Collection<Property> properties;
+        private final Collection<Property> properties = new LinkedList<>();
+        private long id = 0;
+        private int version = 1;
+        private long updated = Clock.systemDefaultZone().millis();
         private String description;
-
-        /**
-         * Constructs a default configuration model.
-         */
-        public Builder() {
-            this.id = 0;
-            this.version = 1;
-            this.updated = Clock.systemDefaultZone().millis();
-            this.attributes = new HashMap<>();
-            this.properties = new LinkedList<>();
-        }
 
         /**
          * Constructs a configuration model based on the config object.
@@ -222,7 +211,6 @@ public final class Config implements Configurable {
          * @param config a configuration model.
          */
         public Builder(final Config config) {
-            this();
             final Config prototype = Validator.of(config).get();
             this.id = config.id;
             this.name = prototype.name;
@@ -239,7 +227,6 @@ public final class Config implements Configurable {
          * @param jsonObject a json object with the configuration model.
          */
         public Builder(final JsonObject jsonObject) {
-            this();
             final JsonObject prototype = Validator.of(jsonObject).get();
             this.id = getLong(prototype, "id");
             this.name = Validator.of((String) prototype.get("name")).get();
@@ -260,7 +247,6 @@ public final class Config implements Configurable {
          * @param properties configuration properties.
          */
         public Builder(final String name, final Collection<Property> properties) {
-            this();
             this.name = Validator.of(name).get();
             this.properties.addAll(Validator.of(properties).get());
         }

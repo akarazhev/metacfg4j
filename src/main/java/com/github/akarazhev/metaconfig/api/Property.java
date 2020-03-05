@@ -297,25 +297,15 @@ public final class Property implements Configurable {
      * Wraps and builds the instance of the property model.
      */
     public final static class Builder {
-        private long id;
+        private final Map<String, String> attributes = new HashMap<>();
         private String name;
-        private final Map<String, String> attributes;
-        private final Collection<Property> properties;
+        private final Collection<Property> properties = new LinkedList<>();
+        private long id = 0;
         private Type type;
         private String value;
-        private long updated;
+        private long updated = Clock.systemDefaultZone().millis();
         private String caption;
         private String description;
-
-        /**
-         * Constructs a default property model.
-         */
-        public Builder() {
-            this.id = 0;
-            this.updated = Clock.systemDefaultZone().millis();
-            this.attributes = new HashMap<>();
-            this.properties = new LinkedList<>();
-        }
 
         /**
          * Constructs a property model based on the property object.
@@ -323,7 +313,6 @@ public final class Property implements Configurable {
          * @param property a property model.
          */
         public Builder(final Property property) {
-            this();
             final Property prototype = Validator.of(property).get();
             this.id = prototype.id;
             this.name = prototype.name;
@@ -342,7 +331,6 @@ public final class Property implements Configurable {
          * @param jsonObject a json object with the property model.
          */
         public Builder(final JsonObject jsonObject) {
-            this();
             final JsonObject prototype = Validator.of(jsonObject).get();
             this.id = getLong(prototype, "id");
             this.name = Validator.of((String) prototype.get("name")).get();
@@ -362,7 +350,6 @@ public final class Property implements Configurable {
          * @param value a string property value.
          */
         public Builder(final String name, final String value) {
-            this();
             this.name = Validator.of(name).get();
             this.type = Type.STRING;
             this.value = Validator.of(value).get();
@@ -376,7 +363,6 @@ public final class Property implements Configurable {
          * @param value a property value.
          */
         public Builder(final String name, final String type, final String value) {
-            this();
             this.name = Validator.of(name).get();
             this.type = Type.valueOf(Validator.of(type).get());
             this.value = Validator.of(value).get();
@@ -389,7 +375,6 @@ public final class Property implements Configurable {
          * @param value a boolean property value.
          */
         public Builder(final String name, final boolean value) {
-            this();
             this.name = Validator.of(name).get();
             this.type = Type.BOOL;
             this.value = String.valueOf(value);
@@ -402,7 +387,6 @@ public final class Property implements Configurable {
          * @param value a double property value.
          */
         public Builder(final String name, final double value) {
-            this();
             this.name = Validator.of(name).get();
             this.type = Type.DOUBLE;
             this.value = String.valueOf(value);
@@ -415,7 +399,6 @@ public final class Property implements Configurable {
          * @param value a long property value.
          */
         public Builder(final String name, final long value) {
-            this();
             this.name = Validator.of(name).get();
             this.type = Type.LONG;
             this.value = String.valueOf(value);
@@ -428,7 +411,6 @@ public final class Property implements Configurable {
          * @param value an array property value.
          */
         public Builder(final String name, final String... value) {
-            this();
             this.name = Validator.of(name).get();
             this.type = Type.STRING_ARRAY;
             this.value = new JsonArray(Arrays.asList(Validator.of(value).get())).toJson();
