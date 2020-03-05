@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Optional;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,9 +44,9 @@ import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ER
 import static com.github.akarazhev.metaconfig.Constants.Endpoints.ACCEPT_CONFIG;
 import static com.github.akarazhev.metaconfig.Constants.Endpoints.ACCEPT_CONFIG_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG;
-import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_NAMES;
 import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_NAMES_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CERTIFICATE_LOAD_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.PARAM_NOT_PRESENTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_CREATE_ERROR;
@@ -193,7 +194,7 @@ public final class Server implements WebServer {
                 orElse(CONFIG_VALUE);
         httpsServer.createContext(apiPath + configEndpoint,
                 new ConfigController.Builder(configService).build()::handle);
-        httpsServer.setExecutor(null);
+        httpsServer.setExecutor(Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()));
         httpsServer.setHttpsConfigurator(new HttpsConfigurator(getSSLContext(serverConfig)) {
 
             /**

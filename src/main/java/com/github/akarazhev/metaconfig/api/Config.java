@@ -18,6 +18,8 @@ import java.io.Writer;
 import java.time.Clock;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -27,11 +29,13 @@ import java.util.stream.Stream;
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_ID_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_UPDATED_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_VERSION_VALUE;
+import static com.github.akarazhev.metaconfig.api.Configurable.ConfigBuilder.getLong;
+import static com.github.akarazhev.metaconfig.api.Configurable.ConfigBuilder.setProperties;
 
 /**
  * The configuration model that contains parameters, attributes and properties.
  */
-public final class Config extends AbstractConfig {
+public final class Config implements Configurable {
     private final long id;
     private final String name;
     private final String description;
@@ -132,7 +136,7 @@ public final class Config extends AbstractConfig {
      */
     @Override
     public Optional<Property> getProperty(final String... paths) {
-        return getProperty(0, paths, getProperties());
+        return Configurable.getProperty(0, paths, getProperties());
     }
 
     /**
@@ -192,12 +196,14 @@ public final class Config extends AbstractConfig {
     /**
      * Wraps and builds the instance of the configuration model.
      */
-    public final static class Builder extends ConfigBuilder {
+    public final static class Builder {
+        private final Map<String, String> attributes = new HashMap<>();
+        private String name;
+        private final Collection<Property> properties = new LinkedList<>();
         private long id = 0;
-        private final String name;
-        private String description;
         private int version = 1;
         private long updated = Clock.systemDefaultZone().millis();
+        private String description;
 
         /**
          * Constructs a configuration model based on the config object.
@@ -230,8 +236,8 @@ public final class Config extends AbstractConfig {
                 this.version = (int) version;
             }
             this.updated = getLong(prototype, "updated");
-            getAttributes(prototype).ifPresent(this.attributes::putAll);
-            this.properties.addAll(getProperties(prototype).collect(Collectors.toList()));
+            ConfigBuilder.getAttributes(prototype).ifPresent(this.attributes::putAll);
+            this.properties.addAll(ConfigBuilder.getProperties(prototype).collect(Collectors.toList()));
         }
 
         /**
@@ -346,7 +352,7 @@ public final class Config extends AbstractConfig {
          * @return a builder of the configuration model.
          */
         public Builder properties(final String[] paths, final Collection<Property> properties) {
-            setProperties(paths, properties);
+            setProperties(this.properties, paths, properties);
             return this;
         }
 

@@ -21,6 +21,8 @@ import java.time.Clock;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -29,11 +31,13 @@ import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_ID_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_UPDATED_VALUE;
+import static com.github.akarazhev.metaconfig.api.Configurable.ConfigBuilder.getLong;
+import static com.github.akarazhev.metaconfig.api.Configurable.ConfigBuilder.setProperties;
 
 /**
  * The property model that contains parameters, attributes and properties.
  */
-public final class Property extends AbstractConfig {
+public final class Property implements Configurable {
     private final long id;
     private final String name;
     private final String caption;
@@ -218,7 +222,7 @@ public final class Property extends AbstractConfig {
      */
     @Override
     public Optional<Property> getProperty(final String... paths) {
-        return getProperty(0, paths, getProperties());
+        return Configurable.getProperty(0, paths, getProperties());
     }
 
     /**
@@ -280,21 +284,28 @@ public final class Property extends AbstractConfig {
                 '}';
     }
 
-    Collection<Property> getProps() {
+    /**
+     * It is only used by the builder and must not be used directly.
+     *
+     * @return a reference to properties.
+     */
+    Collection<Property> properties() {
         return properties;
     }
 
     /**
      * Wraps and builds the instance of the property model.
      */
-    public final static class Builder extends ConfigBuilder {
+    public final static class Builder {
+        private final Map<String, String> attributes = new HashMap<>();
+        private String name;
+        private final Collection<Property> properties = new LinkedList<>();
         private long id = 0;
-        private final String name;
+        private Type type;
+        private String value;
+        private long updated = Clock.systemDefaultZone().millis();
         private String caption;
         private String description;
-        private final Type type;
-        private final String value;
-        private long updated = Clock.systemDefaultZone().millis();
 
         /**
          * Constructs a property model based on the property object.
@@ -328,8 +339,8 @@ public final class Property extends AbstractConfig {
             this.type = Type.valueOf(Validator.of((String) prototype.get("type")).get());
             this.value = Validator.of((String) prototype.get("value")).get();
             this.updated = getLong(prototype, "updated");
-            getAttributes(prototype).ifPresent(this.attributes::putAll);
-            this.properties.addAll(getProperties(prototype).collect(Collectors.toList()));
+            ConfigBuilder.getAttributes(prototype).ifPresent(this.attributes::putAll);
+            this.properties.addAll(ConfigBuilder.getProperties(prototype).collect(Collectors.toList()));
         }
 
         /**
@@ -501,7 +512,7 @@ public final class Property extends AbstractConfig {
          * @return a builder of the property model.
          */
         public Builder properties(final String[] paths, final Collection<Property> properties) {
-            setProperties(paths, properties);
+            setProperties(this.properties, paths, properties);
             return this;
         }
 

@@ -18,7 +18,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -51,11 +50,11 @@ import static java.util.AbstractMap.SimpleEntry;
  */
 final class DbConfigRepository implements ConfigRepository {
     private final DataSource dataSource;
-    private final Map<String, String> mapping;
+    private final Map<String, String> mapping = new HashMap<>();
 
     private DbConfigRepository(final Builder builder) {
         this.dataSource = builder.dataSource;
-        this.mapping = JDBCUtils.createMapping(builder.mapping);
+        this.mapping.putAll(JDBCUtils.createMapping(builder.mapping));
         JDBCUtils.createDataBase(this.dataSource, this.mapping);
     }
 
@@ -205,10 +204,9 @@ final class DbConfigRepository implements ConfigRepository {
 
     private Collection<Property> getLinkedProps(final Map<Long, Property> properties,
                                                 final Collection<SimpleEntry<Long, Long>> links) {
-        final Comparator<SimpleEntry<Long, Long>> comparing = Comparator.comparing(SimpleEntry::getValue);
         final Map<Long, Property> linkedProps = new HashMap<>(properties);
-        final Collection<SimpleEntry<Long, Long>> sortedLinks = new ArrayList<>(links);
-        sortedLinks.stream().
+        final Comparator<SimpleEntry<Long, Long>> comparing = Comparator.comparing(SimpleEntry::getValue);
+        links.stream().
                 sorted(comparing.reversed()).
                 forEach(link -> {
                     final Property childProp = linkedProps.get(link.getKey());
@@ -272,11 +270,11 @@ final class DbConfigRepository implements ConfigRepository {
                             final long configId = resultSet.getInt(1);
                             final Property[] properties = configs[i].getProperties().toArray(Property[]::new);
                             // Create config attributes
-                            configs[i].getAttributes().ifPresent(map -> {
+                            configs[i].getAttributes().ifPresent(attributes -> {
                                 try {
                                     final String attributesSql = String.format(SQL.INSERT.CONFIG_ATTRIBUTES,
                                             mapping.get(CONFIG_ATTRIBUTES_TABLE));
-                                    execute(connection, attributesSql, configId, map, INSERT_ATTRIBUTES_ERROR);
+                                    execute(connection, attributesSql, configId, attributes, INSERT_ATTRIBUTES_ERROR);
                                 } catch (final SQLException e) {
                                     exceptions.add(e);
                                 }
@@ -303,26 +301,26 @@ final class DbConfigRepository implements ConfigRepository {
         return new Config[0];
     }
 
-    private void execute(final Connection connection, final String sql, final long id, final Map<String, String> map,
-                         final String error) throws SQLException {
-        if (map.size() > 0) {
+    private void execute(final Connection connection, final String sql, final long id,
+                         final Map<String, String> attributes, final String error) throws SQLException {
+        if (attributes.size() > 0) {
             try (final PreparedStatement statement = connection.prepareStatement(sql)) {
-                JDBCUtils.setBatch(statement, id, map);
+                JDBCUtils.setBatch(statement, id, attributes);
 
-                if (statement.executeBatch().length != map.size()) {
+                if (statement.executeBatch().length != attributes.size()) {
                     throw new SQLException(error);
                 }
             }
         }
     }
 
-    private void execute(final Connection connection, final String sql, final long id, final Map<String, String> map)
-            throws SQLException {
-        if (map.size() > 0) {
+    private void execute(final Connection connection, final String sql, final long id,
+                         final Map<String, String> attributes) throws SQLException {
+        if (attributes.size() > 0) {
             try (final PreparedStatement statement = connection.prepareStatement(sql)) {
-                JDBCUtils.setBatch(statement, map, id);
+                JDBCUtils.setBatch(statement, attributes, id);
 
-                if (statement.executeBatch().length != map.size()) {
+                if (statement.executeBatch().length != attributes.size()) {
                     throw new SQLException(UPDATE_ATTRIBUTES_ERROR);
                 }
             }
@@ -370,11 +368,11 @@ final class DbConfigRepository implements ConfigRepository {
                     resultSet.absolute(i + 1);
                     final long propertyId = resultSet.getLong(1);
                     // Create property attributes
-                    properties[i].getAttributes().ifPresent(map -> {
+                    properties[i].getAttributes().ifPresent(attributes -> {
                         try {
                             final String sql = String.format(SQL.INSERT.PROPERTY_ATTRIBUTES,
                                     mapping.get(PROPERTY_ATTRIBUTES_TABLE));
-                            execute(connection, sql, propertyId, map, INSERT_ATTRIBUTES_ERROR);
+                            execute(connection, sql, propertyId, attributes, INSERT_ATTRIBUTES_ERROR);
                         } catch (final SQLException e) {
                             exceptions.add(e);
                         }
@@ -436,16 +434,16 @@ final class DbConfigRepository implements ConfigRepository {
     }
 
     private void updateConfig(final Connection connection, final String table, final long id,
-                              final Map<String, String> map) throws SQLException {
-        if (map.size() > 0) {
+                              final Map<String, String> attributes) throws SQLException {
+        if (attributes.size() > 0) {
             final Map<String, String> toInsert = new HashMap<>();
             final Map<String, String> toUpdate = new HashMap<>();
             final Map<String, String> toDelete = new HashMap<>();
             final Map<String, String> existed =
                     getAttributes(connection, String.format(SQL.SELECT.CONFIG_ATTRIBUTES, table), id);
 
-            update(existed, map, toDelete, toUpdate);
-            update(map, existed, toInsert, toUpdate);
+            update(existed, attributes, toDelete, toUpdate);
+            update(attributes, existed, toInsert, toUpdate);
 
             execute(connection, String.format(SQL.INSERT.CONFIG_ATTRIBUTES, table), id, toInsert, UPDATE_ATTRIBUTES_ERROR);
             execute(connection, String.format(SQL.UPDATE.ATTRIBUTE, table), id, toUpdate);
@@ -456,16 +454,16 @@ final class DbConfigRepository implements ConfigRepository {
     }
 
     private void updateProperty(final Connection connection, final String table, final long id,
-                                final Map<String, String> map) throws SQLException {
-        if (map.size() > 0) {
+                                final Map<String, String> attributes) throws SQLException {
+        if (attributes.size() > 0) {
             final Map<String, String> toInsert = new HashMap<>();
             final Map<String, String> toUpdate = new HashMap<>();
             final Map<String, String> toDelete = new HashMap<>();
             final Map<String, String> existed =
                     getAttributes(connection, String.format(SQL.SELECT.PROPERTY_ATTRIBUTES, table), id);
 
-            update(existed, map, toDelete, toUpdate);
-            update(map, existed, toInsert, toUpdate);
+            update(existed, attributes, toDelete, toUpdate);
+            update(attributes, existed, toInsert, toUpdate);
 
             execute(connection, String.format(SQL.INSERT.PROPERTY_ATTRIBUTES, table), id, toInsert,
                     UPDATE_ATTRIBUTES_ERROR);
@@ -570,34 +568,34 @@ final class DbConfigRepository implements ConfigRepository {
 
     private Map<Long, Long> getIdUpdated(final Connection connection, final String sql, final long id)
             throws SQLException {
-        final Map<Long, Long> map = new HashMap<>();
+        final Map<Long, Long> attributes = new HashMap<>();
         try (final PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
 
             try (final ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    map.put(resultSet.getLong(1), resultSet.getLong(2));
+                    attributes.put(resultSet.getLong(1), resultSet.getLong(2));
                 }
             }
         }
 
-        return map;
+        return attributes;
     }
 
     private Map<String, String> getAttributes(final Connection connection, final String sql, final long id)
             throws SQLException {
-        final Map<String, String> map = new HashMap<>();
+        final Map<String, String> attributes = new HashMap<>();
         try (final PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
 
             try (final ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    map.put(resultSet.getString(1), resultSet.getString(2));
+                    attributes.put(resultSet.getString(1), resultSet.getString(2));
                 }
             }
         }
 
-        return map;
+        return attributes;
     }
 
     private int getVersion(final Connection connection, final long id) throws SQLException {
@@ -884,22 +882,22 @@ final class DbConfigRepository implements ConfigRepository {
             }
         }
 
-        private static void setBatch(final PreparedStatement statement, final Map<String, String> map, final long id)
-                throws SQLException {
-            for (final String key : map.keySet()) {
+        private static void setBatch(final PreparedStatement statement, final Map<String, String> attributes,
+                                     final long id) throws SQLException {
+            for (final String key : attributes.keySet()) {
                 statement.setString(1, key);
-                statement.setString(2, map.get(key));
+                statement.setString(2, attributes.get(key));
                 statement.setLong(3, id);
                 statement.addBatch();
             }
         }
 
-        private static void setBatch(final PreparedStatement statement, final long id, final Map<String, String> map)
-                throws SQLException {
-            for (final String key : map.keySet()) {
+        private static void setBatch(final PreparedStatement statement, final long id,
+                                     final Map<String, String> attributes) throws SQLException {
+            for (final String key : attributes.keySet()) {
                 statement.setLong(1, id);
                 statement.setString(2, key);
-                statement.setString(3, map.get(key));
+                statement.setString(3, attributes.get(key));
                 statement.addBatch();
             }
         }
