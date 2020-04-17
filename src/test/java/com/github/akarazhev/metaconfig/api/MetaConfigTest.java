@@ -148,6 +148,17 @@ final class MetaConfigTest extends UnitTest {
     }
 
     @Test
+    @DisplayName("Get config with empty attributes")
+    void getConfigWithEmptyAttributes() {
+        final Property property = new Property.Builder("Property", "value").build();
+        final Config newConfig = new Config.Builder(NEW_CONFIG, Collections.singleton(property)).build();
+        dbMetaConfig.update(Stream.of(newConfig));
+        final Optional<Config> dbConfig = dbMetaConfig.get(Stream.of(NEW_CONFIG)).findFirst();
+        assertTrue(dbConfig.isPresent());
+        assertEquals(NEW_CONFIG, dbConfig.get().getName());
+    }
+
+    @Test
     @DisplayName("Get config names")
     void getNames() {
         assertEqualsNames(dbMetaConfig.getNames().toArray(String[]::new));

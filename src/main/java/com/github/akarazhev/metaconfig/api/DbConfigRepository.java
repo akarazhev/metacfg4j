@@ -82,6 +82,8 @@ final class DbConfigRepository implements ConfigRepository {
                             // Create properties
                             final long propertyId = resultSet.getInt(8);
                             final Property property = properties.get(propertyId);
+                            final Map<String, String> propertyAttributes =
+                                    getAttributes(resultSet.getString(16), resultSet.getString(17));
                             if (property == null) {
                                 properties.put(propertyId, new Property.Builder(resultSet.getString(10),
                                         resultSet.getString(13),
@@ -90,11 +92,11 @@ final class DbConfigRepository implements ConfigRepository {
                                         caption(resultSet.getString(11)).
                                         description(resultSet.getString(12)).
                                         updated(resultSet.getLong(15)).
-                                        attribute(resultSet.getString(16), resultSet.getString(17)).
+                                        attributes(propertyAttributes).
                                         build());
                             } else {
                                 properties.put(propertyId, new Property.Builder(property).
-                                        attribute(resultSet.getString(16), resultSet.getString(17)).
+                                        attributes(propertyAttributes).
                                         build());
                             }
                             // Create links
@@ -102,6 +104,8 @@ final class DbConfigRepository implements ConfigRepository {
                             // Create configs
                             final long configId = resultSet.getInt(1);
                             final Config config = configs.get(configId);
+                            final Map<String, String> configAttributes =
+                                    getAttributes(resultSet.getString(6), resultSet.getString(7));
                             if (config == null) {
                                 configs.put(configId,
                                         new Config.Builder(resultSet.getString(2), Collections.emptyList()).
@@ -109,12 +113,11 @@ final class DbConfigRepository implements ConfigRepository {
                                                 description(resultSet.getString(3)).
                                                 version(resultSet.getInt(4)).
                                                 updated(resultSet.getLong(5)).
-                                                attribute(resultSet.getString(6),
-                                                        resultSet.getString(7)).
+                                                attributes(configAttributes).
                                                 build());
                             } else {
                                 configs.put(configId, new Config.Builder(config).
-                                        attribute(resultSet.getString(6), resultSet.getString(7)).
+                                        attributes(configAttributes).
                                         build());
                             }
                             // Set properties to the config
@@ -219,6 +222,15 @@ final class DbConfigRepository implements ConfigRepository {
                 });
 
         return linkedProps.values();
+    }
+
+    private Map<String, String> getAttributes(final String key, final String value) {
+        final Map<String, String> attributes = new HashMap<>();
+        if (key != null && value != null) {
+            attributes.put(key, value);
+        }
+
+        return attributes;
     }
 
     private Config[] saveAndFlush(final Connection connection, final Config[] configs) throws SQLException {
