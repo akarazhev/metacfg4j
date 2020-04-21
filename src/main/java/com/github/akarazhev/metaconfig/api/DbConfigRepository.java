@@ -69,8 +69,9 @@ final class DbConfigRepository implements ConfigRepository {
                 final String sql = String.format(SQL.SELECT.CONFIGS, mapping.get(CONFIGS_TABLE),
                         mapping.get(CONFIG_ATTRIBUTES_TABLE), mapping.get(PROPERTIES_TABLE),
                         mapping.get(PROPERTY_ATTRIBUTES_TABLE));
+                final String subSql = " OR `C`.`NAME` = ?";
                 try (final Connection connection = dataSource.getConnection();
-                     final PreparedStatement statement = connection.prepareStatement(JDBCUtils.getSql(sql, names))) {
+                     final PreparedStatement statement = connection.prepareStatement(JDBCUtils.getSql(sql, subSql, names))) {
                     JDBCUtils.set(statement, names);
 
                     try (final ResultSet resultSet = statement.executeQuery()) {
@@ -628,8 +629,10 @@ final class DbConfigRepository implements ConfigRepository {
     private int delete(final Connection connection, final String[] names) throws SQLException {
         if (names.length > 0) {
             try {
-                final String sql = String.format(SQL.DELETE.CONFIGS, mapping.get(CONFIGS_TABLE));
-                try (final PreparedStatement statement = connection.prepareStatement(JDBCUtils.getSql(sql, names))) {
+                final String table = mapping.get(CONFIGS_TABLE);
+                final String sql = String.format(SQL.DELETE.CONFIGS, table);
+                final String subSql = String.format(" OR `%s`.`NAME` = ?", table);
+                try (final PreparedStatement statement = connection.prepareStatement(JDBCUtils.getSql(sql, subSql, names))) {
                     JDBCUtils.set(statement, names);
                     final int deleted = statement.executeUpdate();
                     connection.commit();
@@ -699,19 +702,19 @@ final class DbConfigRepository implements ConfigRepository {
             }
 
             static final String CONFIGS =
-                    "DELETE FROM `%s` AS `C` WHERE `C`.`NAME` = ?";
+                    "DELETE FROM `%1$s` WHERE `%1$s`.`NAME` = ?";
             static final String CONFIG_ATTRIBUTES =
-                    "DELETE FROM `%s` AS `CA` WHERE `CA`.`CONFIG_ID` = ?;";
+                    "DELETE FROM `%1$s` WHERE `%1$s`.`CONFIG_ID` = ?;";
             static final String PROPERTY_ATTRIBUTES =
-                    "DELETE FROM `%s` AS `PA` WHERE `PA`.`PROPERTY_ID` = ?;";
+                    "DELETE FROM `%1$s` WHERE `%1$s`.`PROPERTY_ID` = ?;";
             static final String CONFIG_ATTRIBUTE =
-                    "DELETE FROM `%s` AS `CA` WHERE `CA`.`CONFIG_ID` = ? AND `CA`.`KEY` = ? AND `CA`.`VALUE` = ?;";
+                    "DELETE FROM `%1$s` WHERE `%1$s`.`CONFIG_ID` = ? AND `%1$s`.`KEY` = ? AND `%1$s`.`VALUE` = ?;";
             static final String PROPERTY_ATTRIBUTE =
-                    "DELETE FROM `%s` AS `PA` WHERE `PA`.`PROPERTY_ID` = ? AND `PA`.`KEY` = ? AND `PA`.`VALUE` = ?;";
+                    "DELETE FROM `%1$s` WHERE `%1$s`.`PROPERTY_ID` = ? AND `%1$s`.`KEY` = ? AND `%1$s`.`VALUE` = ?;";
             static final String PROPERTIES =
-                    "DELETE FROM `%s` AS `P` WHERE `P`.`CONFIG_ID` = ?;";
+                    "DELETE FROM `%1$s` WHERE `%1$s`.`CONFIG_ID` = ?;";
             static final String PROPERTY =
-                    "DELETE FROM `%s` AS `P` WHERE `P`.`ID` = ?;";
+                    "DELETE FROM `%1$s` WHERE `%1$s`.`ID` = ?;";
         }
 
         final static class SELECT {
@@ -838,10 +841,10 @@ final class DbConfigRepository implements ConfigRepository {
             return mapping;
         }
 
-        private static String getSql(final String query, final String[] names) {
+        private static String getSql(final String query, final String subQuery, final String[] names) {
             final StringBuilder sql = new StringBuilder(query);
             if (names.length > 1) {
-                Arrays.stream(names).skip(1).forEach(name -> sql.append(" OR C.NAME = ?"));
+                Arrays.stream(names).skip(1).forEach(name -> sql.append(subQuery));
             }
 
             return sql.append(";").toString();
