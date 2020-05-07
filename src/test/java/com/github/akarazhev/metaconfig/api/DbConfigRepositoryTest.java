@@ -164,7 +164,7 @@ final class DbConfigRepositoryTest extends UnitTest {
     @DisplayName("Find config names by a name")
     void findByName() {
         final ConfigRepository.PageRequest pageRequest = new ConfigRepository.PageRequest.Builder().build();
-        final ConfigRepository.Page page = configRepository.findByName(CONFIG_NAME, pageRequest);
+        final ConfigRepository.Page page = configRepository.findByName(CONFIG, pageRequest);
         // Check test results
         assertEquals(0, page.getPage());
         assertEquals(2, page.getTotal());
@@ -182,7 +182,7 @@ final class DbConfigRepositoryTest extends UnitTest {
                 size(1).
                 ascending(false).
                 build();
-        final ConfigRepository.Page page = configRepository.findByName(CONFIG_NAME, pageRequest);
+        final ConfigRepository.Page page = configRepository.findByName(CONFIG, pageRequest);
         // Check test results
         assertEquals(1, page.getPage());
         assertEquals(2, page.getTotal());
