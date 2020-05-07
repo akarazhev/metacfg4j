@@ -29,12 +29,13 @@ import java.util.stream.Stream;
 import static com.github.akarazhev.metaconfig.Constants.Endpoints.ACCEPT_CONFIG;
 import static com.github.akarazhev.metaconfig.Constants.Endpoints.ACCEPT_CONFIG_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG;
-import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_NAMES;
 import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_NAMES_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CONFIG_ACCEPT_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DELETE_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIGS_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIG_NAMES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SAVE_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_WRONG_STATUS_CODE;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Header.APPLICATION_JSON;
@@ -84,7 +85,15 @@ final class WebConfigRepository implements ConfigRepository {
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
         setProperties(GET, CONFIG_NAMES, CONFIG_NAMES_VALUE, properties);
 
-        return ((JsonArray) getContent(properties, RECEIVED_CONFIGS_ERROR)).stream().map(Objects::toString);
+        return ((JsonArray) getContent(properties, RECEIVED_CONFIG_NAMES_ERROR)).stream().map(Objects::toString);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Page findByName(final String name, final PageRequest pageRequest) {
+        return null;
     }
 
     /**

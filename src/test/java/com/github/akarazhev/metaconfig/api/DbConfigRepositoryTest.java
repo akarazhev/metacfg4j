@@ -161,6 +161,69 @@ final class DbConfigRepositoryTest extends UnitTest {
     }
 
     @Test
+    @DisplayName("Find config names by a name")
+    void findByName() {
+        final ConfigRepository.PageRequest pageRequest = new ConfigRepository.PageRequest.Builder().build();
+        final ConfigRepository.Page page = configRepository.findByName(CONFIG_NAME, pageRequest);
+        // Check test results
+        assertEquals(0, page.getPage());
+        assertEquals(2, page.getTotal());
+        final String[] names = page.getStream().toArray(String[]::new);
+        assertEquals(2, names.length);
+        assertEquals(FIRST_CONFIG, names[0]);
+        assertEquals(SECOND_CONFIG, names[1]);
+    }
+
+    @Test
+    @DisplayName("Find config names by a name, page, size and sorting")
+    void findByNameAndPageAndSizeAndSorting() {
+        final ConfigRepository.PageRequest pageRequest = new ConfigRepository.PageRequest.Builder().
+                page(1).
+                size(1).
+                ascending(false).
+                build();
+        final ConfigRepository.Page page = configRepository.findByName(CONFIG_NAME, pageRequest);
+        // Check test results
+        assertEquals(1, page.getPage());
+        assertEquals(2, page.getTotal());
+        final String[] names = page.getStream().toArray(String[]::new);
+        assertEquals(1, names.length);
+        assertEquals(FIRST_CONFIG, names[0]);
+    }
+
+    @Test
+    @DisplayName("Find config names by a wrong name")
+    void findByWrongName() {
+        final ConfigRepository.PageRequest pageRequest = new ConfigRepository.PageRequest.Builder().build();
+        final ConfigRepository.Page page = configRepository.findByName(NEW_CONFIG, pageRequest);
+        // Check test results
+        assertEquals(0, page.getPage());
+        assertEquals(0, page.getTotal());
+        assertEquals(0, page.getStream().count());
+    }
+
+    @Test
+    @DisplayName("Find config names by name with not existed tables")
+    void findByNameWithNotExistedTables() throws SQLException {
+        dropTables();
+        // Check test results
+        assertThrows(RuntimeException.class, () ->
+                configRepository.findByName(FIRST_CONFIG, new ConfigRepository.PageRequest.Builder().build()));
+        createRepository();
+    }
+
+    @Test
+    @DisplayName("Find config names by name with the closed connection pool")
+    void findByNameWithClosedConnectionPool() throws IOException {
+        connectionPool.close();
+        // Check test results
+        assertThrows(RuntimeException.class, () ->
+                configRepository.findByName(FIRST_CONFIG, new ConfigRepository.PageRequest.Builder().build()));
+        connectionPool = ConnectionPools.newPool();
+        configRepository = new DbConfigRepository.Builder(connectionPool.getDataSource()).build();
+    }
+
+    @Test
     @DisplayName("Save and flush a new config with properties")
     void saveAndFlushNewConfigWithProperties() {
         final Optional<Config> newConfig =

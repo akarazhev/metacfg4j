@@ -63,7 +63,7 @@ final class ConfigTest extends UnitTest {
         final Config config = getConfig(Collections.singletonList(getProperty()));
         // Check test results
         assertEquals(100, config.getId());
-        assertEquals("Config", config.getName());
+        assertEquals(CONFIG_NAME, config.getName());
         assertTrue(config.getDescription().isPresent());
         assertEquals("Description", config.getDescription().get());
         assertEquals(2, config.getVersion());
@@ -110,7 +110,7 @@ final class ConfigTest extends UnitTest {
     @DisplayName("Compare two configs")
     void compareTwoConfigs() {
         final Property firstProperty = new Property.Builder("Property-1", "Value-1").build();
-        final Config firstConfig = new Config.Builder("Config", Collections.singletonList(firstProperty)).
+        final Config firstConfig = new Config.Builder(CONFIG_NAME, Collections.singletonList(firstProperty)).
                 id(1).
                 description("Description").
                 version(1).
@@ -120,7 +120,7 @@ final class ConfigTest extends UnitTest {
                 property(new String[0], new Property.Builder("Property-2", "Value-2").build()).
                 build();
         final Property secondProperty = new Property.Builder("Property-1", "Value-1").build();
-        final Config secondConfig = new Config.Builder("Config", Collections.singletonList(secondProperty)).
+        final Config secondConfig = new Config.Builder(CONFIG_NAME, Collections.singletonList(secondProperty)).
                 id(1).
                 description("Description").
                 version(1).
@@ -136,8 +136,8 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Check hash codes of two configs")
     void checkHashCodesOfTwoConfigs() {
-        final Config firstConfig = new Config.Builder("Config", Collections.emptyList()).build();
-        final Config secondConfig = new Config.Builder("Config", Collections.emptyList()).build();
+        final Config firstConfig = new Config.Builder(CONFIG_NAME, Collections.emptyList()).build();
+        final Config secondConfig = new Config.Builder(CONFIG_NAME, Collections.emptyList()).build();
         // Check test results
         assertEquals(firstConfig.hashCode(), secondConfig.hashCode());
     }
@@ -145,8 +145,8 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Check toString() of two configs")
     void checkToStringOfTwoConfigs() {
-        final Config firstConfig = new Config.Builder("Config", Collections.emptyList()).build();
-        final Config secondConfig = new Config.Builder("Config", Collections.emptyList()).build();
+        final Config firstConfig = new Config.Builder(CONFIG_NAME, Collections.emptyList()).build();
+        final Config secondConfig = new Config.Builder(CONFIG_NAME, Collections.emptyList()).build();
         // Check test results
         assertEquals(firstConfig.toString(), secondConfig.toString());
     }

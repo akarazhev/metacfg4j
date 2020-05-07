@@ -40,6 +40,7 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.DB_ROLLBACK_ERR
 import static com.github.akarazhev.metaconfig.Constants.Messages.DELETE_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_ATTRIBUTES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIGS_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIG_NAMES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SAVE_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SAVE_PROPERTIES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_ATTRIBUTES_ERROR;
@@ -166,7 +167,49 @@ final class DbConfigRepository implements ConfigRepository {
                 return names.stream();
             }
         } catch (final SQLException e) {
-            throw new RuntimeException(RECEIVED_CONFIGS_ERROR, e);
+            throw new RuntimeException(RECEIVED_CONFIG_NAMES_ERROR, e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Page findByName(final String name, final PageRequest pageRequest) {
+        try {
+            final String table = mapping.get(CONFIGS_TABLE);
+            final String sql = String.format(SQL.SELECT.CONFIG_NAMES_BY_NAME, table) +
+                    (pageRequest.isAscending() ? " ASC " : " DESC ") + "LIMIT " + pageRequest.getSize() +
+                    " OFFSET " + pageRequest.getPage() * pageRequest.getSize() + ";";
+            try (final Connection connection = dataSource.getConnection()) {
+                final int total = getCount(connection, table, name);
+                if (total > 0) {
+                    try (final PreparedStatement statement = connection.prepareStatement(sql)) {
+                        statement.setString(1, "%" + name + "%");
+
+                        try (final ResultSet resultSet = statement.executeQuery()) {
+                            final Collection<String> names = new LinkedList<>();
+                            while (resultSet.next()) {
+                                names.add(resultSet.getString(1));
+                            }
+
+                            return new Page.Builder().
+                                    page(pageRequest.getPage()).
+                                    total(total).
+                                    stream(names.stream()).
+                                    build();
+                        }
+                    }
+                }
+
+                return new Page.Builder().
+                        page(pageRequest.getPage()).
+                        total(total).
+                        stream(Stream.empty()).
+                        build();
+            }
+        } catch (final SQLException e) {
+            throw new RuntimeException(RECEIVED_CONFIG_NAMES_ERROR, e);
         }
     }
 
@@ -175,17 +218,18 @@ final class DbConfigRepository implements ConfigRepository {
      */
     @Override
     public Stream<Config> saveAndFlush(final Stream<Config> stream) {
+        Stream<Config> configs = Stream.empty();
         Connection connection = null;
         try {
             connection = JDBCUtils.open(dataSource);
-            return Arrays.stream(saveAndFlush(connection, stream.toArray(Config[]::new)));
+            configs = Arrays.stream(saveAndFlush(connection, stream.toArray(Config[]::new)));
         } catch (final SQLException e) {
             JDBCUtils.rollback(connection, e);
         } finally {
             JDBCUtils.close(connection);
         }
 
-        return Stream.empty();
+        return configs;
     }
 
     /**
@@ -193,17 +237,18 @@ final class DbConfigRepository implements ConfigRepository {
      */
     @Override
     public int delete(final Stream<String> stream) {
+        int deleted = 0;
         Connection connection = null;
         try {
             connection = JDBCUtils.open(dataSource);
-            return delete(connection, stream.toArray(String[]::new));
+            deleted = delete(connection, stream.toArray(String[]::new));
         } catch (final SQLException e) {
             JDBCUtils.rollback(connection, e);
         } finally {
             JDBCUtils.close(connection);
         }
 
-        return 0;
+        return deleted;
     }
 
     private Collection<Property> getLinkedProps(final Map<Long, Property> properties,
@@ -265,8 +310,9 @@ final class DbConfigRepository implements ConfigRepository {
     }
 
     private Config[] insert(final Connection connection, final Config[] configs) throws SQLException {
+        Config[] inserted = new Config[0];
         if (configs.length > 0) {
-            final Config[] inserted = new Config[configs.length];
+            inserted = new Config[configs.length];
             final String configsSql = String.format(SQL.INSERT.CONFIGS, mapping.get(CONFIGS_TABLE));
             try (final PreparedStatement statement =
                          connection.prepareStatement(configsSql, Statement.RETURN_GENERATED_KEYS)) {
@@ -307,11 +353,9 @@ final class DbConfigRepository implements ConfigRepository {
                     throw new SQLException(SAVE_CONFIGS_ERROR);
                 }
             }
-
-            return inserted;
         }
 
-        return new Config[0];
+        return inserted;
     }
 
     private void execute(final Connection connection, final String sql, final long id,
@@ -409,8 +453,9 @@ final class DbConfigRepository implements ConfigRepository {
     }
 
     private Config[] update(final Connection connection, final Config[] configs) throws SQLException {
+        Config[] updated = new Config[0];
         if (configs.length > 0) {
-            final Config[] updated = new Config[configs.length];
+            updated = new Config[configs.length];
             final String sql = String.format(SQL.UPDATE.CONFIGS, mapping.get(CONFIGS_TABLE));
             try (final PreparedStatement statement = connection.prepareStatement(sql)) {
                 final Collection<Throwable> exceptions = new LinkedList<>();
@@ -439,11 +484,9 @@ final class DbConfigRepository implements ConfigRepository {
 
                 JDBCUtils.execute(statement, configs.length, exceptions, SAVE_CONFIGS_ERROR);
             }
-
-            return updated;
         }
 
-        return new Config[0];
+        return updated;
     }
 
     private void updateConfig(final Connection connection, final String table, final long id,
@@ -611,19 +654,36 @@ final class DbConfigRepository implements ConfigRepository {
         return attributes;
     }
 
+    private int getCount(final Connection connection, final String table, final String name) throws SQLException {
+        int count = 0;
+        final String sql = String.format(SQL.SELECT.COUNT_CONFIG_NAMES_BY_NAME, table);
+        try (final PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, "%" + name + "%");
+
+            try (final ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    count = resultSet.getInt(1);
+                }
+            }
+        }
+
+        return count;
+    }
+
     private int getVersion(final Connection connection, final long id) throws SQLException {
+        int version = 0;
         final String sql = String.format(SQL.SELECT.VERSION, mapping.get(CONFIGS_TABLE));
         try (final PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
 
             try (final ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    return resultSet.getInt(1);
+                    version = resultSet.getInt(1);
                 }
             }
         }
 
-        return 0;
+        return version;
     }
 
     private int delete(final Connection connection, final String[] names) throws SQLException {
@@ -725,6 +785,10 @@ final class DbConfigRepository implements ConfigRepository {
 
             static final String CONFIG_NAMES =
                     "SELECT `C`.`NAME` FROM `%s` AS `C` ORDER BY `C`.`NAME`;";
+            static final String COUNT_CONFIG_NAMES_BY_NAME =
+                    "SELECT COUNT(`C`.`NAME`) FROM `%s` AS `C` WHERE `C`.`NAME` LIKE ?;";
+            static final String CONFIG_NAMES_BY_NAME =
+                    "SELECT `C`.`NAME` FROM `%s` AS `C` WHERE `C`.`NAME` LIKE ? ORDER BY `C`.`NAME`";
             static final String CONFIG_ATTRIBUTES =
                     "SELECT `CA`.`KEY`, `CA`.`VALUE` FROM `%s` AS `CA` WHERE `CA`.`CONFIG_ID` = ?;";
             static final String PROPERTY_ATTRIBUTES =
