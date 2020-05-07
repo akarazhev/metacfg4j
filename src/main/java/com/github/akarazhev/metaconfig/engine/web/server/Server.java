@@ -76,7 +76,7 @@ import static com.github.akarazhev.metaconfig.engine.web.server.Server.Settings.
  */
 public final class Server implements WebServer {
     private final static Logger LOGGER = Logger.getLogger(Server.class.getSimpleName());
-    private HttpsServer httpsServer;
+    private final HttpsServer httpsServer;
 
     /**
      * Settings constants for the web server.

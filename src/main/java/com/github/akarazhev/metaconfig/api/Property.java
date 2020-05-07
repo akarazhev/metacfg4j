@@ -298,11 +298,11 @@ public final class Property implements Configurable {
      */
     public final static class Builder {
         private final Map<String, String> attributes = new HashMap<>();
-        private String name;
+        private final String name;
         private final Collection<Property> properties = new LinkedList<>();
         private long id = 0;
-        private Type type;
-        private String value;
+        private final Type type;
+        private final String value;
         private long updated = Clock.systemDefaultZone().millis();
         private String caption;
         private String description;
