@@ -175,17 +175,18 @@ final class DbConfigRepository implements ConfigRepository {
      * {@inheritDoc}
      */
     @Override
-    public Page findByName(final String name, final PageRequest pageRequest) {
+    public ConfigPageResponse findByPageRequest(final ConfigPageRequest request) {
         try {
             final String table = mapping.get(CONFIGS_TABLE);
             final String sql = String.format(SQL.SELECT.CONFIG_NAMES_BY_NAME, table) +
-                    (pageRequest.isAscending() ? " ASC " : " DESC ") + "LIMIT " + pageRequest.getSize() +
-                    " OFFSET " + pageRequest.getPage() * pageRequest.getSize() + ";";
+                    (request.isAscending() ? " ASC " : " DESC ") +
+                    "LIMIT " + request.getSize() +
+                    " OFFSET " + request.getPage() * request.getSize() + ";";
             try (final Connection connection = dataSource.getConnection()) {
-                final int total = getCount(connection, table, name);
+                final int total = getCount(connection, table, request.getName());
                 if (total > 0) {
                     try (final PreparedStatement statement = connection.prepareStatement(sql)) {
-                        statement.setString(1, "%" + name + "%");
+                        statement.setString(1, "%" + request.getName() + "%");
 
                         try (final ResultSet resultSet = statement.executeQuery()) {
                             final Collection<String> names = new LinkedList<>();
@@ -193,19 +194,19 @@ final class DbConfigRepository implements ConfigRepository {
                                 names.add(resultSet.getString(1));
                             }
 
-                            return new Page.Builder().
-                                    page(pageRequest.getPage()).
+                            return new ConfigPageResponse.Builder().
+                                    page(request.getPage()).
                                     total(total).
-                                    stream(names.stream()).
+                                    names(names).
                                     build();
                         }
                     }
                 }
 
-                return new Page.Builder().
-                        page(pageRequest.getPage()).
+                return new ConfigPageResponse.Builder().
+                        page(request.getPage()).
                         total(total).
-                        stream(Stream.empty()).
+                        names(Collections.emptyList()).
                         build();
             }
         } catch (final SQLException e) {

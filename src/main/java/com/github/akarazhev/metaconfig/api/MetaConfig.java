@@ -55,6 +55,14 @@ public final class MetaConfig implements ConfigService, Closeable {
      * {@inheritDoc}
      */
     @Override
+    public ConfigPageResponse getNames(final ConfigPageRequest request) {
+        return configService.getNames(request);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Stream<Config> get() {
         return configService.get();
     }

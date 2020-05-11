@@ -11,6 +11,8 @@
 package com.github.akarazhev.metaconfig.engine.web;
 
 import com.github.akarazhev.metaconfig.api.Config;
+import com.github.akarazhev.metaconfig.api.ConfigPageRequest;
+import com.github.akarazhev.metaconfig.api.ConfigPageResponse;
 import com.github.akarazhev.metaconfig.api.ConfigService;
 import com.github.akarazhev.metaconfig.engine.web.server.Server;
 
@@ -80,6 +82,12 @@ public final class WebServers {
             @Override
             public Stream<String> getNames() {
                 return dataStorage.keySet().stream().sorted();
+            }
+
+            @Override
+            public ConfigPageResponse getNames(final ConfigPageRequest request) {
+                // TODO
+                return null;
             }
 
             /**

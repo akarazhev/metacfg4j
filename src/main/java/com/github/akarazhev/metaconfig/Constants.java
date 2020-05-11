@@ -66,9 +66,12 @@ public final class Constants {
         public static final String CREATE_UTILS_CLASS_ERROR = "Utils class can not be created.";
         public static final String META_CONFIG_ERROR = "MetaConfig can not be instantiated.";
         public static final String STRING_TO_JSON_ERROR = "String can not be parsed to JSON.";
-        public static final String WRONG_ID_VALUE = "Id value must be grater zero.";
-        public static final String WRONG_VERSION_VALUE = "Version value must be grater zero.";
-        public static final String WRONG_UPDATED_VALUE = "Updated value must be grater zero.";
+        public static final String WRONG_ID_VALUE = "Id value must be greater than zero.";
+        public static final String WRONG_VERSION_VALUE = "Version value must be greater than zero.";
+        public static final String WRONG_UPDATED_VALUE = "Updated value must be greater than zero.";
+        public static final String WRONG_PAGE_VALUE = "Page value must be greater or equal to zero.";
+        public static final String WRONG_TOTAL_VALUE = "Total value must be greater or equal to zero.";
+        public static final String WRONG_SIZE_VALUE = "Size value must be greater or equal to zero.";
         public static final String WRONG_CONFIG_NAME = "Config name is wrong.";
         public static final String REQUEST_SEND_ERROR = "Request can not be sent.";
         public static final String SERVER_STARTED = "Server started.";
