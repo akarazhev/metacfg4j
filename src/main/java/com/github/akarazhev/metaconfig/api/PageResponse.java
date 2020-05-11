@@ -23,12 +23,12 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_TOTAL_VAL
 /**
  * The configuration page response that contains a page number, total and names.
  */
-public final class ConfigPageResponse {
+public final class PageResponse {
     private final int page;
     private final int total;
     private final Collection<String> names;
 
-    private ConfigPageResponse(final Builder builder) {
+    private PageResponse(final Builder builder) {
         this.page = builder.page;
         this.total = builder.total;
         this.names = builder.names;
@@ -68,7 +68,7 @@ public final class ConfigPageResponse {
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        final ConfigPageResponse response = (ConfigPageResponse) o;
+        final PageResponse response = (PageResponse) o;
         return page == response.page &&
                 total == response.total &&
                 names.equals(response.names);
@@ -87,7 +87,7 @@ public final class ConfigPageResponse {
      */
     @Override
     public String toString() {
-        return "ConfigPage{" +
+        return "PageResponse{" +
                 "page=" + page +
                 ", total=" + total +
                 ", names=" + names +
@@ -150,8 +150,8 @@ public final class ConfigPageResponse {
          *
          * @return a builder of the configuration page response model.
          */
-        public ConfigPageResponse build() {
-            return new ConfigPageResponse(this);
+        public PageResponse build() {
+            return new PageResponse(this);
         }
     }
 }

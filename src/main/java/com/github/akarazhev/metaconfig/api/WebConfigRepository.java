@@ -92,7 +92,7 @@ final class WebConfigRepository implements ConfigRepository {
      * {@inheritDoc}
      */
     @Override
-    public ConfigPageResponse findByPageRequest(final ConfigPageRequest request) {
+    public PageResponse findByPageRequest(final PageRequest request) {
         // TODO:
         return null;
     }

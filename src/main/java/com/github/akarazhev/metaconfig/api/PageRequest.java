@@ -12,22 +12,28 @@ package com.github.akarazhev.metaconfig.api;
 
 import com.github.akarazhev.metaconfig.extension.Validator;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_PAGE_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_SIZE_VALUE;
 
 /**
- * The configuration page request model that contains a name, page number, size and sorting property.
+ * The configuration page request model that contains a name, attributes, page number, size and sorting property.
  */
-public final class ConfigPageRequest {
+public final class PageRequest {
     private final String name;
+    private final Map<String, String> attributes;
     private final int page;
     private final int size;
     private final boolean ascending;
 
-    private ConfigPageRequest(final Builder builder) {
+    private PageRequest(final Builder builder) {
         this.name = builder.name;
+        this.attributes = builder.attributes;
         this.page = builder.page;
         this.size = builder.size;
         this.ascending = builder.ascending;
@@ -40,6 +46,15 @@ public final class ConfigPageRequest {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Returns configuration attributes.
+     *
+     * @return attributes as a map.
+     */
+    public Optional<Map<String, String>> getAttributes() {
+        return Optional.of(Collections.unmodifiableMap(attributes));
     }
 
     /**
@@ -76,11 +91,12 @@ public final class ConfigPageRequest {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        final ConfigPageRequest request = (ConfigPageRequest) o;
+        final PageRequest request = (PageRequest) o;
         return page == request.page &&
                 size == request.size &&
                 ascending == request.ascending &&
-                name.equals(request.name);
+                Objects.equals(name, request.name) &&
+                Objects.equals(attributes, request.attributes);
     }
 
     /**
@@ -88,7 +104,7 @@ public final class ConfigPageRequest {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(name, page, size, ascending);
+        return Objects.hash(name, attributes, page, size, ascending);
     }
 
     /**
@@ -96,8 +112,9 @@ public final class ConfigPageRequest {
      */
     @Override
     public String toString() {
-        return "ConfigPageRequest{" +
+        return "PageRequest{" +
                 "name='" + name + '\'' +
+                ", attributes=" + attributes +
                 ", page=" + page +
                 ", size=" + size +
                 ", ascending=" + ascending +
@@ -109,6 +126,7 @@ public final class ConfigPageRequest {
      */
     final static class Builder {
         private final String name;
+        private final Map<String, String> attributes = new HashMap<>();
         private int page = 0;
         private int size = Integer.MAX_VALUE;
         private boolean ascending = true;
@@ -120,6 +138,29 @@ public final class ConfigPageRequest {
          */
         public Builder(final String name) {
             this.name = Validator.of(name).get();
+        }
+
+        /**
+         * Constructs a configuration page request model with an attribute.
+         *
+         * @param key   a key of the attribute.
+         * @param value a value of the attribute.
+         * @return a builder of the configuration page request model.
+         */
+        public Builder attribute(final String key, final String value) {
+            this.attributes.put(Validator.of(key).get(), Validator.of(value).get());
+            return this;
+        }
+
+        /**
+         * Constructs a configuration page request model with attributes.
+         *
+         * @param attributes configuration attributes.
+         * @return a builder of the configuration page request model.
+         */
+        public Builder attributes(final Map<String, String> attributes) {
+            this.attributes.putAll(Validator.of(attributes).get());
+            return this;
         }
 
         /**
@@ -170,8 +211,8 @@ public final class ConfigPageRequest {
          *
          * @return a builder of the configuration page request model.
          */
-        public ConfigPageRequest build() {
-            return new ConfigPageRequest(this);
+        public PageRequest build() {
+            return new PageRequest(this);
         }
     }
 }

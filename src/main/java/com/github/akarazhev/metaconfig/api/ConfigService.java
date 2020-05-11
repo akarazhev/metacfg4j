@@ -38,7 +38,7 @@ public interface ConfigService {
      * @param request a configuration page request that has parameters: page, size, ascending.
      * @return a page with configuration names.
      */
-    ConfigPageResponse getNames(final ConfigPageRequest request);
+    PageResponse getNames(final PageRequest request);
 
     /**
      * Returns all configuration models.

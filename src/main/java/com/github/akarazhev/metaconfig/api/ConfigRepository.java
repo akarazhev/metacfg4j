@@ -37,7 +37,7 @@ interface ConfigRepository {
      * @param request a configuration page request that has parameters: name, page, size, ascending.
      * @return a page response with configuration names.
      */
-    ConfigPageResponse findByPageRequest(final ConfigPageRequest request);
+    PageResponse findByPageRequest(final PageRequest request);
 
     /**
      * Saves and flushes configuration models.

@@ -163,7 +163,7 @@ final class DbConfigRepositoryTest extends UnitTest {
     @Test
     @DisplayName("Find config names by a page request")
     void findByPageRequest() {
-        final ConfigPageResponse page = configRepository.findByPageRequest(new ConfigPageRequest.Builder(CONFIG).build());
+        final PageResponse page = configRepository.findByPageRequest(new PageRequest.Builder(CONFIG).build());
         // Check test results
         assertEquals(0, page.getPage());
         assertEquals(2, page.getTotal());
@@ -176,12 +176,12 @@ final class DbConfigRepositoryTest extends UnitTest {
     @Test
     @DisplayName("Find config names by a name, page, size and sorting")
     void findByNameAndPageAndSizeAndSorting() {
-        final ConfigPageRequest request = new ConfigPageRequest.Builder(CONFIG).
+        final PageRequest request = new PageRequest.Builder(CONFIG).
                 page(1).
                 size(1).
                 ascending(false).
                 build();
-        final ConfigPageResponse page = configRepository.findByPageRequest(request);
+        final PageResponse page = configRepository.findByPageRequest(request);
         // Check test results
         assertEquals(1, page.getPage());
         assertEquals(2, page.getTotal());
@@ -193,7 +193,7 @@ final class DbConfigRepositoryTest extends UnitTest {
     @Test
     @DisplayName("Find config names by a wrong name")
     void findByWrongName() {
-        final ConfigPageResponse page = configRepository.findByPageRequest(new ConfigPageRequest.Builder(NEW_CONFIG).build());
+        final PageResponse page = configRepository.findByPageRequest(new PageRequest.Builder(NEW_CONFIG).build());
         // Check test results
         assertEquals(0, page.getPage());
         assertEquals(0, page.getTotal());
@@ -206,7 +206,7 @@ final class DbConfigRepositoryTest extends UnitTest {
         dropTables();
         // Check test results
         assertThrows(RuntimeException.class, () ->
-                configRepository.findByPageRequest(new ConfigPageRequest.Builder(FIRST_CONFIG).build()));
+                configRepository.findByPageRequest(new PageRequest.Builder(FIRST_CONFIG).build()));
         createRepository();
     }
 
@@ -216,7 +216,7 @@ final class DbConfigRepositoryTest extends UnitTest {
         connectionPool.close();
         // Check test results
         assertThrows(RuntimeException.class, () ->
-                configRepository.findByPageRequest(new ConfigPageRequest.Builder(FIRST_CONFIG).build()));
+                configRepository.findByPageRequest(new PageRequest.Builder(FIRST_CONFIG).build()));
         connectionPool = ConnectionPools.newPool();
         configRepository = new DbConfigRepository.Builder(connectionPool.getDataSource()).build();
     }

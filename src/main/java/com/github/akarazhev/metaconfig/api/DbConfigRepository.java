@@ -175,7 +175,7 @@ final class DbConfigRepository implements ConfigRepository {
      * {@inheritDoc}
      */
     @Override
-    public ConfigPageResponse findByPageRequest(final ConfigPageRequest request) {
+    public PageResponse findByPageRequest(final PageRequest request) {
         try {
             final String table = mapping.get(CONFIGS_TABLE);
             final String sql = String.format(SQL.SELECT.CONFIG_NAMES_BY_NAME, table) +
@@ -194,7 +194,7 @@ final class DbConfigRepository implements ConfigRepository {
                                 names.add(resultSet.getString(1));
                             }
 
-                            return new ConfigPageResponse.Builder().
+                            return new PageResponse.Builder().
                                     page(request.getPage()).
                                     total(total).
                                     names(names).
@@ -203,7 +203,7 @@ final class DbConfigRepository implements ConfigRepository {
                     }
                 }
 
-                return new ConfigPageResponse.Builder().
+                return new PageResponse.Builder().
                         page(request.getPage()).
                         total(total).
                         names(Collections.emptyList()).
