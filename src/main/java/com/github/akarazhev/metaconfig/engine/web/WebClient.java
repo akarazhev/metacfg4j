@@ -215,7 +215,7 @@ public final class WebClient {
      * Wraps and builds the instance of the web client.
      */
     public final static class Builder {
-        private Config config;
+        private final Config config;
 
         /**
          * Constructs the a client based on the configuration.
