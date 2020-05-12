@@ -50,11 +50,11 @@ final class ConfigTest extends UnitTest {
     void createConfigException() {
         // Check test results
         assertThrows(IllegalArgumentException.class,
-                () -> new Config.Builder("Config", Collections.emptyList()).id(0).build());
+                () -> new Config.Builder("Config", Collections.emptyList()).id(0));
         assertThrows(IllegalArgumentException.class,
-                () -> new Config.Builder("Config", Collections.emptyList()).version(0).build());
+                () -> new Config.Builder("Config", Collections.emptyList()).version(0));
         assertThrows(IllegalArgumentException.class,
-                () -> new Config.Builder("Config", Collections.emptyList()).updated(0).build());
+                () -> new Config.Builder("Config", Collections.emptyList()).updated(0));
     }
 
     @Test
