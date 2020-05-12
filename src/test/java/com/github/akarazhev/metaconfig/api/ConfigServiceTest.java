@@ -144,6 +144,31 @@ final class ConfigServiceTest extends UnitTest {
     }
 
     @Test
+    @DisplayName("Get config names by a page request")
+    void getNamesByPageRequest() {
+        final PageResponse page = configService.getNames(new PageRequest.Builder(CONFIG).build());
+        // Check test results
+        assertEquals(0, page.getPage());
+        assertEquals(2, page.getTotal());
+        final String[] names = page.getNames().toArray(String[]::new);
+        assertEquals(2, names.length);
+        assertEquals(FIRST_CONFIG, names[0]);
+        assertEquals(SECOND_CONFIG, names[1]);
+    }
+
+    @Test
+    @DisplayName("Get config names by a page request with the closed connection pool")
+    void getNamesByPageRequestWithClosedConnectionPool() throws IOException {
+        connectionPool.close();
+        // Check test results
+        assertThrows(RuntimeException.class, () -> configService.getNames(new PageRequest.Builder(CONFIG).build()));
+        connectionPool = ConnectionPools.newPool();
+        final ConfigRepository configRepository =
+                new DbConfigRepository.Builder(connectionPool.getDataSource()).build();
+        configService = new ConfigServiceImpl.Builder(configRepository).build();
+    }
+
+    @Test
     @DisplayName("Get configs")
     void getConfigs() {
         final Config[] configs = configService.get().toArray(Config[]::new);
