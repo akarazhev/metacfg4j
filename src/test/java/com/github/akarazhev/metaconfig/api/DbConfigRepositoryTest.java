@@ -161,6 +161,84 @@ final class DbConfigRepositoryTest extends UnitTest {
     }
 
     @Test
+    @DisplayName("Find config names by a page request")
+    void findByPageRequest() {
+        final PageResponse page = configRepository.findByPageRequest(new PageRequest.Builder(CONFIG).build());
+        // Check test results
+        assertEquals(0, page.getPage());
+        assertEquals(2, page.getTotal());
+        final String[] names = page.getNames().toArray(String[]::new);
+        assertEquals(2, names.length);
+        assertEquals(FIRST_CONFIG, names[0]);
+        assertEquals(SECOND_CONFIG, names[1]);
+    }
+
+    @Test
+    @DisplayName("Find config names by a page request")
+    void findByPageRequestAndAttributes() {
+        final PageRequest request = new PageRequest.Builder(CONFIG).
+                attributes(Collections.singletonMap("key", "value")).
+                build();
+        final PageResponse page = configRepository.findByPageRequest(request);
+        // Check test results
+        assertEquals(0, page.getPage());
+        assertEquals(2, page.getTotal());
+        final String[] names = page.getNames().toArray(String[]::new);
+        assertEquals(2, names.length);
+        assertEquals(FIRST_CONFIG, names[0]);
+        assertEquals(SECOND_CONFIG, names[1]);
+    }
+
+    @Test
+    @DisplayName("Find config names by a name, page, size and sorting")
+    void findByNameAndPageAndSizeAndSorting() {
+        final PageRequest request = new PageRequest.Builder(CONFIG).
+                page(1).
+                size(1).
+                attribute("key", "value").
+                ascending(false).
+                build();
+        final PageResponse page = configRepository.findByPageRequest(request);
+        // Check test results
+        assertEquals(1, page.getPage());
+        assertEquals(2, page.getTotal());
+        final String[] names = page.getNames().toArray(String[]::new);
+        assertEquals(1, names.length);
+        assertEquals(FIRST_CONFIG, names[0]);
+    }
+
+    @Test
+    @DisplayName("Find config names by a wrong name")
+    void findByWrongName() {
+        final PageResponse page = configRepository.findByPageRequest(new PageRequest.Builder(NEW_CONFIG).build());
+        // Check test results
+        assertEquals(0, page.getPage());
+        assertEquals(0, page.getTotal());
+        assertEquals(0, page.getNames().count());
+    }
+
+    @Test
+    @DisplayName("Find config names by name with not existed tables")
+    void findByNameWithNotExistedTables() throws SQLException {
+        dropTables();
+        // Check test results
+        assertThrows(RuntimeException.class, () ->
+                configRepository.findByPageRequest(new PageRequest.Builder(FIRST_CONFIG).build()));
+        createRepository();
+    }
+
+    @Test
+    @DisplayName("Find config names by name with the closed connection pool")
+    void findByNameWithClosedConnectionPool() throws IOException {
+        connectionPool.close();
+        // Check test results
+        assertThrows(RuntimeException.class, () ->
+                configRepository.findByPageRequest(new PageRequest.Builder(FIRST_CONFIG).build()));
+        connectionPool = ConnectionPools.newPool();
+        configRepository = new DbConfigRepository.Builder(connectionPool.getDataSource()).build();
+    }
+
+    @Test
     @DisplayName("Save and flush a new config with properties")
     void saveAndFlushNewConfigWithProperties() {
         final Optional<Config> newConfig =

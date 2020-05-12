@@ -198,7 +198,7 @@ public final class Config implements Configurable {
      */
     public final static class Builder {
         private final Map<String, String> attributes = new HashMap<>();
-        private String name;
+        private final String name;
         private final Collection<Property> properties = new LinkedList<>();
         private long id = 0;
         private int version = 1;

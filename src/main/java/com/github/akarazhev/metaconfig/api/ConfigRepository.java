@@ -32,6 +32,14 @@ interface ConfigRepository {
     Stream<String> findNames();
 
     /**
+     * Returns selected configuration names by a configuration page request.
+     *
+     * @param request a configuration page request that has parameters: name, page, size, ascending.
+     * @return a page response with configuration names.
+     */
+    PageResponse findByPageRequest(final PageRequest request);
+
+    /**
      * Saves and flushes configuration models.
      *
      * @param stream a stream of configuration models.

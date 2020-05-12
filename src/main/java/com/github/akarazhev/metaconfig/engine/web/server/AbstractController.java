@@ -15,6 +15,7 @@ import com.github.akarazhev.metaconfig.extension.URLUtils;
 import com.github.akarazhev.metaconfig.extension.Validator;
 import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonException;
+import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -41,6 +42,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 abstract class AbstractController {
     private final static Logger LOGGER = Logger.getLogger(AbstractController.class.getSimpleName());
     final static String REQ_PARAM_NAMES = "names";
+    final static String REQ_PARAM_PAGE_REQUEST = "page_request";
     final String apiPath;
     final ConfigService configService;
 
@@ -114,6 +116,18 @@ abstract class AbstractController {
     Stream<String> getValues(final String param) throws JsonException {
         final String json = new String(Base64.getDecoder().decode(param), StandardCharsets.UTF_8);
         return ((JsonArray) Jsoner.deserialize(json)).stream().map(Objects::toString);
+    }
+
+    /**
+     * Returns a value belongs to the param.
+     *
+     * @param param a param to get a value of.
+     * @return a json value.
+     * @throws JsonException when a parser encounters a problem.
+     */
+    JsonObject getValue(final String param) throws JsonException {
+        final String json = new String(Base64.getDecoder().decode(param), StandardCharsets.UTF_8);
+        return (JsonObject) Jsoner.deserialize(json);
     }
 
     /**

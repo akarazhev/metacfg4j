@@ -66,9 +66,13 @@ public final class Constants {
         public static final String CREATE_UTILS_CLASS_ERROR = "Utils class can not be created.";
         public static final String META_CONFIG_ERROR = "MetaConfig can not be instantiated.";
         public static final String STRING_TO_JSON_ERROR = "String can not be parsed to JSON.";
-        public static final String WRONG_ID_VALUE = "Id value must be grater zero.";
-        public static final String WRONG_VERSION_VALUE = "Version value must be grater zero.";
-        public static final String WRONG_UPDATED_VALUE = "Updated value must be grater zero.";
+        public static final String WRONG_ID_VALUE = "Id value must be greater than zero.";
+        public static final String WRONG_VERSION_VALUE = "Version value must be greater than zero.";
+        public static final String WRONG_UPDATED_VALUE = "Updated value must be greater than zero.";
+        public static final String WRONG_PAGE_VALUE = "Page value must be greater or equal to zero.";
+        public static final String WRONG_TOTAL_VALUE = "Total value must be greater or equal to zero.";
+        public static final String WRONG_SIZE_VALUE = "Size value must be greater or equal to zero.";
+        public static final String EMPTY_ASCENDING_VALUE = "Ascending must be set.";
         public static final String WRONG_CONFIG_NAME = "Config name is wrong.";
         public static final String REQUEST_SEND_ERROR = "Request can not be sent.";
         public static final String SERVER_STARTED = "Server started.";
@@ -85,6 +89,8 @@ public final class Constants {
         public static final String UPDATE_ATTRIBUTES_ERROR = "Attributes can not be updated.";
         public static final String SAVE_PROPERTIES_ERROR = "Propert(y/ies) instances can not be saved.";
         public static final String RECEIVED_CONFIGS_ERROR = "Config instances can not be received.";
+        public static final String RECEIVED_CONFIG_NAMES_ERROR = "Config names can not be received.";
+        public static final String RECEIVED_PAGE_RESPONSE_ERROR = "Page response can not be received.";
         public static final String DELETE_CONFIGS_ERROR = "Config(s) can not be deleted.";
         public static final String DB_ERROR = "Database error.";
         public static final String DB_ROLLBACK_ERROR = "Database rollback error.";

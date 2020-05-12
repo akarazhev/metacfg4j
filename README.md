@@ -24,7 +24,7 @@ Add a maven dependency into your project:
 <dependency>
     <groupId>com.github.akarazhev</groupId>
     <artifactId>metacfg4j</artifactId>
-    <version>1.9</version>
+    <version>1.10</version>
 </dependency>
 ```
 Instantiate the meta configuration class in your project with the default configuration:
@@ -142,6 +142,14 @@ public interface ConfigService {
     Stream<String> getNames();
 
     /**
+     * Returns selected configuration names by a config page request.
+     *
+     * @param request a configuration page request that has parameters: page, size, ascending.
+     * @return a page with configuration names.
+     */
+    PageResponse getNames(final PageRequest request);
+
+    /**
      * Returns all configuration models.
      *
      * @return a stream of configurations models.
@@ -186,6 +194,8 @@ The REST API is available by the https protocol:
 
 `POST api/metacfg/accept_config/CONFIG_NAMES_IN_BASE64` - calls the logic for configs. <br/>
 `GET api/metacfg/config_names` - returns a list of config names. <br/>
+`GET api/metacfg/config_names?page_request=CONFIG_NAMES_IN_BASE64` - returns a page response based on a page request that 
+has a list of config names and pagination settings. <br/>
 `GET api/metacfg/config?names=CONFIG_NAMES_IN_BASE64` - returns a list of configs. <br/>
 `PUT api/metacfg/config` - creates or updates a config. <br/>
 `DELETE api/metacfg/config?names=CONFIG_NAMES_IN_BASE64` - removes a list of configs. <br/>

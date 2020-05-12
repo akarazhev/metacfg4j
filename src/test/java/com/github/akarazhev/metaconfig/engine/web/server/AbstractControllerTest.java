@@ -12,6 +12,8 @@ package com.github.akarazhev.metaconfig.engine.web.server;
 
 import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.ConfigService;
+import com.github.akarazhev.metaconfig.api.PageRequest;
+import com.github.akarazhev.metaconfig.api.PageResponse;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpExchange;
@@ -50,6 +52,14 @@ final class AbstractControllerTest {
          */
         @Override
         public Stream<String> getNames() {
+            return null;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public PageResponse getNames(final PageRequest request) {
             return null;
         }
 

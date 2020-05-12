@@ -44,6 +44,14 @@ final class ConfigServiceImpl implements ConfigService {
      * {@inheritDoc}
      */
     @Override
+    public PageResponse getNames(final PageRequest request) {
+        return configRepository.findByPageRequest(request);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Stream<Config> get() {
         return get(getNames());
     }

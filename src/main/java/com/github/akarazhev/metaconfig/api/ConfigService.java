@@ -33,6 +33,14 @@ public interface ConfigService {
     Stream<String> getNames();
 
     /**
+     * Returns selected configuration names by a config page request.
+     *
+     * @param request a configuration page request that has parameters: page, size, ascending.
+     * @return a page with configuration names.
+     */
+    PageResponse getNames(final PageRequest request);
+
+    /**
      * Returns all configuration models.
      *
      * @return a stream of configurations models.

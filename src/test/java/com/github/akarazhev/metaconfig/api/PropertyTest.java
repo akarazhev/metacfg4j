@@ -60,9 +60,9 @@ final class PropertyTest extends UnitTest {
     void createPropertyException() {
         // Check test results
         assertThrows(IllegalArgumentException.class,
-                () -> new Property.Builder("Value", 0).id(0).build());
+                () -> new Property.Builder("Value", 0).id(0));
         assertThrows(IllegalArgumentException.class,
-                () -> new Property.Builder("Value", 0).updated(0).build());
+                () -> new Property.Builder("Value", 0).updated(0));
     }
 
     @Test

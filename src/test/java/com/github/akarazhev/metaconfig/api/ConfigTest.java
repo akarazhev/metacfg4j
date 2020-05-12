@@ -33,9 +33,9 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Create a config")
     void createConfig() {
-        final Config config = new Config.Builder("Config", Collections.emptyList()).build();
+        final Config config = new Config.Builder(CONFIG, Collections.emptyList()).build();
         // Check test results
-        assertEquals("Config", config.getName());
+        assertEquals(CONFIG, config.getName());
         assertFalse(config.getDescription().isPresent());
         assertEquals(1, config.getVersion());
         assertTrue(config.getUpdated() > 0);
@@ -50,11 +50,11 @@ final class ConfigTest extends UnitTest {
     void createConfigException() {
         // Check test results
         assertThrows(IllegalArgumentException.class,
-                () -> new Config.Builder("Config", Collections.emptyList()).id(0).build());
+                () -> new Config.Builder(CONFIG, Collections.emptyList()).id(0));
         assertThrows(IllegalArgumentException.class,
-                () -> new Config.Builder("Config", Collections.emptyList()).version(0).build());
+                () -> new Config.Builder(CONFIG, Collections.emptyList()).version(0));
         assertThrows(IllegalArgumentException.class,
-                () -> new Config.Builder("Config", Collections.emptyList()).updated(0).build());
+                () -> new Config.Builder(CONFIG, Collections.emptyList()).updated(0));
     }
 
     @Test
@@ -63,7 +63,7 @@ final class ConfigTest extends UnitTest {
         final Config config = getConfig(Collections.singletonList(getProperty()));
         // Check test results
         assertEquals(100, config.getId());
-        assertEquals("Config", config.getName());
+        assertEquals(CONFIG, config.getName());
         assertTrue(config.getDescription().isPresent());
         assertEquals("Description", config.getDescription().get());
         assertEquals(2, config.getVersion());
@@ -110,7 +110,7 @@ final class ConfigTest extends UnitTest {
     @DisplayName("Compare two configs")
     void compareTwoConfigs() {
         final Property firstProperty = new Property.Builder("Property-1", "Value-1").build();
-        final Config firstConfig = new Config.Builder("Config", Collections.singletonList(firstProperty)).
+        final Config firstConfig = new Config.Builder(CONFIG, Collections.singletonList(firstProperty)).
                 id(1).
                 description("Description").
                 version(1).
@@ -120,7 +120,7 @@ final class ConfigTest extends UnitTest {
                 property(new String[0], new Property.Builder("Property-2", "Value-2").build()).
                 build();
         final Property secondProperty = new Property.Builder("Property-1", "Value-1").build();
-        final Config secondConfig = new Config.Builder("Config", Collections.singletonList(secondProperty)).
+        final Config secondConfig = new Config.Builder(CONFIG, Collections.singletonList(secondProperty)).
                 id(1).
                 description("Description").
                 version(1).
@@ -136,8 +136,8 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Check hash codes of two configs")
     void checkHashCodesOfTwoConfigs() {
-        final Config firstConfig = new Config.Builder("Config", Collections.emptyList()).build();
-        final Config secondConfig = new Config.Builder("Config", Collections.emptyList()).build();
+        final Config firstConfig = new Config.Builder(CONFIG, Collections.emptyList()).build();
+        final Config secondConfig = new Config.Builder(CONFIG, Collections.emptyList()).build();
         // Check test results
         assertEquals(firstConfig.hashCode(), secondConfig.hashCode());
     }
@@ -145,8 +145,8 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Check toString() of two configs")
     void checkToStringOfTwoConfigs() {
-        final Config firstConfig = new Config.Builder("Config", Collections.emptyList()).build();
-        final Config secondConfig = new Config.Builder("Config", Collections.emptyList()).build();
+        final Config firstConfig = new Config.Builder(CONFIG, Collections.emptyList()).build();
+        final Config secondConfig = new Config.Builder(CONFIG, Collections.emptyList()).build();
         // Check test results
         assertEquals(firstConfig.toString(), secondConfig.toString());
     }

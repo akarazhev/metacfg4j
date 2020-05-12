@@ -130,6 +130,19 @@ final class WebConfigRepositoryTest extends UnitTest {
     }
 
     @Test
+    @DisplayName("Find config names by a page request")
+    void findByPageRequest() {
+        final PageResponse page = configRepository.findByPageRequest(new PageRequest.Builder(CONFIG).build());
+        // Check test results
+        assertEquals(0, page.getPage());
+        assertEquals(2, page.getTotal());
+        final String[] names = page.getNames().toArray(String[]::new);
+        assertEquals(2, names.length);
+        assertEquals(FIRST_CONFIG, names[0]);
+        assertEquals(SECOND_CONFIG, names[1]);
+    }
+
+    @Test
     @DisplayName("Save and flush a new config")
     void saveAndFlushNewConfig() {
         final Optional<Config> newConfig =

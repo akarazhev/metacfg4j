@@ -33,9 +33,10 @@ public class UnitTest {
     protected static final String FIRST_CONFIG = "The First Config";
     protected static final String SECOND_CONFIG = "The Second Config";
     protected static final String NEW_CONFIG = "New Config";
+    protected static final String CONFIG = "Config";
 
     protected Config getConfig(final Collection<Property> properties) {
-        return new Config.Builder("Config", properties).
+        return new Config.Builder(CONFIG, properties).
                 id(100).
                 description("Description").
                 version(2).

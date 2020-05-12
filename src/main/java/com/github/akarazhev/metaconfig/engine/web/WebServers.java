@@ -12,15 +12,20 @@ package com.github.akarazhev.metaconfig.engine.web;
 
 import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.ConfigService;
+import com.github.akarazhev.metaconfig.api.PageRequest;
+import com.github.akarazhev.metaconfig.api.PageResponse;
 import com.github.akarazhev.metaconfig.engine.web.server.Server;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_FACTORY_CLASS_ERROR;
@@ -82,6 +87,34 @@ public final class WebServers {
                 return dataStorage.keySet().stream().sorted();
             }
 
+            @Override
+            public PageResponse getNames(final PageRequest request) {
+                final List<String> data = dataStorage.values().stream().
+                        filter(config -> {
+                            if (config.getName().toLowerCase().contains(request.getName().toLowerCase())) {
+                                if (config.getAttributes().isPresent()) {
+                                    return contains(request.getAttributes(), config.getAttributes().get());
+                                }
+
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        }).
+                        map(Config::getName).
+                        sorted(request.isAscending() ? String::compareTo : Collections.reverseOrder()).
+                        collect(Collectors.toList());
+                final int size = Math.min(request.getSize(), data.size());
+                final Collection<String> names = data.size() > 0 ?
+                        data.subList(request.getPage() * size, size) :
+                        Collections.emptyList();
+
+                return new PageResponse.Builder(names).
+                        page(request.getPage()).
+                        total(names.size()).
+                        build();
+            }
+
             /**
              * {@inheritDoc}
              */
@@ -132,6 +165,25 @@ public final class WebServers {
             @Override
             public void addConsumer(final Consumer<Config> consumer) {
                 this.consumer = consumer;
+            }
+
+            private boolean contains(final Map<String, String> filter, final Map<String, String> data) {
+                if (filter.size() > 0) {
+                    for (final String dataKey : data.keySet()) {
+                        final String dataValue = data.get(dataKey);
+                        for (final String filterKey : filter.keySet()) {
+                            final String filterValue = filter.get(filterKey);
+                            if (dataKey.toLowerCase().contains(filterKey.toLowerCase()) &&
+                                    dataValue.toLowerCase().contains(filterValue.toLowerCase())) {
+                                return true;
+                            }
+                        }
+                    }
+
+                    return false;
+                }
+
+                return true;
             }
         });
     }
