@@ -166,6 +166,21 @@ final class MetaConfigTest extends UnitTest {
     }
 
     @Test
+    @DisplayName("Get config names by a page request")
+    void getNamesByPageRequest() {
+        final PageResponse dbPageResponse = dbMetaConfig.getNames(new PageRequest.Builder(CONFIG).build());
+        // Check test results
+        assertEquals(0, dbPageResponse.getPage());
+        assertEquals(2, dbPageResponse.getTotal());
+        assertEqualsNames(dbPageResponse.getNames().toArray(String[]::new));
+        final PageResponse webPageResponse = webMetaConfig.getNames(new PageRequest.Builder(CONFIG).build());
+        // Check test results
+        assertEquals(0, webPageResponse.getPage());
+        assertEquals(2, webPageResponse.getTotal());
+        assertEqualsNames(webPageResponse.getNames().toArray(String[]::new));
+    }
+
+    @Test
     @DisplayName("Get configs")
     void getConfigs() {
         assertEqualsNames(dbMetaConfig.get().toArray(Config[]::new));
