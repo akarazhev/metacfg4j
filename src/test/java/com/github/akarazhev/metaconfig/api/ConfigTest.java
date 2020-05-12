@@ -33,9 +33,9 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Create a config")
     void createConfig() {
-        final Config config = new Config.Builder("Config", Collections.emptyList()).build();
+        final Config config = new Config.Builder(CONFIG, Collections.emptyList()).build();
         // Check test results
-        assertEquals("Config", config.getName());
+        assertEquals(CONFIG, config.getName());
         assertFalse(config.getDescription().isPresent());
         assertEquals(1, config.getVersion());
         assertTrue(config.getUpdated() > 0);
@@ -50,11 +50,11 @@ final class ConfigTest extends UnitTest {
     void createConfigException() {
         // Check test results
         assertThrows(IllegalArgumentException.class,
-                () -> new Config.Builder("Config", Collections.emptyList()).id(0));
+                () -> new Config.Builder(CONFIG, Collections.emptyList()).id(0));
         assertThrows(IllegalArgumentException.class,
-                () -> new Config.Builder("Config", Collections.emptyList()).version(0));
+                () -> new Config.Builder(CONFIG, Collections.emptyList()).version(0));
         assertThrows(IllegalArgumentException.class,
-                () -> new Config.Builder("Config", Collections.emptyList()).updated(0));
+                () -> new Config.Builder(CONFIG, Collections.emptyList()).updated(0));
     }
 
     @Test

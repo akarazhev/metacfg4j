@@ -167,7 +167,23 @@ final class DbConfigRepositoryTest extends UnitTest {
         // Check test results
         assertEquals(0, page.getPage());
         assertEquals(2, page.getTotal());
-        final String[] names = page.getStream().toArray(String[]::new);
+        final String[] names = page.getNames().toArray(String[]::new);
+        assertEquals(2, names.length);
+        assertEquals(FIRST_CONFIG, names[0]);
+        assertEquals(SECOND_CONFIG, names[1]);
+    }
+
+    @Test
+    @DisplayName("Find config names by a page request")
+    void findByPageRequestAndAttributes() {
+        final PageRequest request = new PageRequest.Builder(CONFIG).
+                attributes(Collections.singletonMap("key", "value")).
+                build();
+        final PageResponse page = configRepository.findByPageRequest(request);
+        // Check test results
+        assertEquals(0, page.getPage());
+        assertEquals(2, page.getTotal());
+        final String[] names = page.getNames().toArray(String[]::new);
         assertEquals(2, names.length);
         assertEquals(FIRST_CONFIG, names[0]);
         assertEquals(SECOND_CONFIG, names[1]);
@@ -179,13 +195,14 @@ final class DbConfigRepositoryTest extends UnitTest {
         final PageRequest request = new PageRequest.Builder(CONFIG).
                 page(1).
                 size(1).
+                attribute("key", "value").
                 ascending(false).
                 build();
         final PageResponse page = configRepository.findByPageRequest(request);
         // Check test results
         assertEquals(1, page.getPage());
         assertEquals(2, page.getTotal());
-        final String[] names = page.getStream().toArray(String[]::new);
+        final String[] names = page.getNames().toArray(String[]::new);
         assertEquals(1, names.length);
         assertEquals(FIRST_CONFIG, names[0]);
     }
@@ -197,7 +214,7 @@ final class DbConfigRepositoryTest extends UnitTest {
         // Check test results
         assertEquals(0, page.getPage());
         assertEquals(0, page.getTotal());
-        assertEquals(0, page.getStream().count());
+        assertEquals(0, page.getNames().count());
     }
 
     @Test

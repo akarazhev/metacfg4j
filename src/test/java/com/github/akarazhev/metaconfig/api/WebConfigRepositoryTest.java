@@ -136,7 +136,7 @@ final class WebConfigRepositoryTest extends UnitTest {
         // Check test results
         assertEquals(0, page.getPage());
         assertEquals(2, page.getTotal());
-        final String[] names = page.getStream().toArray(String[]::new);
+        final String[] names = page.getNames().toArray(String[]::new);
         assertEquals(2, names.length);
         assertEquals(FIRST_CONFIG, names[0]);
         assertEquals(SECOND_CONFIG, names[1]);

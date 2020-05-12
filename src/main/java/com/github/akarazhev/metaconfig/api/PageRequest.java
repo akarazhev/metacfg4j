@@ -19,8 +19,8 @@ import java.io.Writer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.EMPTY_ASCENDING_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_PAGE_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_SIZE_VALUE;
 import static com.github.akarazhev.metaconfig.api.Configurable.ConfigBuilder.getLong;
@@ -106,29 +106,6 @@ public final class PageRequest implements ExtJsonable {
      * {@inheritDoc}
      */
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        final PageRequest request = (PageRequest) o;
-        return page == request.page &&
-                size == request.size &&
-                ascending == request.ascending &&
-                Objects.equals(name, request.name) &&
-                Objects.equals(attributes, request.attributes);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, attributes, page, size, ascending);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public String toString() {
         return "PageRequest{" +
                 "name='" + name + '\'' +
@@ -161,14 +138,20 @@ public final class PageRequest implements ExtJsonable {
             final long page = getLong(prototype, "page");
             if (page >= 0) {
                 this.page = (int) page;
+            } else {
+                throw new IllegalArgumentException(WRONG_PAGE_VALUE);
             }
             final long size = getLong(prototype, "size");
             if (size >= 0) {
                 this.size = (int) size;
+            } else {
+                throw new IllegalArgumentException(WRONG_SIZE_VALUE);
             }
             final Object value = jsonObject.get("ascending");
             if (value != null) {
                 this.ascending = (Boolean) value;
+            } else {
+                throw new IllegalArgumentException(EMPTY_ASCENDING_VALUE);
             }
         }
 

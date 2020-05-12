@@ -72,6 +72,7 @@ public final class Constants {
         public static final String WRONG_PAGE_VALUE = "Page value must be greater or equal to zero.";
         public static final String WRONG_TOTAL_VALUE = "Total value must be greater or equal to zero.";
         public static final String WRONG_SIZE_VALUE = "Size value must be greater or equal to zero.";
+        public static final String EMPTY_ASCENDING_VALUE = "Ascending must be set.";
         public static final String WRONG_CONFIG_NAME = "Config name is wrong.";
         public static final String REQUEST_SEND_ERROR = "Request can not be sent.";
         public static final String SERVER_STARTED = "Server started.";

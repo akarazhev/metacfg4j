@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -64,7 +63,7 @@ public final class PageResponse implements ExtJsonable {
      *
      * @return names of instances as a stream.
      */
-    public Stream<String> getStream() {
+    public Stream<String> getNames() {
         return names.stream();
     }
 
@@ -78,27 +77,6 @@ public final class PageResponse implements ExtJsonable {
         json.put("total", total);
         json.put("names", names);
         json.toJson(writer);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        final PageResponse response = (PageResponse) o;
-        return page == response.page &&
-                total == response.total &&
-                names.equals(response.names);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int hashCode() {
-        return Objects.hash(page, total, names);
     }
 
     /**
@@ -144,10 +122,14 @@ public final class PageResponse implements ExtJsonable {
             final long page = getLong(prototype, "page");
             if (page >= 0) {
                 this.page = (int) page;
+            } else {
+                throw new IllegalArgumentException(WRONG_PAGE_VALUE);
             }
             final long total = getLong(prototype, "total");
             if (total >= 0) {
                 this.total = (int) total;
+            } else {
+                throw new IllegalArgumentException(WRONG_TOTAL_VALUE);
             }
         }
 
