@@ -10,8 +10,12 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
+import com.github.akarazhev.metaconfig.extension.ExtJsonable;
 import com.github.akarazhev.metaconfig.extension.Validator;
+import com.github.cliftonlabs.json_simple.JsonObject;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Objects;
@@ -23,7 +27,7 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_TOTAL_VAL
 /**
  * The configuration page response that contains a page number, total and names.
  */
-public final class PageResponse {
+public final class PageResponse implements ExtJsonable {
     private final int page;
     private final int total;
     private final Collection<String> names;
@@ -65,6 +69,18 @@ public final class PageResponse {
      * {@inheritDoc}
      */
     @Override
+    public void toJson(Writer writer) throws IOException {
+        final JsonObject json = new JsonObject();
+        json.put("page", page);
+        json.put("total", total);
+        json.put("names", names);
+        json.toJson(writer);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -97,7 +113,7 @@ public final class PageResponse {
     /**
      * Wraps and builds the instance of the configuration page response model.
      */
-    final static class Builder {
+    public final static class Builder {
         private final Collection<String> names = new LinkedList<>();
         private int page = 0;
         private int total = 0;

@@ -12,12 +12,17 @@ package com.github.akarazhev.metaconfig.engine.web.server;
 
 import com.github.akarazhev.metaconfig.Constants;
 import com.github.akarazhev.metaconfig.api.ConfigService;
+import com.github.akarazhev.metaconfig.api.PageRequest;
+import com.github.akarazhev.metaconfig.api.PageResponse;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.STRING_TO_JSON_ERROR;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.GET;
 import static java.net.HttpURLConnection.HTTP_BAD_METHOD;
 
@@ -35,11 +40,23 @@ final class ConfigNamesController extends AbstractController {
      */
     @Override
     void execute(final HttpExchange httpExchange) throws IOException {
-        if (GET.equals(httpExchange.getRequestMethod())) {
-            List<String> names = configService.getNames().collect(Collectors.toList());
-            final OperationResponse<List<String>> response =
-                    new OperationResponse.Builder<List<String>>().result(names).build();
-            writeResponse(httpExchange, response);
+        final String method = httpExchange.getRequestMethod();
+        if (GET.equals(method)) {
+            final URI uri = httpExchange.getRequestURI();
+            final Optional<String> param = getRequestParam(uri.getQuery(), REQ_PARAM_PAGE_REQUEST);
+            if (param.isPresent()) {
+                try {
+                    final PageResponse response =
+                            configService.getNames(new PageRequest.Builder(getValue(param.get())).build());
+                    writeResponse(httpExchange, new OperationResponse.Builder<PageResponse>().result(response).build());
+                } catch (final Exception e) {
+                    writeResponse(httpExchange,
+                            new OperationResponse.Builder<PageResponse>().error(STRING_TO_JSON_ERROR).build());
+                }
+            } else {
+                final List<String> names = configService.getNames().collect(Collectors.toList());
+                writeResponse(httpExchange, new OperationResponse.Builder<List<String>>().result(names).build());
+            }
         } else {
             throw new MethodNotAllowedException(HTTP_BAD_METHOD, Constants.Messages.METHOD_NOT_ALLOWED);
         }

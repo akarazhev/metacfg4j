@@ -10,8 +10,12 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
+import com.github.akarazhev.metaconfig.extension.ExtJsonable;
 import com.github.akarazhev.metaconfig.extension.Validator;
+import com.github.cliftonlabs.json_simple.JsonObject;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,11 +23,12 @@ import java.util.Objects;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_PAGE_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_SIZE_VALUE;
+import static com.github.akarazhev.metaconfig.api.Configurable.ConfigBuilder.getLong;
 
 /**
  * The configuration page request model that contains a name, attributes, page number, size and sorting property.
  */
-public final class PageRequest {
+public final class PageRequest implements ExtJsonable {
     private final String name;
     private final Map<String, String> attributes;
     private final int page;
@@ -87,6 +92,20 @@ public final class PageRequest {
      * {@inheritDoc}
      */
     @Override
+    public void toJson(Writer writer) throws IOException {
+        final JsonObject json = new JsonObject();
+        json.put("name", name);
+        json.put("attributes", attributes);
+        json.put("page", page);
+        json.put("size", size);
+        json.put("ascending", ascending);
+        json.toJson(writer);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -123,12 +142,35 @@ public final class PageRequest {
     /**
      * Wraps and builds the instance of the configuration page request model.
      */
-    final static class Builder {
+    public final static class Builder {
         private final String name;
         private final Map<String, String> attributes = new HashMap<>();
         private int page = 0;
         private int size = Integer.MAX_VALUE;
         private boolean ascending = true;
+
+        /**
+         * Constructs a configuration page request model based on the json object.
+         *
+         * @param jsonObject a json object with the configuration page request model.
+         */
+        public Builder(final JsonObject jsonObject) {
+            final JsonObject prototype = Validator.of(jsonObject).get();
+            this.name = Validator.of((String) prototype.get("name")).get();
+            Configurable.ConfigBuilder.getAttributes(prototype).ifPresent(this.attributes::putAll);
+            final long page = getLong(prototype, "page");
+            if (page >= 0) {
+                this.page = (int) page;
+            }
+            final long size = getLong(prototype, "size");
+            if (size >= 0) {
+                this.size = (int) size;
+            }
+            final Object value = jsonObject.get(name);
+            if (value != null) {
+                this.ascending = (Boolean) value;
+            }
+        }
 
         /**
          * Constructs a configuration page request model with the required name parameter.
