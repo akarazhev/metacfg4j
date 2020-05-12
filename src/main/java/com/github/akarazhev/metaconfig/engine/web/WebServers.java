@@ -106,12 +106,12 @@ public final class WebServers {
                         collect(Collectors.toList());
                 final int size = Math.min(request.getSize(), data.size());
                 final Collection<String> names = data.size() > 0 ?
-                        data.subList(request.getPage() * size, size) :
+                        data.subList(request.getPage() * size, request.getPage() * size + size) :
                         Collections.emptyList();
 
                 return new PageResponse.Builder(names).
                         page(request.getPage()).
-                        total(names.size()).
+                        total(data.size()).
                         build();
             }
 
