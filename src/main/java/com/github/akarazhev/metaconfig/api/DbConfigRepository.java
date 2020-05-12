@@ -72,7 +72,8 @@ final class DbConfigRepository implements ConfigRepository {
                         mapping.get(PROPERTY_ATTRIBUTES_TABLE));
                 final String subSql = " OR `C`.`NAME` = ?";
                 try (final Connection connection = dataSource.getConnection();
-                     final PreparedStatement statement = connection.prepareStatement(JDBCUtils.getSql(sql, subSql, names))) {
+                     final PreparedStatement statement =
+                             connection.prepareStatement(JDBCUtils.concatSql(sql, subSql, names))) {
                     JDBCUtils.set(statement, names);
 
                     try (final ResultSet resultSet = statement.executeQuery()) {
@@ -177,16 +178,16 @@ final class DbConfigRepository implements ConfigRepository {
     @Override
     public PageResponse findByPageRequest(final PageRequest request) {
         try {
-            final String table = mapping.get(CONFIGS_TABLE);
-            final String sql = String.format(SQL.SELECT.CONFIG_NAMES_BY_NAME, table) +
-                    (request.isAscending() ? " ASC " : " DESC ") +
-                    "LIMIT " + request.getSize() +
-                    " OFFSET " + request.getPage() * request.getSize() + ";";
+            final String configs = mapping.get(CONFIGS_TABLE);
+            final String attributes = mapping.get(CONFIG_ATTRIBUTES_TABLE);
+            final String sql = String.format(SQL.SELECT.CONFIG_NAMES_BY_NAME, configs, attributes) +
+                    JDBCUtils.getSubSql(request) + " ORDER BY `C`.`NAME` " + (request.isAscending() ? "ASC" : "DESC") +
+                    " LIMIT " + request.getSize() + " OFFSET " + request.getPage() * request.getSize() + ";";
             try (final Connection connection = dataSource.getConnection()) {
-                final int total = getCount(connection, table, request.getName());
+                final int total = getCount(connection, configs, attributes, request);
                 if (total > 0) {
                     try (final PreparedStatement statement = connection.prepareStatement(sql)) {
-                        statement.setString(1, "%" + request.getName() + "%");
+                        JDBCUtils.set(statement, request);
 
                         try (final ResultSet resultSet = statement.executeQuery()) {
                             final Collection<String> names = new LinkedList<>();
@@ -655,11 +656,13 @@ final class DbConfigRepository implements ConfigRepository {
         return attributes;
     }
 
-    private int getCount(final Connection connection, final String table, final String name) throws SQLException {
+    private int getCount(final Connection connection, final String configs, final String attributes,
+                         final PageRequest request) throws SQLException {
         int count = 0;
-        final String sql = String.format(SQL.SELECT.COUNT_CONFIG_NAMES_BY_NAME, table);
+        final String sql = String.format(SQL.SELECT.COUNT_CONFIG_NAMES_BY_NAME, configs, attributes) +
+                JDBCUtils.getSubSql(request) + ";";
         try (final PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, "%" + name + "%");
+            JDBCUtils.set(statement, request);
 
             try (final ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
@@ -690,10 +693,11 @@ final class DbConfigRepository implements ConfigRepository {
     private int delete(final Connection connection, final String[] names) throws SQLException {
         if (names.length > 0) {
             try {
-                final String table = mapping.get(CONFIGS_TABLE);
-                final String sql = String.format(SQL.DELETE.CONFIGS, table);
-                final String subSql = String.format(" OR `%s`.`NAME` = ?", table);
-                try (final PreparedStatement statement = connection.prepareStatement(JDBCUtils.getSql(sql, subSql, names))) {
+                final String configs = mapping.get(CONFIGS_TABLE);
+                final String sql = String.format(SQL.DELETE.CONFIGS, configs);
+                final String subSql = String.format(" OR `%s`.`NAME` = ?", configs);
+                try (final PreparedStatement statement =
+                             connection.prepareStatement(JDBCUtils.concatSql(sql, subSql, names))) {
                     JDBCUtils.set(statement, names);
                     final int deleted = statement.executeUpdate();
                     connection.commit();
@@ -787,9 +791,13 @@ final class DbConfigRepository implements ConfigRepository {
             static final String CONFIG_NAMES =
                     "SELECT `C`.`NAME` FROM `%s` AS `C` ORDER BY `C`.`NAME`;";
             static final String COUNT_CONFIG_NAMES_BY_NAME =
-                    "SELECT COUNT(`C`.`NAME`) FROM `%s` AS `C` WHERE `C`.`NAME` LIKE ?;";
+                    "SELECT COUNT(DISTINCT `C`.`NAME`) FROM `%1$s` AS `C` " +
+                            "INNER JOIN `%2$s` AS `CA` ON `C`.`ID` = `CA`.`CONFIG_ID` " +
+                            "WHERE (`C`.`NAME` LIKE ?)";
             static final String CONFIG_NAMES_BY_NAME =
-                    "SELECT `C`.`NAME` FROM `%s` AS `C` WHERE `C`.`NAME` LIKE ? ORDER BY `C`.`NAME`";
+                    "SELECT DISTINCT `C`.`NAME` FROM `%1$s` AS `C` " +
+                            "INNER JOIN `%2$s` AS `CA` ON `C`.`ID` = `CA`.`CONFIG_ID` " +
+                            "WHERE (`C`.`NAME` LIKE ?)";
             static final String CONFIG_ATTRIBUTES =
                     "SELECT `CA`.`KEY`, `CA`.`VALUE` FROM `%s` AS `CA` WHERE `CA`.`CONFIG_ID` = ?;";
             static final String PROPERTY_ATTRIBUTES =
@@ -906,13 +914,25 @@ final class DbConfigRepository implements ConfigRepository {
             return mapping;
         }
 
-        private static String getSql(final String query, final String subQuery, final String[] names) {
-            final StringBuilder sql = new StringBuilder(query);
+        private static String concatSql(final String sql, final String subSql, final String[] names) {
+            final StringBuilder string = new StringBuilder(sql);
             if (names.length > 1) {
-                Arrays.stream(names).skip(1).forEach(name -> sql.append(subQuery));
+                Arrays.stream(names).skip(1).forEach(name -> string.append(subSql));
             }
 
-            return sql.append(";").toString();
+            string.append(";");
+            return string.toString();
+        }
+
+        private static String getSubSql(final PageRequest request) {
+            final StringBuilder string = new StringBuilder();
+            final int size = request.getAttributes().size();
+            for (int i = 0; i < size; i++) {
+                string.append(i == 0 ? " AND" : " OR");
+                string.append(" (`CA`.`KEY` LIKE ? AND `CA`.`VALUE` LIKE ?)");
+            }
+
+            return string.toString();
         }
 
         private static Connection open(final DataSource dataSource) throws SQLException {
@@ -959,6 +979,18 @@ final class DbConfigRepository implements ConfigRepository {
         private static void set(final PreparedStatement statement, final String[] names) throws SQLException {
             for (int i = 0; i < names.length; i++) {
                 statement.setString(i + 1, names[i]);
+            }
+        }
+
+        private static void set(final PreparedStatement statement, final PageRequest request)
+                throws SQLException {
+            statement.setString(1, "%" + request.getName() + "%");
+
+            int index = 1;
+            final Map<String, String> attributes = request.getAttributes();
+            for (final String key : attributes.keySet()) {
+                statement.setString(++index, "%" + key + "%");
+                statement.setString(++index, "%" + attributes.get(key) + "%");
             }
         }
 

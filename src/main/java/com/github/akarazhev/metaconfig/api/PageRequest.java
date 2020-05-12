@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_PAGE_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_SIZE_VALUE;
@@ -53,8 +52,8 @@ public final class PageRequest {
      *
      * @return attributes as a map.
      */
-    public Optional<Map<String, String>> getAttributes() {
-        return Optional.of(Collections.unmodifiableMap(attributes));
+    public Map<String, String> getAttributes() {
+        return Collections.unmodifiableMap(attributes);
     }
 
     /**
