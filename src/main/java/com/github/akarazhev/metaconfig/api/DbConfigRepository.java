@@ -41,6 +41,7 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.DELETE_CONFIGS_
 import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_ATTRIBUTES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIG_NAMES_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_PAGE_RESPONSE_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SAVE_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SAVE_PROPERTIES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_ATTRIBUTES_ERROR;
@@ -195,23 +196,21 @@ final class DbConfigRepository implements ConfigRepository {
                                 names.add(resultSet.getString(1));
                             }
 
-                            return new PageResponse.Builder().
+                            return new PageResponse.Builder(names).
                                     page(request.getPage()).
                                     total(total).
-                                    names(names).
                                     build();
                         }
                     }
                 }
 
-                return new PageResponse.Builder().
+                return new PageResponse.Builder(Collections.emptyList()).
                         page(request.getPage()).
                         total(total).
-                        names(Collections.emptyList()).
                         build();
             }
         } catch (final SQLException e) {
-            throw new RuntimeException(RECEIVED_CONFIG_NAMES_ERROR, e);
+            throw new RuntimeException(RECEIVED_PAGE_RESPONSE_ERROR, e);
         }
     }
 

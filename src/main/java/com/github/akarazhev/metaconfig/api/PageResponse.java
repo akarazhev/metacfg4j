@@ -12,6 +12,7 @@ package com.github.akarazhev.metaconfig.api;
 
 import com.github.akarazhev.metaconfig.extension.ExtJsonable;
 import com.github.akarazhev.metaconfig.extension.Validator;
+import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
 
 import java.io.IOException;
@@ -19,10 +20,12 @@ import java.io.Writer;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_PAGE_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_TOTAL_VALUE;
+import static com.github.akarazhev.metaconfig.api.Configurable.ConfigBuilder.getLong;
 
 /**
  * The configuration page response that contains a page number, total and names.
@@ -119,6 +122,36 @@ public final class PageResponse implements ExtJsonable {
         private int total = 0;
 
         /**
+         * Constructs a configuration page response model with names.
+         *
+         * @param names configuration names.
+         */
+        public Builder(final Collection<String> names) {
+            this.names.addAll(Validator.of(names).get());
+        }
+
+        /**
+         * Constructs a configuration page response model based on the json object.
+         *
+         * @param jsonObject a json object with the configuration page response model.
+         */
+        public Builder(final JsonObject jsonObject) {
+            final JsonObject prototype = Validator.of(jsonObject).get();
+            final JsonArray jsonNames = (JsonArray) prototype.get("names");
+            if (jsonNames != null) {
+                names.addAll(jsonNames.stream().map(Object::toString).collect(Collectors.toList()));
+            }
+            final long page = getLong(prototype, "page");
+            if (page >= 0) {
+                this.page = (int) page;
+            }
+            final long total = getLong(prototype, "total");
+            if (total >= 0) {
+                this.total = (int) total;
+            }
+        }
+
+        /**
          * Constructs a configuration page response model with a page number.
          *
          * @param page a page number.
@@ -147,17 +180,6 @@ public final class PageResponse implements ExtJsonable {
                 throw new IllegalArgumentException(WRONG_TOTAL_VALUE);
             }
 
-            return this;
-        }
-
-        /**
-         * Constructs a configuration page response model with names.
-         *
-         * @param names configuration names.
-         * @return a builder of the configuration page response model.
-         */
-        public Builder names(final Collection<String> names) {
-            this.names.addAll(Validator.of(names).get());
             return this;
         }
 

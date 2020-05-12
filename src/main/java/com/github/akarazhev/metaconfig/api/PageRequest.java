@@ -166,7 +166,7 @@ public final class PageRequest implements ExtJsonable {
             if (size >= 0) {
                 this.size = (int) size;
             }
-            final Object value = jsonObject.get(name);
+            final Object value = jsonObject.get("ascending");
             if (value != null) {
                 this.ascending = (Boolean) value;
             }

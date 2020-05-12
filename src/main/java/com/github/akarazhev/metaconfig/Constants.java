@@ -89,6 +89,7 @@ public final class Constants {
         public static final String SAVE_PROPERTIES_ERROR = "Propert(y/ies) instances can not be saved.";
         public static final String RECEIVED_CONFIGS_ERROR = "Config instances can not be received.";
         public static final String RECEIVED_CONFIG_NAMES_ERROR = "Config names can not be received.";
+        public static final String RECEIVED_PAGE_RESPONSE_ERROR = "Page response can not be received.";
         public static final String DELETE_CONFIGS_ERROR = "Config(s) can not be deleted.";
         public static final String DB_ERROR = "Database error.";
         public static final String DB_ROLLBACK_ERROR = "Database rollback error.";

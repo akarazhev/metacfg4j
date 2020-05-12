@@ -36,6 +36,7 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.CONFIG_ACCEPT_E
 import static com.github.akarazhev.metaconfig.Constants.Messages.DELETE_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIG_NAMES_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_PAGE_RESPONSE_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SAVE_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SERVER_WRONG_STATUS_CODE;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Header.APPLICATION_JSON;
@@ -93,8 +94,14 @@ final class WebConfigRepository implements ConfigRepository {
      */
     @Override
     public PageResponse findByPageRequest(final PageRequest request) {
-        // TODO:
-        return null;
+        // Set the configuration
+        final Collection<Property> properties = getProperties(request);
+        final String content = (String) getContent(properties, RECEIVED_PAGE_RESPONSE_ERROR);
+        try {
+            return new PageResponse.Builder((JsonObject) Jsoner.deserialize(content)).build();
+        } catch (final Exception e) {
+            throw new RuntimeException(RECEIVED_PAGE_RESPONSE_ERROR, e);
+        }
     }
 
     /**
@@ -138,7 +145,7 @@ final class WebConfigRepository implements ConfigRepository {
                         config.getProperty(ACCEPT_CONFIG).
                                 map(Property::getValue).
                                 orElse(ACCEPT_CONFIG_VALUE) + "/" +
-                        getAsArray(stream)).build()));
+                        getAsArrayInBase64(stream)).build()));
         properties.add(new Property.Builder(METHOD, POST).build());
 
         getContent(properties, CONFIG_ACCEPT_ERROR);
@@ -151,11 +158,24 @@ final class WebConfigRepository implements ConfigRepository {
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
         this.config.getProperty(URL).ifPresent(property ->
                 properties.add(new Property.Builder(URL, property.getValue() + "/" +
-                        config.getProperty(CONFIG).
-                                map(Property::getValue).
-                                orElse(CONFIG_VALUE) + "?names=" +
-                        getAsArray(stream)).build()));
+                        config.getProperty(CONFIG).map(Property::getValue).orElse(CONFIG_VALUE) +
+                        "?names=" + getAsArrayInBase64(stream)).build()));
         properties.add(new Property.Builder(METHOD, method).build());
+        return properties;
+    }
+
+    private Collection<Property> getProperties(final PageRequest request) {
+        final String pageRequest =
+                new String(Base64.getEncoder().encode(request.toJson().getBytes()), StandardCharsets.UTF_8);
+        // Set the configuration
+        final Collection<Property> properties = new ArrayList<>(3);
+        this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
+                properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
+        this.config.getProperty(URL).ifPresent(property ->
+                properties.add(new Property.Builder(URL, property.getValue() + "/" +
+                        config.getProperty(CONFIG).map(Property::getValue).orElse(CONFIG_NAMES_VALUE) +
+                        "?page_request=" + pageRequest).build()));
+        properties.add(new Property.Builder(METHOD, GET).build());
         return properties;
     }
 
@@ -169,7 +189,7 @@ final class WebConfigRepository implements ConfigRepository {
         properties.add(new Property.Builder(METHOD, method).build());
     }
 
-    private String getAsArray(final Stream<String> stream) {
+    private String getAsArrayInBase64(final Stream<String> stream) {
         final String jsonNames = new JsonArray(Arrays.asList(stream.toArray(String[]::new))).toJson();
         return new String(Base64.getEncoder().encode(jsonNames.getBytes()), StandardCharsets.UTF_8);
     }

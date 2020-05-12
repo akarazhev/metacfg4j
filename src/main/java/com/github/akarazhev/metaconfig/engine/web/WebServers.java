@@ -104,12 +104,12 @@ public final class WebServers {
                         map(Config::getName).
                         sorted(request.isAscending() ? String::compareTo : Collections.reverseOrder()).
                         collect(Collectors.toList());
+                final int size = Math.min(request.getSize(), data.size());
                 final Collection<String> names = data.size() > 0 ?
-                        data.subList(request.getPage() * request.getSize(), request.getSize()) :
+                        data.subList(request.getPage() * size, size) :
                         Collections.emptyList();
 
-                return new PageResponse.Builder().
-                        names(names).
+                return new PageResponse.Builder(names).
                         page(request.getPage()).
                         total(names.size()).
                         build();
@@ -168,18 +168,22 @@ public final class WebServers {
             }
 
             private boolean contains(final Map<String, String> filter, final Map<String, String> data) {
-                for (final String dataKey : data.keySet()) {
-                    final String dataValue = data.get(dataKey);
-                    for (final String filterKey : filter.keySet()) {
-                        final String filterValue = filter.get(filterKey);
-                        if (dataKey.toLowerCase().contains(filterKey.toLowerCase()) &&
-                                dataValue.toLowerCase().contains(filterValue.toLowerCase())) {
-                            return true;
+                if (filter.size() > 0) {
+                    for (final String dataKey : data.keySet()) {
+                        final String dataValue = data.get(dataKey);
+                        for (final String filterKey : filter.keySet()) {
+                            final String filterValue = filter.get(filterKey);
+                            if (dataKey.toLowerCase().contains(filterKey.toLowerCase()) &&
+                                    dataValue.toLowerCase().contains(filterValue.toLowerCase())) {
+                                return true;
+                            }
                         }
                     }
+
+                    return false;
                 }
 
-                return false;
+                return true;
             }
         });
     }
