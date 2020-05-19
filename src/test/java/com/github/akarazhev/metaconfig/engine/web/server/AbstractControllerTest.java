@@ -26,12 +26,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DisplayName("Abstract controller test")
@@ -103,22 +100,6 @@ final class AbstractControllerTest {
             // Empty implementation
         }
     }).build();
-
-    @Test
-    @DisplayName("Get path params")
-    void getPathParams() {
-        final Stream<String> params = testController.getPathParams("path", "api");
-        // Check test results
-        assertEquals(0, params.count());
-    }
-
-    @Test
-    @DisplayName("Get request param")
-    void getRequestParam() {
-        final Optional<String> param = testController.getRequestParam("path", "api");
-        // Check test results
-        assertFalse(param.isPresent());
-    }
 
     @Test
     @DisplayName("Write response")

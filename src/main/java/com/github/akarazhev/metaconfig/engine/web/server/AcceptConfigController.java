@@ -20,6 +20,8 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.CONFIG_ACCEPTED
 import static com.github.akarazhev.metaconfig.Constants.Messages.PATH_PARAM_NOT_PRESENT;
 import static com.github.akarazhev.metaconfig.Constants.Messages.STRING_TO_JSON_ERROR;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.POST;
+import static com.github.akarazhev.metaconfig.extension.WebUtils.getPathParams;
+import static com.github.akarazhev.metaconfig.extension.WebUtils.getValues;
 import static java.net.HttpURLConnection.HTTP_BAD_METHOD;
 
 /**
@@ -37,7 +39,7 @@ final class AcceptConfigController extends AbstractController {
     @Override
     void execute(final HttpExchange httpExchange) throws IOException {
         if (POST.equals(httpExchange.getRequestMethod())) {
-            final OperationResponse<String> response = getPathParams(httpExchange.getRequestURI().getPath(), apiPath).
+            final OperationResponse<String> response = getPathParams(httpExchange.getRequestURI(), apiPath).
                     findAny().
                     map(param -> {
                         try {
