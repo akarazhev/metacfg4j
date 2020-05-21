@@ -27,13 +27,11 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Mapping.CONFIGS_TABLE;
 import static com.github.akarazhev.metaconfig.Constants.Mapping.CONFIG_ATTRIBUTES_TABLE;
 import static com.github.akarazhev.metaconfig.Constants.Mapping.PROPERTIES_TABLE;
 import static com.github.akarazhev.metaconfig.Constants.Mapping.PROPERTY_ATTRIBUTES_TABLE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_CONFIG_TABLE_ERROR;
-import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_UTILS_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DB_CONNECTION_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DB_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DB_ROLLBACK_ERROR;
@@ -719,15 +717,7 @@ final class DbConfigRepository implements ConfigRepository {
 
     private final static class SQL {
 
-        private SQL() {
-            throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
-        }
-
-        final static class INSERT {
-
-            private INSERT() {
-                throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
-            }
+        private final static class INSERT {
 
             static final String CONFIGS =
                     "INSERT INTO `%s` (`NAME`, `DESCRIPTION`, `VERSION`, `UPDATED`) VALUES (?, ?, ?, ?);";
@@ -743,11 +733,7 @@ final class DbConfigRepository implements ConfigRepository {
                             "`UPDATED`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
         }
 
-        final static class UPDATE {
-
-            private UPDATE() {
-                throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
-            }
+        private final static class UPDATE {
 
             static final String CONFIGS =
                     "UPDATE `%s` SET `NAME` = ?, `DESCRIPTION` = ?, `VERSION` = ?, `UPDATED` = ? " +
@@ -759,11 +745,7 @@ final class DbConfigRepository implements ConfigRepository {
                             "`UPDATED` = ? WHERE `ID` = ?;";
         }
 
-        final static class DELETE {
-
-            private DELETE() {
-                throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
-            }
+        private final static class DELETE {
 
             static final String CONFIGS =
                     "DELETE FROM `%1$s` WHERE `%1$s`.`NAME` = ?";
@@ -781,11 +763,7 @@ final class DbConfigRepository implements ConfigRepository {
                     "DELETE FROM `%1$s` WHERE `%1$s`.`ID` = ?;";
         }
 
-        final static class SELECT {
-
-            private SELECT() {
-                throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
-            }
+        private final static class SELECT {
 
             static final String CONFIG_NAMES =
                     "SELECT `C`.`NAME` FROM `%s` AS `C` ORDER BY `C`.`NAME`;";
@@ -816,11 +794,7 @@ final class DbConfigRepository implements ConfigRepository {
                             "WHERE `C`.`NAME` = ?";
         }
 
-        final static class CREATE_TABLE {
-
-            private CREATE_TABLE() {
-                throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
-            }
+        private final static class CREATE_TABLE {
 
             static final String CONFIGS =
                     "CREATE TABLE IF NOT EXISTS `%s` " +
@@ -860,10 +834,6 @@ final class DbConfigRepository implements ConfigRepository {
     }
 
     private static final class JDBCUtils {
-
-        private JDBCUtils() {
-            throw new AssertionError(CREATE_UTILS_CLASS_ERROR);
-        }
 
         private static void createDataBase(final DataSource dataSource, final Map<String, String> mapping) {
             Connection connection = null;
