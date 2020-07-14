@@ -82,27 +82,29 @@ final class DbConfigRepository implements ConfigRepository {
                         final Collection<SimpleEntry<Long, Long>> links = new LinkedList<>();
                         while (resultSet.next()) {
                             // Create properties
-                            final long propertyId = resultSet.getInt(8);
-                            final Property property = properties.get(propertyId);
-                            final Map<String, String> propertyAttributes =
-                                    getAttributes(resultSet.getString(16), resultSet.getString(17));
-                            if (property == null) {
-                                properties.put(propertyId, new Property.Builder(resultSet.getString(10),
-                                        resultSet.getString(13),
-                                        resultSet.getString(14)).
-                                        id(propertyId).
-                                        caption(resultSet.getString(11)).
-                                        description(resultSet.getString(12)).
-                                        updated(resultSet.getLong(15)).
-                                        attributes(propertyAttributes).
-                                        build());
-                            } else {
-                                properties.put(propertyId, new Property.Builder(property).
-                                        attributes(propertyAttributes).
-                                        build());
+                            final long propertyId = resultSet.getLong(8);
+                            if (propertyId > 0) {
+                                final Property property = properties.get(propertyId);
+                                final Map<String, String> propertyAttributes =
+                                        getAttributes(resultSet.getString(16), resultSet.getString(17));
+                                if (property == null) {
+                                    properties.put(propertyId, new Property.Builder(resultSet.getString(10),
+                                            resultSet.getString(13),
+                                            resultSet.getString(14)).
+                                            id(propertyId).
+                                            caption(resultSet.getString(11)).
+                                            description(resultSet.getString(12)).
+                                            updated(resultSet.getLong(15)).
+                                            attributes(propertyAttributes).
+                                            build());
+                                } else {
+                                    properties.put(propertyId, new Property.Builder(property).
+                                            attributes(propertyAttributes).
+                                            build());
+                                }
+                                // Create links
+                                links.add(new SimpleEntry<>(propertyId, resultSet.getLong(9)));
                             }
-                            // Create links
-                            links.add(new SimpleEntry<>(propertyId, resultSet.getLong(9)));
                             // Create configs
                             final long configId = resultSet.getInt(1);
                             final Config config = configs.get(configId);
