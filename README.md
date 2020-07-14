@@ -11,7 +11,7 @@ may extend an existed implementation to provide such software solutions as: vari
 
 This is a high-level abstraction based on the low-level API. It has been written without frameworks and delivered with one dependency:
 
- &#8658; JSON simple (https://github.com/fangyidong/json-simple)<br/>
+ &#8658; JSON simple (https://cliftonlabs.github.io/json-simple/)<br/>
 
 This library has the implementation of a simple web-client/server, repositories, services, controllers. The web-server provides implementation of REST methods.
 Data is persisted into a DB, by using any configured datasource.
