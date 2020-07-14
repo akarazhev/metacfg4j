@@ -8,19 +8,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License. */
-package com.github.akarazhev.metaconfig.engine.web.server;
-
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-@DisplayName("Internal server error exception test")
-final class InternalServerErrorExceptionTest {
-
-    @Test
-    @DisplayName("Internal server error exception")
-    void internalServerErrorException() {
-        assertThrows(InternalServerErrorException.class, () -> {throw new InternalServerErrorException(0, "Error");});
-    }
+open module com.github.akarazhev.metaconfig {
+    requires jdk.httpserver;
+    requires java.logging;
+    requires json.simple;
+    requires java.sql;
 }
