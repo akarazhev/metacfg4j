@@ -14,45 +14,65 @@ import com.github.akarazhev.metaconfig.UnitTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DisplayName("URL utils test")
-final class URLUtilsTest extends UnitTest {
+final class WebUtilsTest extends UnitTest {
 
     @Test
     @DisplayName("URL utils constructor")
     void urlUtilsConstructor() throws Exception {
-        assertPrivate(URLUtils.class);
+        assertPrivate(WebUtils.class);
     }
 
     @Test
     @DisplayName("Encode")
     void encode() {
         // Check test results
-        assertEquals("name", URLUtils.encode("name", StandardCharsets.UTF_8));
+        assertEquals("name", WebUtils.encode("name", StandardCharsets.UTF_8));
     }
 
     @Test
     @DisplayName("Encode error")
     void encodeError() {
         // Check test results
-        assertThrows(RuntimeException.class, () -> URLUtils.encode("name", null));
+        assertThrows(RuntimeException.class, () -> WebUtils.encode("name", null));
     }
 
     @Test
     @DisplayName("Decode")
     void decode() {
         // Check test results
-        assertEquals("name", URLUtils.decode("name", StandardCharsets.UTF_8));
+        assertEquals("name", WebUtils.decode("name", StandardCharsets.UTF_8));
     }
 
     @Test
     @DisplayName("Decode error")
     void decodeError() {
         // Check test results
-        assertThrows(RuntimeException.class, () -> URLUtils.decode("name", null));
+        assertThrows(RuntimeException.class, () -> WebUtils.decode("name", null));
+    }
+
+    @Test
+    @DisplayName("Get path params")
+    void getPathParams() {
+        final Stream<String> params = WebUtils.getPathParams(URI.create("path"), "api");
+        // Check test results
+        assertEquals(0, params.count());
+    }
+
+    @Test
+    @DisplayName("Get request param")
+    void getRequestParam() {
+        final Optional<String> param = WebUtils.getRequestParam(URI.create("http://path?path"), "api");
+        // Check test results
+        assertFalse(param.isPresent());
     }
 }

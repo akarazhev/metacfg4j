@@ -34,6 +34,8 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.STRING_TO_JSON_
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.DELETE;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.GET;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.PUT;
+import static com.github.akarazhev.metaconfig.extension.WebUtils.getRequestParam;
+import static com.github.akarazhev.metaconfig.extension.WebUtils.getValues;
 import static java.net.HttpURLConnection.HTTP_BAD_METHOD;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 
@@ -54,7 +56,7 @@ final class ConfigController extends AbstractController {
         final URI uri = httpExchange.getRequestURI();
         final String method = httpExchange.getRequestMethod();
         if (GET.equals(method)) {
-            final OperationResponse<Collection<Config>> response = getRequestParam(uri.getQuery(), REQ_PARAM_NAMES).
+            final OperationResponse<Collection<Config>> response = getRequestParam(uri, REQ_PARAM_NAMES).
                     map(param -> {
                         try {
                             final Collection<Config> configs =
@@ -82,7 +84,7 @@ final class ConfigController extends AbstractController {
                 throw new InvalidRequestException(HTTP_BAD_REQUEST, JSON_TO_CONFIG_ERROR);
             }
         } else if (DELETE.equals(method)) {
-            final OperationResponse<Integer> response = getRequestParam(uri.getQuery(), REQ_PARAM_NAMES).
+            final OperationResponse<Integer> response = getRequestParam(uri, REQ_PARAM_NAMES).
                     map(param -> {
                         try {
                             final int result = configService.remove(getValues(param));

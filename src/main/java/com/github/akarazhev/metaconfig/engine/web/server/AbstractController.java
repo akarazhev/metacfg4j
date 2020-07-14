@@ -11,25 +11,14 @@
 package com.github.akarazhev.metaconfig.engine.web.server;
 
 import com.github.akarazhev.metaconfig.api.ConfigService;
-import com.github.akarazhev.metaconfig.extension.URLUtils;
 import com.github.akarazhev.metaconfig.extension.Validator;
-import com.github.cliftonlabs.json_simple.JsonArray;
-import com.github.cliftonlabs.json_simple.JsonException;
-import com.github.cliftonlabs.json_simple.JsonObject;
-import com.github.cliftonlabs.json_simple.Jsoner;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collections;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Header.APPLICATION_JSON;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
@@ -75,60 +64,6 @@ abstract class AbstractController {
      * @see HttpExchange for more information.
      */
     abstract void execute(final HttpExchange httpExchange) throws IOException;
-
-    /**
-     * Returns path params.
-     *
-     * @param path an URI path.
-     * @param api  a based API.
-     * @return a stream of path params.
-     */
-    Stream<String> getPathParams(final String path, final String api) {
-        return path.contains(api) ?
-                Arrays.stream(path.substring(api.length() + 1).split("/")).map(param ->
-                        URLUtils.decode(param, StandardCharsets.UTF_8)) :
-                Stream.empty();
-    }
-
-    /**
-     * Returns a param that is a part of a request.
-     *
-     * @param query an URI query.
-     * @param param a param to get a value of.
-     * @return a value of a param.
-     */
-    Optional<String> getRequestParam(final String query, final String param) {
-        return query != null ?
-                Arrays.stream(query.split("&")).
-                        filter(q -> q.contains(param)).
-                        map(p -> URLUtils.decode(p.split("=")[1], StandardCharsets.UTF_8)).
-                        findFirst() :
-                Optional.empty();
-    }
-
-    /**
-     * Returns values belong to the param.
-     *
-     * @param param a param to get a value of.
-     * @return a stream of values.
-     * @throws JsonException when a parser encounters a problem.
-     */
-    Stream<String> getValues(final String param) throws JsonException {
-        final String json = new String(Base64.getDecoder().decode(param), StandardCharsets.UTF_8);
-        return ((JsonArray) Jsoner.deserialize(json)).stream().map(Objects::toString);
-    }
-
-    /**
-     * Returns a value belongs to the param.
-     *
-     * @param param a param to get a value of.
-     * @return a json value.
-     * @throws JsonException when a parser encounters a problem.
-     */
-    JsonObject getValue(final String param) throws JsonException {
-        final String json = new String(Base64.getDecoder().decode(param), StandardCharsets.UTF_8);
-        return (JsonObject) Jsoner.deserialize(json);
-    }
 
     /**
      * Writes an operation response.

@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.STRING_TO_JSON_ERROR;
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.GET;
+import static com.github.akarazhev.metaconfig.extension.WebUtils.getRequestParam;
+import static com.github.akarazhev.metaconfig.extension.WebUtils.getValue;
 import static java.net.HttpURLConnection.HTTP_BAD_METHOD;
 
 /**
@@ -43,7 +45,7 @@ final class ConfigNamesController extends AbstractController {
         final String method = httpExchange.getRequestMethod();
         if (GET.equals(method)) {
             final URI uri = httpExchange.getRequestURI();
-            final Optional<String> param = getRequestParam(uri.getQuery(), REQ_PARAM_PAGE_REQUEST);
+            final Optional<String> param = getRequestParam(uri, REQ_PARAM_PAGE_REQUEST);
             if (param.isPresent()) {
                 try {
                     final PageResponse response =

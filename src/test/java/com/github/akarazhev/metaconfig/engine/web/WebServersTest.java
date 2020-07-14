@@ -13,7 +13,7 @@ package com.github.akarazhev.metaconfig.engine.web;
 import com.github.akarazhev.metaconfig.UnitTest;
 import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.Property;
-import com.github.akarazhev.metaconfig.extension.URLUtils;
+import com.github.akarazhev.metaconfig.extension.WebUtils;
 import com.github.cliftonlabs.json_simple.JsonException;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
@@ -30,8 +30,8 @@ import java.util.Collection;
 import java.util.Collections;
 
 import static com.github.akarazhev.metaconfig.Constants.Endpoints.ACCEPT_CONFIG_VALUE;
-import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_NAMES_VALUE;
+import static com.github.akarazhev.metaconfig.Constants.Endpoints.CONFIG_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.JSON_TO_CONFIG_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.METHOD_NOT_ALLOWED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.REQUEST_PARAM_NOT_PRESENT;
@@ -102,7 +102,7 @@ final class WebServersTest extends UnitTest {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/" + ACCEPT_CONFIG_VALUE + "/" +
-                URLUtils.encode("[\"name_1\", \"name_2\", \"name_3\"]", StandardCharsets.UTF_8)).build());
+                WebUtils.encode("[\"name_1\", \"name_2\", \"name_3\"]", StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, POST).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
@@ -121,7 +121,7 @@ final class WebServersTest extends UnitTest {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/" + ACCEPT_CONFIG_VALUE + "/" +
-                URLUtils.encode("[name_1, name_2, name_3]", StandardCharsets.UTF_8)).build());
+                WebUtils.encode("[name_1, name_2, name_3]", StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, POST).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
@@ -228,7 +228,7 @@ final class WebServersTest extends UnitTest {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE + "?names=" +
-                URLUtils.encode("[\"name_1\", \"name_2\", \"name_3\"]", StandardCharsets.UTF_8)).build());
+                WebUtils.encode("[\"name_1\", \"name_2\", \"name_3\"]", StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();
@@ -247,7 +247,7 @@ final class WebServersTest extends UnitTest {
         final Collection<Property> properties = new ArrayList<>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE + "?names=" +
-                URLUtils.encode("[name_1, name_2, name_3]", StandardCharsets.UTF_8)).build());
+                WebUtils.encode("[name_1, name_2, name_3]", StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
         final Config config = new Config.Builder(CONFIG_NAME, properties).build();

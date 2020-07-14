@@ -250,6 +250,19 @@ final class DbConfigRepositoryTest extends UnitTest {
     }
 
     @Test
+    @DisplayName("Save and flush a new config without properties")
+    void saveAndFlushNewConfigWithoutProperties() {
+        Config newConfig = new Config.Builder(NEW_CONFIG, Collections.emptyList()).build();
+        configRepository.saveAndFlush(Stream.of(newConfig));
+        final Optional<Config> updatedConfig = configRepository.findByNames(Stream.of(NEW_CONFIG)).findFirst();
+        // Check test results
+        assertTrue(updatedConfig.isPresent());
+        newConfig = updatedConfig.get();
+        assertTrue(newConfig.getId() > 0);
+        assertEquals(0, newConfig.getProperties().count());
+    }
+
+    @Test
     @DisplayName("Save and read a large config with properties")
     void saveAndReadLargeConfigWithProperties() {
         // Save a large config
@@ -323,6 +336,32 @@ final class DbConfigRepositoryTest extends UnitTest {
                 description("Description").
                 attribute("key_1", "value-1").
                 attribute("key_4", "value_4").build();
+        final Optional<Config> updatedConfig = configRepository.saveAndFlush(Stream.of(updateConfig)).findFirst();
+        // Check test results
+        assertTrue(updatedConfig.isPresent());
+        assertTrue(updatedConfig.get().getId() > 0);
+        updatedConfig.get().getProperties().forEach(property -> assertTrue(property.getId() > 0));
+    }
+
+    @Test
+    @DisplayName("Save and flush an updated new config with property and empty attributes")
+    void saveAndFlushUpdatedNewConfigWithPropertyAndEmptyAttributes() {
+        final Config config = new Config.Builder(NEW_CONFIG, Collections.singletonList(getProperty())).
+                attribute("key_1", "value_1").
+                attribute("key_2", "value_2").
+                attribute("key_3", "value_3").build();
+        final Optional<Config> newConfig = configRepository.saveAndFlush(Stream.of(config)).findFirst();
+        // Check test results
+        assertTrue(newConfig.isPresent());
+        assertTrue(newConfig.get().getId() > 0);
+        newConfig.get().getProperties().forEach(property -> assertTrue(property.getId() > 0));
+
+        assertTrue(newConfig.get().getProperty("Property-1").isPresent());
+        final Property firstProperty = new Property.Builder("Value", 1000).
+                id(newConfig.get().getProperty("Property-1").get().getId()).build();
+        final Config updateConfig = new Config.Builder(NEW_CONFIG, Collections.singletonList(firstProperty)).
+                id(newConfig.get().getId()).
+                description("Description").build();
         final Optional<Config> updatedConfig = configRepository.saveAndFlush(Stream.of(updateConfig)).findFirst();
         // Check test results
         assertTrue(updatedConfig.isPresent());
@@ -407,6 +446,21 @@ final class DbConfigRepositoryTest extends UnitTest {
         dropConfigAttributesTables();
         assertThrows(RuntimeException.class, () -> configRepository.saveAndFlush(Stream.of(newConfig)));
         createRepository();
+    }
+
+    @Test
+    @DisplayName("Save and flush a config without properties")
+    void saveAndFlushConfigWithoutProperties() {
+        Optional<Config> firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
+        // Check test results
+        assertTrue(firstConfig.isPresent());
+        Config updatedConfig = new Config.Builder(firstConfig.get()).properties(Collections.emptyList()).build();
+        configRepository.saveAndFlush(Stream.of(updatedConfig));
+        firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
+        assertTrue(firstConfig.isPresent());
+        updatedConfig = firstConfig.get();
+        assertTrue(updatedConfig.getId() > 0);
+        assertEquals(0, updatedConfig.getProperties().count());
     }
 
     @Test
