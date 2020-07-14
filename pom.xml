@@ -15,7 +15,7 @@
     <groupId>com.github.akarazhev</groupId>
     <artifactId>metacfg4j</artifactId>
     <packaging>jar</packaging>
-    <version>1.11-SNAPSHOT</version>
+    <version>1.11</version>
 
     <name>metacfg4j</name>
     <description>The metacfg4j project is a library that can be used as the solution for:
