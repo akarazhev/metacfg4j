@@ -27,9 +27,11 @@ Add a maven dependency into your project:
 <dependency>
     <groupId>com.github.akarazhev</groupId>
     <artifactId>metacfg4j</artifactId>
-    <version>1.11</version>
+    <version>2.0</version>
 </dependency>
 ```
+Note: This version is adopted for Java 14+, use please a 1.x version for Java 8.
+
 Instantiate the meta configuration class in your project with the default configuration:
 ```java
 public MetaConfig metaConfig() {
@@ -205,7 +207,7 @@ has a list of config names and pagination settings. <br/>
 
 ## Build Requirements
 
- &#8658; Java 8+ <br/>
+ &#8658; Java 14+ <br/>
  &#8658; Maven 3.6+ <br/>
  
 ## Contribution

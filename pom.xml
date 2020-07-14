@@ -15,7 +15,7 @@
     <groupId>com.github.akarazhev</groupId>
     <artifactId>metacfg4j</artifactId>
     <packaging>jar</packaging>
-    <version>1.11</version>
+    <version>2.0</version>
 
     <name>metacfg4j</name>
     <description>The metacfg4j project is a library that can be used as the solution for:
@@ -25,8 +25,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.plugin>3.8.1</maven.compiler.plugin>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.release>14</maven.compiler.release>
         <maven.surefire.plugin>2.22.2</maven.surefire.plugin>
         <maven.assembly.plugin>3.2.0</maven.assembly.plugin>
         <maven.deploy.plugin>2.8.2</maven.deploy.plugin>
@@ -98,10 +97,6 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven.compiler.plugin}</version>
-                <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
