@@ -11,6 +11,6 @@
 open module com.github.akarazhev.metaconfig {
     requires jdk.httpserver;
     requires java.logging;
-    requires json.simple;
+    requires com.github.cliftonlabs.json_simple;
     requires java.sql;
 }

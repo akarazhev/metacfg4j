@@ -9,9 +9,7 @@ may extend an existed implementation to provide such software solutions as: vari
 
 ## Architecture
 
-This is a high-level abstraction based on the low-level API. It has been written without frameworks and delivered with one dependency:
-
- &#8658; JSON simple (https://cliftonlabs.github.io/json-simple/)<br/>
+This is a high-level abstraction based on the low-level API. It has been written without frameworks and delivered with a fork of the Java Toolkit (JSON.simple)
 
 This library has the implementation of a simple web-client/server, repositories, services, controllers. The web-server provides implementation of REST methods.
 Data is persisted into a DB, by using any configured datasource.
