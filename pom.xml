@@ -26,11 +26,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.plugin>3.8.1</maven.compiler.plugin>
         <maven.compiler.release>14</maven.compiler.release>
-        <maven.surefire.plugin>2.22.2</maven.surefire.plugin>
-        <maven.assembly.plugin>3.2.0</maven.assembly.plugin>
-        <maven.deploy.plugin>2.8.2</maven.deploy.plugin>
+        <maven.surefire.plugin>3.0.0-M5</maven.surefire.plugin>
+        <maven.assembly.plugin>3.3.0</maven.assembly.plugin>
+        <maven.deploy.plugin>3.0.0-M1</maven.deploy.plugin>
         <maven.gpg.plugin>1.6</maven.gpg.plugin>
-        <maven.javadoc.plugin>3.1.1</maven.javadoc.plugin>
+        <maven.javadoc.plugin>3.2.0</maven.javadoc.plugin>
         <maven.source.plugin>3.2.0</maven.source.plugin>
         <jacoco.maven.plugin>0.8.5</jacoco.maven.plugin>
         <junit.version>5.6.2</junit.version>
