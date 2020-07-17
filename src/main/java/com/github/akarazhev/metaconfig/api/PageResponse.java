@@ -72,7 +72,7 @@ public final class PageResponse implements ExtJsonable {
      */
     @Override
     public void toJson(Writer writer) throws IOException {
-        final JsonObject json = new JsonObject();
+        final var json = new JsonObject();
         json.put("page", page);
         json.put("total", total);
         json.put("names", names);
@@ -114,18 +114,18 @@ public final class PageResponse implements ExtJsonable {
          * @param jsonObject a json object with the configuration page response model.
          */
         public Builder(final JsonObject jsonObject) {
-            final JsonObject prototype = Validator.of(jsonObject).get();
-            final JsonArray jsonNames = (JsonArray) prototype.get("names");
+            final var prototype = Validator.of(jsonObject).get();
+            final var jsonNames = (JsonArray) prototype.get("names");
             if (jsonNames != null) {
                 names.addAll(jsonNames.stream().map(Object::toString).collect(Collectors.toList()));
             }
-            final long page = getLong(prototype, "page");
+            final var page = getLong(prototype, "page");
             if (page >= 0) {
                 this.page = (int) page;
             } else {
                 throw new IllegalArgumentException(WRONG_PAGE_VALUE);
             }
-            final long total = getLong(prototype, "total");
+            final var total = getLong(prototype, "total");
             if (total >= 0) {
                 this.total = (int) total;
             } else {

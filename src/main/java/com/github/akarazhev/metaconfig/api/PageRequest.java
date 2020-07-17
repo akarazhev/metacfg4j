@@ -93,7 +93,7 @@ public final class PageRequest implements ExtJsonable {
      */
     @Override
     public void toJson(Writer writer) throws IOException {
-        final JsonObject json = new JsonObject();
+        final var json = new JsonObject();
         json.put("name", name);
         json.put("attributes", attributes);
         json.put("page", page);
@@ -132,22 +132,22 @@ public final class PageRequest implements ExtJsonable {
          * @param jsonObject a json object with the configuration page request model.
          */
         public Builder(final JsonObject jsonObject) {
-            final JsonObject prototype = Validator.of(jsonObject).get();
+            final var prototype = Validator.of(jsonObject).get();
             this.name = Validator.of((String) prototype.get("name")).get();
             Configurable.ConfigBuilder.getAttributes(prototype).ifPresent(this.attributes::putAll);
-            final long page = getLong(prototype, "page");
+            final var page = getLong(prototype, "page");
             if (page >= 0) {
                 this.page = (int) page;
             } else {
                 throw new IllegalArgumentException(WRONG_PAGE_VALUE);
             }
-            final long size = getLong(prototype, "size");
+            final var size = getLong(prototype, "size");
             if (size >= 0) {
                 this.size = (int) size;
             } else {
                 throw new IllegalArgumentException(WRONG_SIZE_VALUE);
             }
-            final Object value = jsonObject.get("ascending");
+            final var value = jsonObject.get("ascending");
             if (value != null) {
                 this.ascending = (Boolean) value;
             } else {

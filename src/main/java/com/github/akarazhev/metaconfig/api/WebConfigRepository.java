@@ -95,7 +95,7 @@ final class WebConfigRepository implements ConfigRepository {
     @Override
     public PageResponse findByPageRequest(final PageRequest request) {
         // Set the configuration
-        final Collection<Property> properties = getProperties(request);
+        final var properties = getProperties(request);
         final String content = (String) getContent(properties, RECEIVED_PAGE_RESPONSE_ERROR);
         try {
             return new PageResponse.Builder((JsonObject) Jsoner.deserialize(content)).build();
@@ -165,8 +165,8 @@ final class WebConfigRepository implements ConfigRepository {
     }
 
     private Collection<Property> getProperties(final PageRequest request) {
-        final String pageRequest =
-                new String(Base64.getEncoder().encode(request.toJson().getBytes()), StandardCharsets.UTF_8);
+        final var pageRequest = new String(Base64.getEncoder().encode(request.toJson().getBytes()),
+                StandardCharsets.UTF_8);
         // Set the configuration
         final Collection<Property> properties = new ArrayList<>(3);
         this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
@@ -190,16 +190,16 @@ final class WebConfigRepository implements ConfigRepository {
     }
 
     private String getAsArrayInBase64(final Stream<String> stream) {
-        final String jsonNames = new JsonArray(Arrays.asList(stream.toArray(String[]::new))).toJson();
+        final var jsonNames = new JsonArray(Arrays.asList(stream.toArray(String[]::new))).toJson();
         return new String(Base64.getEncoder().encode(jsonNames.getBytes()), StandardCharsets.UTF_8);
     }
 
     private Object getContent(final Collection<Property> properties, final String error) {
         try {
-            final WebClient client = new WebClient.Builder(new Config.Builder(CONFIG_NAME, properties).build()).build();
-            final int code = client.getStatusCode();
+            final var client = new WebClient.Builder(new Config.Builder(CONFIG_NAME, properties).build()).build();
+            final var code = client.getStatusCode();
             if (code == HTTP_OK) {
-                final JsonObject content = client.getJsonContent();
+                final var content = client.getJsonContent();
                 if ((Boolean) content.get(SUCCESS)) {
                     return content.get(RESULT);
                 } else {

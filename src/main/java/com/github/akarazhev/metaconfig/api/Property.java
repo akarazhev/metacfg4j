@@ -230,7 +230,7 @@ public final class Property implements Configurable {
      */
     @Override
     public void toJson(final Writer writer) throws IOException {
-        final JsonObject json = new JsonObject();
+        final var json = new JsonObject();
         json.put("id", id);
         json.put("name", name);
         json.put("caption", caption);
@@ -250,7 +250,7 @@ public final class Property implements Configurable {
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        final Property property = (Property) o;
+        final var property = (Property) o;
         return id == property.id &&
                 updated == property.updated &&
                 Objects.equals(name, property.name) &&
@@ -313,7 +313,7 @@ public final class Property implements Configurable {
          * @param property a property model.
          */
         public Builder(final Property property) {
-            final Property prototype = Validator.of(property).get();
+            final var prototype = Validator.of(property).get();
             this.id = prototype.id;
             this.name = prototype.name;
             this.caption = prototype.caption;
@@ -331,7 +331,7 @@ public final class Property implements Configurable {
          * @param jsonObject a json object with the property model.
          */
         public Builder(final JsonObject jsonObject) {
-            final JsonObject prototype = Validator.of(jsonObject).get();
+            final var prototype = Validator.of(jsonObject).get();
             this.id = getLong(prototype, "id");
             this.name = Validator.of((String) prototype.get("name")).get();
             this.caption = (String) prototype.get("caption");

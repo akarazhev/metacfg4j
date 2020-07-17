@@ -15,7 +15,6 @@ import com.github.akarazhev.metaconfig.extension.Validator;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
@@ -63,30 +62,29 @@ final class DbConfigRepository implements ConfigRepository {
      */
     @Override
     public Stream<Config> findByNames(final Stream<String> stream) {
-        final String[] names = stream.toArray(String[]::new);
+        final var names = stream.toArray(String[]::new);
         if (names.length > 0) {
             try {
-                final String sql = String.format(SQL.SELECT.CONFIGS, mapping.get(CONFIGS_TABLE),
+                final var sql = String.format(SQL.SELECT.CONFIGS, mapping.get(CONFIGS_TABLE),
                         mapping.get(CONFIG_ATTRIBUTES_TABLE), mapping.get(PROPERTIES_TABLE),
                         mapping.get(PROPERTY_ATTRIBUTES_TABLE));
-                final String subSql = " OR `C`.`NAME` = ?";
-                try (final Connection connection = dataSource.getConnection();
-                     final PreparedStatement statement =
-                             connection.prepareStatement(JDBCUtils.concatSql(sql, subSql, names))) {
+                final var subSql = " OR `C`.`NAME` = ?";
+                try (final var connection = dataSource.getConnection();
+                     final var statement = connection.prepareStatement(JDBCUtils.concatSql(sql, subSql, names))) {
                     JDBCUtils.set(statement, names);
 
-                    try (final ResultSet resultSet = statement.executeQuery()) {
+                    try (final var resultSet = statement.executeQuery()) {
                         long prevConfigId = -1;
                         final Map<Long, Config> configs = new HashMap<>();
                         final Map<Long, Property> properties = new HashMap<>();
                         final Collection<SimpleEntry<Long, Long>> links = new LinkedList<>();
                         while (resultSet.next()) {
                             // Create properties
-                            final long propertyId = resultSet.getLong(8);
+                            final var propertyId = resultSet.getLong(8);
                             if (propertyId > 0) {
-                                final Property property = properties.get(propertyId);
-                                final Map<String, String> propertyAttributes =
-                                        getAttributes(resultSet.getString(16), resultSet.getString(17));
+                                final var property = properties.get(propertyId);
+                                final var propertyAttributes = getAttributes(resultSet.getString(16),
+                                        resultSet.getString(17));
                                 if (property == null) {
                                     properties.put(propertyId, new Property.Builder(resultSet.getString(10),
                                             resultSet.getString(13),
@@ -106,10 +104,10 @@ final class DbConfigRepository implements ConfigRepository {
                                 links.add(new SimpleEntry<>(propertyId, resultSet.getLong(9)));
                             }
                             // Create configs
-                            final long configId = resultSet.getInt(1);
-                            final Config config = configs.get(configId);
-                            final Map<String, String> configAttributes =
-                                    getAttributes(resultSet.getString(6), resultSet.getString(7));
+                            final var configId = resultSet.getLong(1);
+                            final var config = configs.get(configId);
+                            final var configAttributes = getAttributes(resultSet.getString(6),
+                                    resultSet.getString(7));
                             if (config == null) {
                                 configs.put(configId,
                                         new Config.Builder(resultSet.getString(2), Collections.emptyList()).
@@ -157,10 +155,10 @@ final class DbConfigRepository implements ConfigRepository {
     @Override
     public Stream<String> findNames() {
         try {
-            final String sql = String.format(SQL.SELECT.CONFIG_NAMES, mapping.get(CONFIGS_TABLE));
-            try (final Connection connection = dataSource.getConnection();
-                 final Statement statement = connection.createStatement();
-                 final ResultSet resultSet = statement.executeQuery(sql)) {
+            final var sql = String.format(SQL.SELECT.CONFIG_NAMES, mapping.get(CONFIGS_TABLE));
+            try (final var connection = dataSource.getConnection();
+                 final var statement = connection.createStatement();
+                 final var resultSet = statement.executeQuery(sql)) {
                 final Collection<String> names = new LinkedList<>();
                 while (resultSet.next()) {
                     names.add(resultSet.getString(1));
@@ -179,18 +177,18 @@ final class DbConfigRepository implements ConfigRepository {
     @Override
     public PageResponse findByPageRequest(final PageRequest request) {
         try {
-            final String configs = mapping.get(CONFIGS_TABLE);
-            final String attributes = mapping.get(CONFIG_ATTRIBUTES_TABLE);
-            final String sql = String.format(SQL.SELECT.CONFIG_NAMES_BY_NAME, configs, attributes) +
+            final var configs = mapping.get(CONFIGS_TABLE);
+            final var attributes = mapping.get(CONFIG_ATTRIBUTES_TABLE);
+            final var sql = String.format(SQL.SELECT.CONFIG_NAMES_BY_NAME, configs, attributes) +
                     JDBCUtils.getSubSql(request) + " ORDER BY `C`.`NAME` " + (request.isAscending() ? "ASC" : "DESC") +
                     " LIMIT " + request.getSize() + " OFFSET " + request.getPage() * request.getSize() + ";";
-            try (final Connection connection = dataSource.getConnection()) {
-                final int total = getCount(connection, configs, attributes, request);
+            try (final var connection = dataSource.getConnection()) {
+                final var total = getCount(connection, configs, attributes, request);
                 if (total > 0) {
-                    try (final PreparedStatement statement = connection.prepareStatement(sql)) {
+                    try (final var statement = connection.prepareStatement(sql)) {
                         JDBCUtils.set(statement, request);
 
-                        try (final ResultSet resultSet = statement.executeQuery()) {
+                        try (final var resultSet = statement.executeQuery()) {
                             final Collection<String> names = new LinkedList<>();
                             while (resultSet.next()) {
                                 names.add(resultSet.getString(1));
@@ -238,7 +236,7 @@ final class DbConfigRepository implements ConfigRepository {
      */
     @Override
     public int delete(final Stream<String> stream) {
-        int deleted = 0;
+        var deleted = 0;
         Connection connection = null;
         try {
             connection = JDBCUtils.open(dataSource);
@@ -254,13 +252,13 @@ final class DbConfigRepository implements ConfigRepository {
 
     private Collection<Property> getLinkedProps(final Map<Long, Property> properties,
                                                 final Collection<SimpleEntry<Long, Long>> links) {
-        final Map<Long, Property> linkedProps = new HashMap<>(properties);
+        final var linkedProps = new HashMap<>(properties);
         final Comparator<SimpleEntry<Long, Long>> comparing = Comparator.comparing(SimpleEntry::getValue);
         links.stream().
                 sorted(comparing.reversed()).
                 forEach(link -> {
-                    final Property childProp = linkedProps.get(link.getKey());
-                    final Property parentProp = linkedProps.get(link.getValue());
+                    final var childProp = linkedProps.get(link.getKey());
+                    final var parentProp = linkedProps.get(link.getValue());
                     if (childProp != null && parentProp != null) {
                         linkedProps.put(link.getValue(),
                                 new Property.Builder(parentProp).property(new String[0], childProp).build());
@@ -283,7 +281,7 @@ final class DbConfigRepository implements ConfigRepository {
     private Config[] saveAndFlush(final Connection connection, final Config[] configs) throws SQLException {
         final Collection<Config> toUpdate = new LinkedList<>();
         final Collection<Config> toInsert = new LinkedList<>();
-        for (Config config : configs) {
+        for (final var config : configs) {
             if (config.getId() > 0) {
                 toUpdate.add(config);
             } else {
@@ -291,15 +289,15 @@ final class DbConfigRepository implements ConfigRepository {
             }
         }
 
-        final Config[] savedConfigs = new Config[toUpdate.size() + toInsert.size()];
+        final var savedConfigs = new Config[toUpdate.size() + toInsert.size()];
         if (toUpdate.size() > 0) {
-            final Config[] updated = update(connection, toUpdate.toArray(new Config[0]));
+            final var updated = update(connection, toUpdate.toArray(new Config[0]));
             System.arraycopy(updated, 0, savedConfigs, 0, updated.length);
         }
 
         if (toInsert.size() > 0) {
-            final int pos = toUpdate.size() == 0 ? 0 : toUpdate.size() + 1;
-            final Config[] inserted = insert(connection, toInsert.toArray(new Config[0]));
+            final var pos = toUpdate.size() == 0 ? 0 : toUpdate.size() + 1;
+            final var inserted = insert(connection, toInsert.toArray(new Config[0]));
             System.arraycopy(inserted, 0, savedConfigs, pos, inserted.length);
         }
 
@@ -311,28 +309,27 @@ final class DbConfigRepository implements ConfigRepository {
     }
 
     private Config[] insert(final Connection connection, final Config[] configs) throws SQLException {
-        Config[] inserted = new Config[0];
+        var inserted = new Config[0];
         if (configs.length > 0) {
             inserted = new Config[configs.length];
-            final String configsSql = String.format(SQL.INSERT.CONFIGS, mapping.get(CONFIGS_TABLE));
-            try (final PreparedStatement statement =
-                         connection.prepareStatement(configsSql, Statement.RETURN_GENERATED_KEYS)) {
-                for (final Config config : configs) {
+            final var configsSql = String.format(SQL.INSERT.CONFIGS, mapping.get(CONFIGS_TABLE));
+            try (final var statement = connection.prepareStatement(configsSql, Statement.RETURN_GENERATED_KEYS)) {
+                for (final var config : configs) {
                     JDBCUtils.set(statement, config, 1);
                     statement.addBatch();
                 }
 
                 if (statement.executeBatch().length == configs.length) {
-                    try (final ResultSet resultSet = statement.getGeneratedKeys()) {
-                        final Collection<Throwable> exceptions = new LinkedList<>();
-                        for (int i = 0; i < configs.length; i++) {
+                    try (final var resultSet = statement.getGeneratedKeys()) {
+                        final var exceptions = new LinkedList<>();
+                        for (var i = 0; i < configs.length; i++) {
                             resultSet.absolute(i + 1);
-                            final long configId = resultSet.getInt(1);
-                            final Property[] properties = configs[i].getProperties().toArray(Property[]::new);
+                            final var configId = resultSet.getLong(1);
+                            final var properties = configs[i].getProperties().toArray(Property[]::new);
                             // Create config attributes
                             configs[i].getAttributes().ifPresent(attributes -> {
                                 try {
-                                    final String attributesSql = String.format(SQL.INSERT.CONFIG_ATTRIBUTES,
+                                    final var attributesSql = String.format(SQL.INSERT.CONFIG_ATTRIBUTES,
                                             mapping.get(CONFIG_ATTRIBUTES_TABLE));
                                     execute(connection, attributesSql, configId, attributes, INSERT_ATTRIBUTES_ERROR);
                                 } catch (final SQLException e) {
@@ -362,7 +359,7 @@ final class DbConfigRepository implements ConfigRepository {
     private void execute(final Connection connection, final String sql, final long id,
                          final Map<String, String> attributes, final String error) throws SQLException {
         if (attributes.size() > 0) {
-            try (final PreparedStatement statement = connection.prepareStatement(sql)) {
+            try (final var statement = connection.prepareStatement(sql)) {
                 JDBCUtils.setBatch(statement, id, attributes);
 
                 if (statement.executeBatch().length != attributes.size()) {
@@ -375,7 +372,7 @@ final class DbConfigRepository implements ConfigRepository {
     private void execute(final Connection connection, final String sql, final long id,
                          final Map<String, String> attributes) throws SQLException {
         if (attributes.size() > 0) {
-            try (final PreparedStatement statement = connection.prepareStatement(sql)) {
+            try (final var statement = connection.prepareStatement(sql)) {
                 JDBCUtils.setBatch(statement, attributes, id);
 
                 if (statement.executeBatch().length != attributes.size()) {
@@ -388,9 +385,9 @@ final class DbConfigRepository implements ConfigRepository {
     private Property[] insert(final Connection connection, final long id, final Property... properties)
             throws SQLException {
         if (properties.length > 0) {
-            final String sql = String.format(SQL.INSERT.PROPERTIES, mapping.get(PROPERTIES_TABLE));
-            try (final PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                for (final Property property : properties) {
+            final var sql = String.format(SQL.INSERT.PROPERTIES, mapping.get(PROPERTIES_TABLE));
+            try (final var statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                for (final var property : properties) {
                     JDBCUtils.setBatch(statement, id, property);
                 }
 
@@ -404,9 +401,9 @@ final class DbConfigRepository implements ConfigRepository {
     private Property[] insert(final Connection connection, final SimpleEntry<Long, Long> confPropIds,
                               final Property[] properties) throws SQLException {
         if (properties.length > 0) {
-            final String sql = String.format(SQL.INSERT.SUB_PROPERTIES, mapping.get(PROPERTIES_TABLE));
-            try (final PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                for (final Property property : properties) {
+            final var sql = String.format(SQL.INSERT.SUB_PROPERTIES, mapping.get(PROPERTIES_TABLE));
+            try (final var statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                for (final var property : properties) {
                     JDBCUtils.setBatch(statement, confPropIds, property);
                 }
 
@@ -420,15 +417,15 @@ final class DbConfigRepository implements ConfigRepository {
     private Property[] insert(final Connection connection, final PreparedStatement statement, final long configId,
                               final Property... properties) throws SQLException {
         if (statement.executeBatch().length == properties.length) {
-            try (final ResultSet resultSet = statement.getGeneratedKeys()) {
-                final Collection<Throwable> exceptions = new LinkedList<>();
-                for (int i = 0; i < properties.length; i++) {
+            try (final var resultSet = statement.getGeneratedKeys()) {
+                final var exceptions = new LinkedList<>();
+                for (var i = 0; i < properties.length; i++) {
                     resultSet.absolute(i + 1);
-                    final long propertyId = resultSet.getLong(1);
+                    final var propertyId = resultSet.getLong(1);
                     // Create property attributes
                     properties[i].getAttributes().ifPresent(attributes -> {
                         try {
-                            final String sql = String.format(SQL.INSERT.PROPERTY_ATTRIBUTES,
+                            final var sql = String.format(SQL.INSERT.PROPERTY_ATTRIBUTES,
                                     mapping.get(PROPERTY_ATTRIBUTES_TABLE));
                             execute(connection, sql, propertyId, attributes, INSERT_ATTRIBUTES_ERROR);
                         } catch (final SQLException e) {
@@ -454,15 +451,15 @@ final class DbConfigRepository implements ConfigRepository {
     }
 
     private Config[] update(final Connection connection, final Config[] configs) throws SQLException {
-        Config[] updated = new Config[0];
+        var updated = new Config[0];
         if (configs.length > 0) {
             updated = new Config[configs.length];
-            final String sql = String.format(SQL.UPDATE.CONFIGS, mapping.get(CONFIGS_TABLE));
-            try (final PreparedStatement statement = connection.prepareStatement(sql)) {
+            final var sql = String.format(SQL.UPDATE.CONFIGS, mapping.get(CONFIGS_TABLE));
+            try (final var statement = connection.prepareStatement(sql)) {
                 final Collection<Throwable> exceptions = new LinkedList<>();
-                for (int i = 0; i < configs.length; i++) {
-                    final Config config = configs[i];
-                    final int version = getVersion(connection, config.getId()) + 1;
+                for (var i = 0; i < configs.length; i++) {
+                    final var config = configs[i];
+                    final var version = getVersion(connection, config.getId()) + 1;
                     statement.setLong(5, config.getId());
                     statement.setInt(6, config.getVersion());
                     JDBCUtils.set(statement, config, version);
@@ -534,8 +531,8 @@ final class DbConfigRepository implements ConfigRepository {
 
     private void update(final Map<String, String> source, final Map<String, String> target,
                         final Map<String, String> replace, final Map<String, String> update) {
-        for (final String key : source.keySet()) {
-            final String value = source.get(key);
+        for (final var key : source.keySet()) {
+            final var value = source.get(key);
             if (!target.containsKey(key)) {
                 replace.put(key, value);
             } else {
@@ -549,11 +546,10 @@ final class DbConfigRepository implements ConfigRepository {
     private Property[] update(final Connection connection, final String table, final long id,
                               final Property[] properties) throws SQLException {
         if (properties.length > 0) {
-            final Map<Long, Long> idUpdated =
-                    getIdUpdated(connection, String.format(SQL.SELECT.PROPERTY_ID_UPDATED, table), id);
-            final Collection<Property> toUpdate = getToUpdate(connection, id, idUpdated, properties);
+            final var idUpdated = getIdUpdated(connection, String.format(SQL.SELECT.PROPERTY_ID_UPDATED, table), id);
+            final var toUpdate = getToUpdate(connection, id, idUpdated, properties);
             // Delete old properties
-            for (final long propertyId : idUpdated.keySet()) {
+            for (final var propertyId : idUpdated.keySet()) {
                 delete(connection, String.format(SQL.DELETE.PROPERTY, table), propertyId);
             }
             // Update properties
@@ -570,9 +566,9 @@ final class DbConfigRepository implements ConfigRepository {
     private Collection<Property> getToUpdate(final Connection connection, final long id, final Map<Long, Long> idUpdated,
                                              final Property[] properties) throws SQLException {
         final Collection<Property> toUpdate = new LinkedList<>();
-        for (int i = 0; i < properties.length; i++) {
+        for (var i = 0; i < properties.length; i++) {
             if (properties[i].getId() > 0) {
-                final Long updated = idUpdated.get(properties[i].getId());
+                final var updated = idUpdated.get(properties[i].getId());
                 if (updated != null && properties[i].getUpdated() > updated) {
                     toUpdate.add(properties[i]);
                 }
@@ -591,7 +587,7 @@ final class DbConfigRepository implements ConfigRepository {
     private Collection<Property> getToUpdate(final Connection connection, final long id, final Map<Long, Long> idUpdated,
                                              final Property property) throws SQLException {
         final Collection<Property> toUpdate = new LinkedList<>();
-        final Property[] properties = property.getProperties().toArray(Property[]::new);
+        final var properties = property.getProperties().toArray(Property[]::new);
         if (properties.length > 0) {
             toUpdate.addAll(getToUpdate(connection, id, idUpdated, properties));
         }
@@ -602,10 +598,10 @@ final class DbConfigRepository implements ConfigRepository {
     private void update(final Connection connection, final String table, final Property[] properties)
             throws SQLException {
         if (properties.length > 0) {
-            final String sql = String.format(SQL.UPDATE.PROPERTIES, table);
-            try (final PreparedStatement statement = connection.prepareStatement(sql)) {
+            final var sql = String.format(SQL.UPDATE.PROPERTIES, table);
+            try (final var statement = connection.prepareStatement(sql)) {
                 final Collection<Throwable> exceptions = new LinkedList<>();
-                for (Property property : properties) {
+                for (final var property : properties) {
                     JDBCUtils.setBatch(statement, property);
                     // Update property attributes
                     property.getAttributes().ifPresent(attributes -> {
@@ -626,10 +622,10 @@ final class DbConfigRepository implements ConfigRepository {
     private Map<Long, Long> getIdUpdated(final Connection connection, final String sql, final long id)
             throws SQLException {
         final Map<Long, Long> attributes = new HashMap<>();
-        try (final PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (final var statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
 
-            try (final ResultSet resultSet = statement.executeQuery()) {
+            try (final var resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     attributes.put(resultSet.getLong(1), resultSet.getLong(2));
                 }
@@ -642,10 +638,10 @@ final class DbConfigRepository implements ConfigRepository {
     private Map<String, String> getAttributes(final Connection connection, final String sql, final long id)
             throws SQLException {
         final Map<String, String> attributes = new HashMap<>();
-        try (final PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (final var statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
 
-            try (final ResultSet resultSet = statement.executeQuery()) {
+            try (final var resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     attributes.put(resultSet.getString(1), resultSet.getString(2));
                 }
@@ -657,13 +653,13 @@ final class DbConfigRepository implements ConfigRepository {
 
     private int getCount(final Connection connection, final String configs, final String attributes,
                          final PageRequest request) throws SQLException {
-        int count = 0;
-        final String sql = String.format(SQL.SELECT.COUNT_CONFIG_NAMES_BY_NAME, configs, attributes) +
+        var count = 0;
+        final var sql = String.format(SQL.SELECT.COUNT_CONFIG_NAMES_BY_NAME, configs, attributes) +
                 JDBCUtils.getSubSql(request) + ";";
-        try (final PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (final var statement = connection.prepareStatement(sql)) {
             JDBCUtils.set(statement, request);
 
-            try (final ResultSet resultSet = statement.executeQuery()) {
+            try (final var resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     count = resultSet.getInt(1);
                 }
@@ -674,12 +670,12 @@ final class DbConfigRepository implements ConfigRepository {
     }
 
     private int getVersion(final Connection connection, final long id) throws SQLException {
-        int version = 0;
-        final String sql = String.format(SQL.SELECT.VERSION, mapping.get(CONFIGS_TABLE));
-        try (final PreparedStatement statement = connection.prepareStatement(sql)) {
+        var version = 0;
+        final var sql = String.format(SQL.SELECT.VERSION, mapping.get(CONFIGS_TABLE));
+        try (final var statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
 
-            try (final ResultSet resultSet = statement.executeQuery()) {
+            try (final var resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     version = resultSet.getInt(1);
                 }
@@ -692,13 +688,12 @@ final class DbConfigRepository implements ConfigRepository {
     private int delete(final Connection connection, final String[] names) throws SQLException {
         if (names.length > 0) {
             try {
-                final String configs = mapping.get(CONFIGS_TABLE);
-                final String sql = String.format(SQL.DELETE.CONFIGS, configs);
-                final String subSql = String.format(" OR `%s`.`NAME` = ?", configs);
-                try (final PreparedStatement statement =
-                             connection.prepareStatement(JDBCUtils.concatSql(sql, subSql, names))) {
+                final var configs = mapping.get(CONFIGS_TABLE);
+                final var sql = String.format(SQL.DELETE.CONFIGS, configs);
+                final var subSql = String.format(" OR `%s`.`NAME` = ?", configs);
+                try (final var statement = connection.prepareStatement(JDBCUtils.concatSql(sql, subSql, names))) {
                     JDBCUtils.set(statement, names);
-                    final int deleted = statement.executeUpdate();
+                    final var deleted = statement.executeUpdate();
                     connection.commit();
                     return deleted;
                 }
@@ -711,7 +706,7 @@ final class DbConfigRepository implements ConfigRepository {
     }
 
     private void delete(final Connection connection, final String sql, final long id) throws SQLException {
-        try (final PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (final var statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
             statement.executeUpdate();
         }
@@ -852,7 +847,7 @@ final class DbConfigRepository implements ConfigRepository {
         private static void createTables(final Connection connection, final Map<String, String> mapping)
                 throws SQLException {
             try {
-                try (final Statement statement = connection.createStatement()) {
+                try (final var statement = connection.createStatement()) {
                     statement.executeUpdate(String.format(SQL.CREATE_TABLE.CONFIGS, mapping.get(CONFIGS_TABLE)));
                     statement.executeUpdate(String.format(SQL.CREATE_TABLE.CONFIG_ATTRIBUTES,
                             mapping.get(CONFIGS_TABLE), mapping.get(CONFIG_ATTRIBUTES_TABLE)));
@@ -886,7 +881,7 @@ final class DbConfigRepository implements ConfigRepository {
         }
 
         private static String concatSql(final String sql, final String subSql, final String[] names) {
-            final StringBuilder string = new StringBuilder(sql);
+            final var string = new StringBuilder(sql);
             if (names.length > 1) {
                 Arrays.stream(names).skip(1).forEach(name -> string.append(subSql));
             }
@@ -896,9 +891,9 @@ final class DbConfigRepository implements ConfigRepository {
         }
 
         private static String getSubSql(final PageRequest request) {
-            final StringBuilder string = new StringBuilder();
-            final int size = request.getAttributes().size();
-            for (int i = 0; i < size; i++) {
+            final var string = new StringBuilder();
+            final var size = request.getAttributes().size();
+            for (var i = 0; i < size; i++) {
                 string.append(i == 0 ? " AND" : " OR");
                 string.append(" (`CA`.`KEY` LIKE ? AND `CA`.`VALUE` LIKE ?)");
             }
@@ -907,7 +902,7 @@ final class DbConfigRepository implements ConfigRepository {
         }
 
         private static Connection open(final DataSource dataSource) throws SQLException {
-            final Connection connection = Validator.of(dataSource).get().getConnection();
+            final var connection = Validator.of(dataSource).get().getConnection();
             connection.setAutoCommit(false);
             return connection;
         }
@@ -948,7 +943,7 @@ final class DbConfigRepository implements ConfigRepository {
         }
 
         private static void set(final PreparedStatement statement, final String[] names) throws SQLException {
-            for (int i = 0; i < names.length; i++) {
+            for (var i = 0; i < names.length; i++) {
                 statement.setString(i + 1, names[i]);
             }
         }
@@ -957,9 +952,9 @@ final class DbConfigRepository implements ConfigRepository {
                 throws SQLException {
             statement.setString(1, "%" + request.getName() + "%");
 
-            int index = 1;
-            final Map<String, String> attributes = request.getAttributes();
-            for (final String key : attributes.keySet()) {
+            var index = 1;
+            final var attributes = request.getAttributes();
+            for (final var key : attributes.keySet()) {
                 statement.setString(++index, "%" + key + "%");
                 statement.setString(++index, "%" + attributes.get(key) + "%");
             }
@@ -967,7 +962,7 @@ final class DbConfigRepository implements ConfigRepository {
 
         private static void setBatch(final PreparedStatement statement, final Map<String, String> attributes,
                                      final long id) throws SQLException {
-            for (final String key : attributes.keySet()) {
+            for (final var key : attributes.keySet()) {
                 statement.setString(1, key);
                 statement.setString(2, attributes.get(key));
                 statement.setLong(3, id);
@@ -977,7 +972,7 @@ final class DbConfigRepository implements ConfigRepository {
 
         private static void setBatch(final PreparedStatement statement, final long id,
                                      final Map<String, String> attributes) throws SQLException {
-            for (final String key : attributes.keySet()) {
+            for (final var key : attributes.keySet()) {
                 statement.setLong(1, id);
                 statement.setString(2, key);
                 statement.setString(3, attributes.get(key));
@@ -1112,7 +1107,7 @@ final class DbConfigRepository implements ConfigRepository {
 
         private boolean validate(final Map<String, String> mapping, final String key) {
             if (mapping.containsKey(key)) {
-                final String configs = mapping.get(key);
+                final var configs = mapping.get(key);
                 return configs != null && configs.length() > 0;
             }
 

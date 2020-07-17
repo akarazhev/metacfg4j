@@ -144,7 +144,7 @@ public final class Config implements Configurable {
      */
     @Override
     public void toJson(final Writer writer) throws IOException {
-        final JsonObject json = new JsonObject();
+        final var json = new JsonObject();
         json.put("id", id);
         json.put("name", name);
         json.put("description", description);
@@ -162,7 +162,7 @@ public final class Config implements Configurable {
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        final Config config = (Config) o;
+        final var config = (Config) o;
         return id == config.id &&
                 version == config.version &&
                 updated == config.updated &&
@@ -211,7 +211,7 @@ public final class Config implements Configurable {
          * @param config a configuration model.
          */
         public Builder(final Config config) {
-            final Config prototype = Validator.of(config).get();
+            final var prototype = Validator.of(config).get();
             this.id = config.id;
             this.name = prototype.name;
             this.description = prototype.description;
@@ -227,11 +227,11 @@ public final class Config implements Configurable {
          * @param jsonObject a json object with the configuration model.
          */
         public Builder(final JsonObject jsonObject) {
-            final JsonObject prototype = Validator.of(jsonObject).get();
+            final var prototype = Validator.of(jsonObject).get();
             this.id = getLong(prototype, "id");
             this.name = Validator.of((String) prototype.get("name")).get();
             this.description = (String) prototype.get("description");
-            final long version = getLong(prototype, "version");
+            final var version = getLong(prototype, "version");
             if (version > 0) {
                 this.version = (int) version;
             }

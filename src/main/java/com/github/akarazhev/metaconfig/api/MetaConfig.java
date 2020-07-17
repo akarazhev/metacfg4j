@@ -191,11 +191,11 @@ public final class MetaConfig implements ConfigService, Closeable {
                 // init a mapping
                 final Map<String, String> mapping = dataMapping != null ? dataMapping : new HashMap<>();
                 // Init the repository
-                final ConfigRepository configRepository = dataSource != null ?
+                final var configRepository = dataSource != null ?
                         new DbConfigRepository.Builder(dataSource).mapping(mapping).build() :
                         new WebConfigRepository.Builder(webClient).build();
                 // Init the config service
-                final ConfigService configService = new ConfigServiceImpl.Builder(configRepository).build();
+                final var configService = new ConfigServiceImpl.Builder(configRepository).build();
                 // Init the web server
                 WebServer webServer = null;
                 if (isDefaultConfig) {

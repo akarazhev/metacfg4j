@@ -76,8 +76,7 @@ interface Configurable extends ExtJsonable {
      */
     static Optional<Property> getProperty(final int index, final String[] paths, final Stream<Property> source) {
         if (index < paths.length) {
-            final Optional<Property> current = source.
-                    filter(property -> paths[index].equals(property.getName())).findFirst();
+            final var current = source.filter(property -> paths[index].equals(property.getName())).findFirst();
             if (current.isPresent()) {
                 return index == paths.length - 1 ?
                         current : getProperty(index + 1, paths, current.get().getProperties());
@@ -98,11 +97,11 @@ interface Configurable extends ExtJsonable {
          * @return attributes as a map.
          */
         static Optional<Map<String, String>> getAttributes(final JsonObject jsonObject) {
-            final JsonObject jsonAttributes = (JsonObject) jsonObject.get("attributes");
+            final var jsonAttributes = (JsonObject) jsonObject.get("attributes");
             if (jsonAttributes != null) {
                 final Map<String, String> attributes = new HashMap<>();
-                for (final Object key : jsonAttributes.keySet()) {
-                    attributes.put((String) key, (String) jsonAttributes.get(key));
+                for (final var key : jsonAttributes.keySet()) {
+                    attributes.put(key, (String) jsonAttributes.get(key));
                 }
 
                 return Optional.of(attributes);
@@ -118,7 +117,7 @@ interface Configurable extends ExtJsonable {
          * @return properties as a stream.
          */
         static Stream<Property> getProperties(final JsonObject jsonObject) {
-            final JsonArray jsonProperties = (JsonArray) jsonObject.get("properties");
+            final var jsonProperties = (JsonArray) jsonObject.get("properties");
             return jsonProperties != null ?
                     jsonProperties.stream().map(json -> new Property.Builder((JsonObject) json).build()) :
                     Stream.empty();
@@ -132,7 +131,7 @@ interface Configurable extends ExtJsonable {
          * @return a value.
          */
         static long getLong(final JsonObject jsonObject, final String name) {
-            final Object value = jsonObject.get(name);
+            final var value = jsonObject.get(name);
             return value != null ? ((BigDecimal) value).longValue() : 0;
         }
 
@@ -144,7 +143,7 @@ interface Configurable extends ExtJsonable {
          */
         static void setProperties(final Collection<Property> target, final String[] paths,
                                   final Collection<Property> source) {
-            final String[] propertyPaths = Validator.of(paths).get();
+            final var propertyPaths = Validator.of(paths).get();
             if (propertyPaths.length > 0) {
                 setProperties(target, 0, paths, source);
             } else {
@@ -155,13 +154,12 @@ interface Configurable extends ExtJsonable {
         private static void setProperties(final Collection<Property> target, final int index, final String[] paths,
                                           final Collection<Property> source) {
             if (index < paths.length) {
-                final int nextIndex = index + 1;
-                final Optional<Property> current = target.stream().
-                        filter(property -> paths[index].equals(property.getName())).findFirst();
+                final var nextIndex = index + 1;
+                final var current = target.stream().filter(property -> paths[index].equals(property.getName())).findFirst();
                 if (current.isPresent()) {
                     setProperties(current.get().properties(), nextIndex, paths, source);
                 } else {
-                    final Property newProperty = new Property.Builder(paths[index], "").build();
+                    final var newProperty = new Property.Builder(paths[index], "").build();
                     target.add(newProperty);
                     setProperties(newProperty.properties(), nextIndex, paths, source);
                 }
