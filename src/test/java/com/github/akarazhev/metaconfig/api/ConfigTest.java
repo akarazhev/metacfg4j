@@ -21,11 +21,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Config test")
 final class ConfigTest extends UnitTest {
@@ -73,6 +69,42 @@ final class ConfigTest extends UnitTest {
         assertEquals(2, config.getProperties().count());
         assertTrue(config.getProperty("Property-1").isPresent());
         assertTrue(config.getProperty("Property-2").isPresent());
+    }
+
+    @Test
+    @DisplayName("Create a config with deleted properties")
+    void createConfigWithDeletedProperties() {
+        final String[] path = new String[]{"Property", "Sub-property-1", "Sub-property-2", "Sub-property-3"};
+        final Property property = new Property.Builder("Property", "Value").
+                property(new String[]{"Sub-property-1", "Sub-property-2"},
+                        new Property.Builder("Sub-property-3", "Sub-value-3").build()).build();
+        final Config config = new Config.Builder(CONFIG, Collections.singletonList(property)).build();
+        // Check test results
+        assertTrue(config.getProperty(path).isPresent());
+
+        final Config updatedConfig = new Config.Builder(config).deleteProperty(path).build();
+        // Check test results
+        assertFalse(updatedConfig.getProperty(path).isPresent());
+    }
+
+    @Test
+    @DisplayName("Create a config with updated properties")
+    void createConfigWithUpdatedProperties() {
+        final String[] path = new String[]{"Property", "Property-2"};
+        final Property property = new Property.Builder("Property", "Value").
+                property(new String[]{"Property-1", "Property-1.2"},
+                        new Property.Builder("Property-1.3", "Value-1.3").build()).
+                property(new String[]{"Property-2", "Property-2.2"},
+                        new Property.Builder("Property-2.3", "Value-2.3").build()).
+                property(new String[]{"Property-3", "Property-3.2"},
+                        new Property.Builder("Property-3.3", "Value-3.3").build()).build();
+        final Config config = new Config.Builder(CONFIG, Collections.singletonList(property)).build();
+        // Check test results
+        assertTrue(config.getProperty(path).isPresent());
+
+        final Config updatedConfig = new Config.Builder(config).deleteProperty(path).build();
+        // Check test results
+        assertFalse(updatedConfig.getProperty(path).isPresent());
     }
 
     @Test

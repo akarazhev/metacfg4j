@@ -16,10 +16,7 @@ import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
 
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -137,6 +134,17 @@ interface Configurable extends ExtJsonable {
         }
 
         /**
+         * Deletes properties which belong to configurations.
+         *
+         * @param paths  path to properties.
+         * @param stream a stream of source properties.
+         * @return updated properties.
+         */
+        static Collection<Property> deleteProperties(final String[] paths, final Stream<Property> stream) {
+            return deleteByPath(0, paths, stream);
+        }
+
+        /**
          * Sets properties which belong to configurations.
          *
          * @param paths  path to properties.
@@ -146,24 +154,42 @@ interface Configurable extends ExtJsonable {
                                   final Collection<Property> source) {
             final String[] propertyPaths = Validator.of(paths).get();
             if (propertyPaths.length > 0) {
-                setProperties(target, 0, paths, source);
+                setByPath(target, 0, paths, source);
             } else {
                 target.addAll(Validator.of(source).get());
             }
         }
 
-        private static void setProperties(final Collection<Property> target, final int index, final String[] paths,
-                                          final Collection<Property> source) {
+        private static Collection<Property> deleteByPath(final int index, final String[] paths, final Stream<Property> stream) {
+            final Collection<Property> properties = new LinkedList<>();
+            if (index < paths.length) {
+                stream.forEach(property -> {
+                    if (paths[index].equalsIgnoreCase(property.getName())) {
+                        final Collection<Property> props = deleteByPath(index + 1, paths, property.getProperties());
+                        if (props.size() > 0) {
+                            properties.add(new Property.Builder(property).properties(props).build());
+                        }
+                    } else {
+                        properties.add(property);
+                    }
+                });
+            }
+
+            return properties;
+        }
+
+        private static void setByPath(final Collection<Property> target, final int index, final String[] paths,
+                                      final Collection<Property> source) {
             if (index < paths.length) {
                 final int nextIndex = index + 1;
                 final Optional<Property> current = target.stream().
                         filter(property -> paths[index].equals(property.getName())).findFirst();
                 if (current.isPresent()) {
-                    setProperties(current.get().properties(), nextIndex, paths, source);
+                    setByPath(current.get().properties(), nextIndex, paths, source);
                 } else {
                     final Property newProperty = new Property.Builder(paths[index], "").build();
                     target.add(newProperty);
-                    setProperties(newProperty.properties(), nextIndex, paths, source);
+                    setByPath(newProperty.properties(), nextIndex, paths, source);
                 }
             } else {
                 target.addAll(source);
