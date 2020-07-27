@@ -18,13 +18,22 @@ import com.github.cliftonlabs.json_simple.Jsoner;
 import java.io.IOException;
 import java.io.Writer;
 import java.time.Clock;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_ID_VALUE;
 import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_UPDATED_VALUE;
-import static com.github.akarazhev.metaconfig.api.Configurable.ConfigBuilder.*;
+import static com.github.akarazhev.metaconfig.api.Configurable.ConfigBuilder.deleteProperties;
+import static com.github.akarazhev.metaconfig.api.Configurable.ConfigBuilder.getLong;
+import static com.github.akarazhev.metaconfig.api.Configurable.ConfigBuilder.setProperties;
 
 /**
  * The property model that contains parameters, attributes and properties.
