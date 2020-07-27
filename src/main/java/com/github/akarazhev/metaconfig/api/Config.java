@@ -16,21 +16,12 @@ import com.github.cliftonlabs.json_simple.JsonObject;
 import java.io.IOException;
 import java.io.Writer;
 import java.time.Clock;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_ID_VALUE;
-import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_UPDATED_VALUE;
-import static com.github.akarazhev.metaconfig.Constants.Messages.WRONG_VERSION_VALUE;
-import static com.github.akarazhev.metaconfig.api.Configurable.ConfigBuilder.getLong;
-import static com.github.akarazhev.metaconfig.api.Configurable.ConfigBuilder.setProperties;
+import static com.github.akarazhev.metaconfig.Constants.Messages.*;
+import static com.github.akarazhev.metaconfig.api.Configurable.ConfigBuilder.*;
 
 /**
  * The configuration model that contains parameters, attributes and properties.
@@ -330,6 +321,17 @@ public final class Config implements Configurable {
          */
         public Builder attributes(final Map<String, String> attributes) {
             this.attributes.putAll(Validator.of(attributes).get());
+            return this;
+        }
+
+        /**
+         * Constructs a configuration model without a property by paths.
+         *
+         * @param paths paths to a configuration property.
+         * @return a builder of the configuration model.
+         */
+        public Builder deleteProperty(final String[] paths) {
+            properties(deleteProperties(paths, this.properties.stream()));
             return this;
         }
 

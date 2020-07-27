@@ -22,11 +22,7 @@ import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Property test")
 final class PropertyTest extends UnitTest {
@@ -156,6 +152,36 @@ final class PropertyTest extends UnitTest {
         final Optional<Property> thirdSubProperty = secondSubProperty.get().getProperty("Sub-property-3");
         assertTrue(thirdSubProperty.isPresent());
         assertEquals("Sub-property-3", thirdSubProperty.get().getName());
+    }
+
+    @Test
+    @DisplayName("Create a custom property with deleted properties")
+    void createCustomPropertyWithDeletedProperties() {
+        final String[] path = new String[]{"Sub-property-1", "Sub-property-2", "Sub-property-3"};
+        final Property property = new Property.Builder("Property", "Value").
+                property(new String[]{"Sub-property-1", "Sub-property-2"},
+                        new Property.Builder("Sub-property-3", "Sub-value-3").build()).build();
+        // Check test results
+        assertTrue(property.getProperty(path).isPresent());
+        final Property updatedProperty = new Property.Builder(property).deleteProperty(path).build();
+        // Check test results
+        assertFalse(updatedProperty.getProperty(path).isPresent());
+    }
+
+    @Test
+    @DisplayName("Create a custom property with updated properties")
+    void createCustomPropertyWithUpdatedProperties() {
+        final int count = 10;
+        final String[] path = new String[]{"Property-0"};
+        final Property property = new Property.Builder("Property", "Value").
+                properties(getProperties(0, count)).build();
+        // Check test results
+        assertTrue(property.getProperty(path).isPresent());
+        assertEquals(count, property.getProperties().count());
+        final Property updatedProperty = new Property.Builder(property).deleteProperty(path).build();
+        // Check test results
+        assertFalse(updatedProperty.getProperty(path).isPresent());
+        assertEquals(count - 1, updatedProperty.getProperties().count());
     }
 
     @Test
