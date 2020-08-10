@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Clock;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -292,6 +293,7 @@ final class DbConfigRepositoryTest extends UnitTest {
         // Update a large config
         final Config config = new Config.Builder(largeConfig.get()).
                 properties(getProperties(1, 50)).
+                updated(Clock.systemDefaultZone().millis()).
                 build();
         time = System.currentTimeMillis();
         System.out.println("Start saveAndFlush");
@@ -454,7 +456,10 @@ final class DbConfigRepositoryTest extends UnitTest {
         Optional<Config> firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
         // Check test results
         assertTrue(firstConfig.isPresent());
-        Config updatedConfig = new Config.Builder(firstConfig.get()).properties(Collections.emptyList()).build();
+        Config updatedConfig = new Config.Builder(firstConfig.get()).
+                updated(Clock.systemDefaultZone().millis()).
+                properties(Collections.emptyList()).
+                build();
         configRepository.saveAndFlush(Stream.of(updatedConfig));
         firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
         assertTrue(firstConfig.isPresent());
@@ -468,7 +473,9 @@ final class DbConfigRepositoryTest extends UnitTest {
     void optimisticLockingError() {
         final Optional<Config> firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
         assertTrue(firstConfig.isPresent());
-        final Config newConfig = new Config.Builder(firstConfig.get()).build();
+        final Config newConfig = new Config.Builder(firstConfig.get()).
+                updated(Clock.systemDefaultZone().millis()).
+                build();
         configRepository.saveAndFlush(Stream.of(newConfig));
         assertThrows(RuntimeException.class, () -> configRepository.saveAndFlush(Stream.of(newConfig)));
     }

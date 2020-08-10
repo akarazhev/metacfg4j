@@ -454,31 +454,35 @@ final class DbConfigRepository implements ConfigRepository {
         Config[] updated = new Config[0];
         if (configs.length > 0) {
             updated = new Config[configs.length];
-            final Map<Long, Integer> versions = getVersions(connection, configs);
             final String sql = String.format(SQL.UPDATE.CONFIGS, mapping.get(CONFIGS_TABLE));
+            final Map<Long, SimpleEntry<Integer, Long>> entries = getVerUpdEntries(connection, configs);
             try (final PreparedStatement statement = connection.prepareStatement(sql)) {
                 final Collection<Throwable> exceptions = new LinkedList<>();
                 for (int i = 0; i < configs.length; i++) {
                     final Config config = configs[i];
-                    final int version = versions.get(config.getId()) + 1;
-                    statement.setLong(5, config.getId());
-                    statement.setInt(6, config.getVersion());
-                    JDBCUtils.set(statement, config, version);
-                    statement.addBatch();
-                    // Update config attributes
-                    config.getAttributes().ifPresent(a -> {
-                        try {
-                            update(connection, TableId.CONFIG, mapping.get(CONFIG_ATTRIBUTES_TABLE), config.getId(), a);
-                        } catch (final SQLException e) {
-                            exceptions.add(e);
-                        }
-                    });
-                    // Update a config
-                    updated[i] = new Config.Builder(configs[i]).
-                            properties(Arrays.asList(update(connection, mapping.get(PROPERTIES_TABLE), config.getId(),
-                                    config.getProperties().toArray(Property[]::new)))).
-                            version(version).
-                            build();
+                    final SimpleEntry<Integer, Long> entry = entries.get(config.getId());
+                    if (config.getUpdated() > entry.getValue()) {
+                        final int version = entry.getKey() + 1;
+                        statement.setLong(5, config.getId());
+                        statement.setInt(6, config.getVersion());
+                        JDBCUtils.set(statement, config, version);
+                        statement.addBatch();
+                        // Update config attributes
+                        config.getAttributes().ifPresent(a -> {
+                            try {
+                                update(connection, TableId.CONFIG, mapping.get(CONFIG_ATTRIBUTES_TABLE),
+                                        config.getId(), a);
+                            } catch (final SQLException e) {
+                                exceptions.add(e);
+                            }
+                        });
+                        // Update a config
+                        updated[i] = new Config.Builder(configs[i]).
+                                properties(Arrays.asList(update(connection, mapping.get(PROPERTIES_TABLE),
+                                        config.getId(), config.getProperties().toArray(Property[]::new)))).
+                                version(version).
+                                build();
+                    }
                 }
 
                 JDBCUtils.execute(statement, configs.length, exceptions, SAVE_CONFIGS_ERROR);
@@ -667,15 +671,17 @@ final class DbConfigRepository implements ConfigRepository {
         return count;
     }
 
-    private Map<Long, Integer> getVersions(final Connection connection, final Config[] configs) throws SQLException {
-        final Map<Long, Integer> versions = new HashMap<>();
-        final StringBuilder sql = new StringBuilder(String.format(SQL.SELECT.VERSION, mapping.get(CONFIGS_TABLE)));
+    private Map<Long, SimpleEntry<Integer, Long>> getVerUpdEntries(final Connection connection, final Config[] configs)
+            throws SQLException {
+        final Map<Long, SimpleEntry<Integer, Long>> entries = new HashMap<>();
+        final StringBuilder sql = new StringBuilder();
+        sql.append(String.format(SQL.SELECT.CONFIG_VERSION_UPDATED, mapping.get(CONFIGS_TABLE)));
         for (int i = 0; i < configs.length; i++) {
             if (i > 0) {
                 sql.append(" OR `C`.`ID` = ?");
             }
 
-            versions.put(configs[i].getId(), configs[i].getVersion());
+            entries.put(configs[i].getId(), new SimpleEntry<>(configs[i].getVersion(), configs[i].getUpdated()));
         }
 
         try (final PreparedStatement statement = connection.prepareStatement(sql.toString())) {
@@ -685,12 +691,13 @@ final class DbConfigRepository implements ConfigRepository {
 
             try (final ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    versions.put(resultSet.getLong(1), resultSet.getInt(2));
+                    entries.put(resultSet.getLong(1),
+                            new SimpleEntry<>(resultSet.getInt(2), resultSet.getLong(3)));
                 }
             }
         }
 
-        return versions;
+        return entries;
     }
 
     private int delete(final Connection connection, final String[] names) throws SQLException {
@@ -791,8 +798,8 @@ final class DbConfigRepository implements ConfigRepository {
                     "SELECT `PA`.`KEY`, `PA`.`VALUE` FROM `%s` AS `PA` WHERE `PA`.`ID` = ?;";
             static final String PROPERTY_ID_UPDATED =
                     "SELECT `P`.`ID`, `P`.`UPDATED` FROM `%s` AS `P` WHERE `P`.`CONFIG_ID` = ?;";
-            static final String VERSION =
-                    "SELECT `C`.`ID`, `C`.`VERSION` FROM `%s` AS `C` WHERE `C`.`ID` = ?";
+            static final String CONFIG_VERSION_UPDATED =
+                    "SELECT `C`.`ID`, `C`.`VERSION`, `C`.`UPDATED` FROM `%s` AS `C` WHERE `C`.`ID` = ?";
             static final String CONFIGS =
                     "SELECT `C`.`ID`, `C`.`NAME`, `C`.`DESCRIPTION`, `C`.`VERSION`, `C`.`UPDATED`, `CA`.`KEY`, " +
                             "`CA`.`VALUE`, `P`.`ID`, `P`.`PROPERTY_ID`, `P`.`NAME` , `P`.`CAPTION`, " +
