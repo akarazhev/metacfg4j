@@ -77,16 +77,16 @@ final class DbConfigRepository implements ConfigRepository {
 
                     try (final var resultSet = statement.executeQuery()) {
                         long prevConfigId = -1;
-                        final Map<Long, Config> configs = new HashMap<>();
-                        final Map<Long, Property> properties = new HashMap<>();
-                        final Collection<SimpleEntry<Long, Long>> links = new LinkedList<>();
+                        final var configs = new HashMap<Long, Config>();
+                        final var properties = new HashMap<Long, Property>();
+                        final var links = new LinkedList<SimpleEntry<Long, Long>>();
                         while (resultSet.next()) {
                             // Create properties
                             final var propertyId = resultSet.getLong(8);
                             if (propertyId > 0) {
                                 final Property.Builder builder;
-                                final Property property = properties.get(propertyId);
-                                final Optional<SimpleEntry<String, String>> optional =
+                                final var property = properties.get(propertyId);
+                                final var optional =
                                         getAttributes(resultSet.getString(16), resultSet.getString(17));
                                 if (property == null) {
                                     builder = new Property.Builder(resultSet.getString(10),
@@ -108,9 +108,9 @@ final class DbConfigRepository implements ConfigRepository {
                             }
                             // Create configs
                             final Config.Builder builder;
-                            final long configId = resultSet.getInt(1);
-                            final Config config = configs.get(configId);
-                            final Optional<SimpleEntry<String, String>> optional =
+                            final long configId = resultSet.getLong(1);
+                            final var config = configs.get(configId);
+                            final var optional =
                                     getAttributes(resultSet.getString(6), resultSet.getString(7));
                             if (config == null) {
                                 builder = new Config.Builder(resultSet.getString(2), Collections.emptyList()).
@@ -240,7 +240,7 @@ final class DbConfigRepository implements ConfigRepository {
     @Override
     public int delete(final Stream<String> stream) {
         Connection connection = null;
-        int count = 0;
+        var count = 0;
         try {
             connection = JDBCUtils.open(dataSource);
             count = delete(connection, stream.toArray(String[]::new));
