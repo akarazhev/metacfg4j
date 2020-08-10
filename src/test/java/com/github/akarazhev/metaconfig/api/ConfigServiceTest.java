@@ -23,6 +23,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.time.Clock;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -214,7 +215,9 @@ final class ConfigServiceTest extends UnitTest {
     void optimisticLockingError() {
         final Optional<Config> firstConfig = configService.get(Stream.of(FIRST_CONFIG)).findFirst();
         assertTrue(firstConfig.isPresent());
-        final Config newConfig = new Config.Builder(firstConfig.get()).build();
+        final Config newConfig = new Config.Builder(firstConfig.get()).
+                updated(Clock.systemDefaultZone().millis()).
+                build();
         configService.update(Stream.of(newConfig));
         assertThrows(RuntimeException.class, () -> configService.update(Stream.of(newConfig)));
     }

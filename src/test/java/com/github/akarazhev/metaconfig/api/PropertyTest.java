@@ -20,6 +20,8 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -268,18 +270,21 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Compare two properties")
     void compareTwoProperties() {
+        final Map<String, String> attributes = new HashMap<>();
+        attributes.put("key_1", "value_1");
+        attributes.put("key_2", "value_2");
         final Property firstProperty = new Property.Builder("Property-1", "Value-1").
                 caption("Caption").
                 description("Description").
                 attribute("key_1", "value_1").
-                attributes(Collections.singletonMap("key_2", "value_2")).
+                attributes(attributes).
                 property(new String[0], new Property.Builder("Sub-property-1", "Sub-value-1").build()).
                 build();
-        final Property secondProperty =  new Property.Builder("Property-1", "Value-1").
+        final Property secondProperty = new Property.Builder("Property-1", "Value-1").
                 caption("Caption").
                 description("Description").
                 attribute("key_1", "value_1").
-                attributes(Collections.singletonMap("key_2", "value_2")).
+                attributes(attributes).
                 property(new String[0], new Property.Builder("Sub-property-1", "Sub-value-1").build()).
                 build();
         // Check test results

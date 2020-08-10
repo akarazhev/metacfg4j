@@ -25,6 +25,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.time.Clock;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
@@ -242,7 +243,9 @@ final class MetaConfigTest extends UnitTest {
     void optimisticLockingError() {
         final Optional<Config> firstConfig = dbMetaConfig.get(Stream.of(FIRST_CONFIG)).findFirst();
         assertTrue(firstConfig.isPresent());
-        final Config newConfig = new Config.Builder(firstConfig.get()).build();
+        final Config newConfig = new Config.Builder(firstConfig.get()).
+                updated(Clock.systemDefaultZone().millis()).
+                build();
         dbMetaConfig.update(Stream.of(newConfig));
         assertThrows(RuntimeException.class, () -> dbMetaConfig.update(Stream.of(newConfig)));
         assertThrows(RuntimeException.class, () -> webMetaConfig.update(Stream.of(newConfig)));

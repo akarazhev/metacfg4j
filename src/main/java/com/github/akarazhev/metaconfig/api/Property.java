@@ -490,6 +490,7 @@ public final class Property implements Configurable {
          * @return a builder of the property model.
          */
         public Builder attributes(final Map<String, String> attributes) {
+            this.attributes.clear();
             this.attributes.putAll(Validator.of(attributes).get());
             return this;
         }

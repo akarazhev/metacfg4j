@@ -36,25 +36,31 @@ public class UnitTest {
     protected static final String CONFIG = "Config";
 
     protected Config getConfig(final Collection<Property> properties) {
+        final Map<String, String> attributes = new HashMap<>();
+        attributes.put("key_1", "value_1");
+        attributes.put("key_2", "value_2");
         return new Config.Builder(CONFIG, properties).
                 id(100).
                 description("Description").
                 version(2).
                 updated(UPDATED).
                 attribute("key_1", "value_1").
-                attributes(Collections.singletonMap("key_2", "value_2")).
+                attributes(attributes).
                 property(new String[0], new Property.Builder("Property-2", "Value-2").build()).
                 build();
     }
 
     protected Property getProperty() {
+        final Map<String, String> attributes = new HashMap<>();
+        attributes.put("key_1", "value_1");
+        attributes.put("key_2", "value_2");
         return new Property.Builder("Property-1", "Value-1").
                 id(200).
                 caption("Caption").
                 description("Description").
                 updated(UPDATED).
                 attribute("key_1", "value_1").
-                attributes(Collections.singletonMap("key_2", "value_2")).
+                attributes(attributes).
                 property(new String[0], new Property.Builder("Sub-property-1", "Sub-value-1").build()).
                 build();
     }
