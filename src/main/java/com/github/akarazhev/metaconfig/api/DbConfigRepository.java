@@ -488,29 +488,29 @@ final class DbConfigRepository implements ConfigRepository {
         return updated;
     }
 
-    private void update(final Connection connection, final TableId methodId, final String table, final long id,
+    private void update(final Connection connection, final TableId tableId, final String table, final long id,
                         final Map<String, String> attributes) throws SQLException {
         if (attributes.size() > 0) {
             final Map<String, String> toInsert = new HashMap<>();
             final Map<String, String> toUpdate = new HashMap<>();
             final Map<String, String> toDelete = new HashMap<>();
             final Map<String, String> existed = new HashMap<>();
-            if (TableId.CONFIG.equals(methodId)) {
+            if (TableId.CONFIG.equals(tableId)) {
                 existed.putAll(getAttributes(connection, String.format(SQL.SELECT.CONFIG_ATTRIBUTES, table), id));
-            } else if (TableId.PROPERTY.equals(methodId)) {
+            } else if (TableId.PROPERTY.equals(tableId)) {
                 existed.putAll(getAttributes(connection, String.format(SQL.SELECT.PROPERTY_ATTRIBUTES, table), id));
             }
 
             update(existed, attributes, toDelete, toUpdate);
             update(attributes, existed, toInsert, toUpdate);
 
-            if (TableId.CONFIG.equals(methodId)) {
+            if (TableId.CONFIG.equals(tableId)) {
                 execute(connection, String.format(SQL.INSERT.CONFIG_ATTRIBUTES, table), id, toInsert,
                         UPDATE_ATTRIBUTES_ERROR);
                 execute(connection, String.format(SQL.UPDATE.ATTRIBUTE, table), id, toUpdate);
                 execute(connection, String.format(SQL.DELETE.CONFIG_ATTRIBUTE, table), id, toDelete,
                         UPDATE_ATTRIBUTES_ERROR);
-            } else if (TableId.PROPERTY.equals(methodId)) {
+            } else if (TableId.PROPERTY.equals(tableId)) {
                 execute(connection, String.format(SQL.INSERT.PROPERTY_ATTRIBUTES, table), id, toInsert,
                         UPDATE_ATTRIBUTES_ERROR);
                 execute(connection, String.format(SQL.UPDATE.ATTRIBUTE, table), id, toUpdate);
@@ -518,9 +518,9 @@ final class DbConfigRepository implements ConfigRepository {
                         UPDATE_ATTRIBUTES_ERROR);
             }
         } else {
-            if (TableId.CONFIG.equals(methodId)) {
+            if (TableId.CONFIG.equals(tableId)) {
                 delete(connection, String.format(SQL.DELETE.CONFIG_ATTRIBUTES, table), id);
-            } else if (TableId.PROPERTY.equals(methodId)) {
+            } else if (TableId.PROPERTY.equals(tableId)) {
                 delete(connection, String.format(SQL.DELETE.PROPERTY_ATTRIBUTES, table), id);
             }
         }
