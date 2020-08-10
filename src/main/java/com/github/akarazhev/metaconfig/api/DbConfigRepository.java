@@ -678,7 +678,12 @@ final class DbConfigRepository implements ConfigRepository {
         sql.append(String.format(SQL.SELECT.CONFIG_VERSION_UPDATED, mapping.get(CONFIGS_TABLE)));
         for (int i = 0; i < configs.length; i++) {
             if (i > 0) {
-                sql.append(" OR `C`.`ID` = ?");
+                sql.append(" OR ");
+            }
+
+            sql.append("`C`.`ID` = ?");
+            if (i == configs.length - 1) {
+                sql.append(";");
             }
 
             entries.put(configs[i].getId(), new SimpleEntry<>(configs[i].getVersion(), configs[i].getUpdated()));
@@ -799,7 +804,7 @@ final class DbConfigRepository implements ConfigRepository {
             static final String PROPERTY_ID_UPDATED =
                     "SELECT `P`.`ID`, `P`.`UPDATED` FROM `%s` AS `P` WHERE `P`.`CONFIG_ID` = ?;";
             static final String CONFIG_VERSION_UPDATED =
-                    "SELECT `C`.`ID`, `C`.`VERSION`, `C`.`UPDATED` FROM `%s` AS `C` WHERE `C`.`ID` = ?";
+                    "SELECT `C`.`ID`, `C`.`VERSION`, `C`.`UPDATED` FROM `%s` AS `C` WHERE ";
             static final String CONFIGS =
                     "SELECT `C`.`ID`, `C`.`NAME`, `C`.`DESCRIPTION`, `C`.`VERSION`, `C`.`UPDATED`, `CA`.`KEY`, " +
                             "`CA`.`VALUE`, `P`.`ID`, `P`.`PROPERTY_ID`, `P`.`NAME` , `P`.`CAPTION`, " +
