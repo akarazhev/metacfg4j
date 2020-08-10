@@ -25,6 +25,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.Constants.Mapping.CONFIGS_TABLE;
@@ -84,46 +85,47 @@ final class DbConfigRepository implements ConfigRepository {
                             // Create properties
                             final long propertyId = resultSet.getLong(8);
                             if (propertyId > 0) {
+                                final Property.Builder builder;
                                 final Property property = properties.get(propertyId);
-                                final Map<String, String> propertyAttributes =
+                                final Optional<SimpleEntry<String, String>> optional =
                                         getAttributes(resultSet.getString(16), resultSet.getString(17));
                                 if (property == null) {
-                                    properties.put(propertyId, new Property.Builder(resultSet.getString(10),
+                                    builder = new Property.Builder(resultSet.getString(10),
                                             resultSet.getString(13),
                                             resultSet.getString(14)).
                                             id(propertyId).
                                             caption(resultSet.getString(11)).
                                             description(resultSet.getString(12)).
-                                            updated(resultSet.getLong(15)).
-                                            attributes(propertyAttributes).
-                                            build());
+                                            updated(resultSet.getLong(15));
+                                    optional.ifPresent(a -> builder.attribute(a.getKey(), a.getValue()));
                                 } else {
-                                    properties.put(propertyId, new Property.Builder(property).
-                                            attributes(propertyAttributes).
-                                            build());
+                                    builder = new Property.Builder(property);
+                                    optional.ifPresent(a -> builder.attribute(a.getKey(), a.getValue()));
                                 }
+                                // Set a property
+                                properties.put(propertyId, builder.build());
                                 // Create links
                                 links.add(new SimpleEntry<>(propertyId, resultSet.getLong(9)));
                             }
                             // Create configs
+                            final Config.Builder builder;
                             final long configId = resultSet.getInt(1);
                             final Config config = configs.get(configId);
-                            final Map<String, String> configAttributes =
+                            final Optional<SimpleEntry<String, String>> optional =
                                     getAttributes(resultSet.getString(6), resultSet.getString(7));
                             if (config == null) {
-                                configs.put(configId,
-                                        new Config.Builder(resultSet.getString(2), Collections.emptyList()).
-                                                id(configId).
-                                                description(resultSet.getString(3)).
-                                                version(resultSet.getInt(4)).
-                                                updated(resultSet.getLong(5)).
-                                                attributes(configAttributes).
-                                                build());
+                                builder = new Config.Builder(resultSet.getString(2), Collections.emptyList()).
+                                        id(configId).
+                                        description(resultSet.getString(3)).
+                                        version(resultSet.getInt(4)).
+                                        updated(resultSet.getLong(5));
+                                optional.ifPresent(a -> builder.attribute(a.getKey(), a.getValue()));
                             } else {
-                                configs.put(configId, new Config.Builder(config).
-                                        attributes(configAttributes).
-                                        build());
+                                builder = new Config.Builder(config);
+                                optional.ifPresent(a -> builder.attribute(a.getKey(), a.getValue()));
                             }
+                            // Set a config
+                            configs.put(configId, builder.build());
                             // Set properties to the config
                             if (prevConfigId > -1 && configId != prevConfigId) {
                                 configs.put(prevConfigId, new Config.Builder(configs.get(prevConfigId)).
@@ -219,8 +221,8 @@ final class DbConfigRepository implements ConfigRepository {
      */
     @Override
     public Stream<Config> saveAndFlush(final Stream<Config> stream) {
-        Stream<Config> configs = Stream.empty();
         Connection connection = null;
+        Stream<Config> configs = Stream.empty();
         try {
             connection = JDBCUtils.open(dataSource);
             configs = Arrays.stream(saveAndFlush(connection, stream.toArray(Config[]::new)));
@@ -238,18 +240,18 @@ final class DbConfigRepository implements ConfigRepository {
      */
     @Override
     public int delete(final Stream<String> stream) {
-        int deleted = 0;
         Connection connection = null;
+        int count = 0;
         try {
             connection = JDBCUtils.open(dataSource);
-            deleted = delete(connection, stream.toArray(String[]::new));
+            count = delete(connection, stream.toArray(String[]::new));
         } catch (final SQLException e) {
             JDBCUtils.rollback(connection, e);
         } finally {
             JDBCUtils.close(connection);
         }
 
-        return deleted;
+        return count;
     }
 
     private Collection<Property> getLinkedProps(final Map<Long, Property> properties,
@@ -271,19 +273,14 @@ final class DbConfigRepository implements ConfigRepository {
         return linkedProps.values();
     }
 
-    private Map<String, String> getAttributes(final String key, final String value) {
-        final Map<String, String> attributes = new HashMap<>();
-        if (key != null && value != null) {
-            attributes.put(key, value);
-        }
-
-        return attributes;
+    private Optional<SimpleEntry<String, String>> getAttributes(final String key, final String value) {
+        return key != null && value != null ? Optional.of(new SimpleEntry<>(key, value)) : Optional.empty();
     }
 
     private Config[] saveAndFlush(final Connection connection, final Config[] configs) throws SQLException {
         final Collection<Config> toUpdate = new LinkedList<>();
         final Collection<Config> toInsert = new LinkedList<>();
-        for (Config config : configs) {
+        for (final Config config : configs) {
             if (config.getId() > 0) {
                 toUpdate.add(config);
             } else {
@@ -602,7 +599,7 @@ final class DbConfigRepository implements ConfigRepository {
             final String sql = String.format(SQL.UPDATE.PROPERTIES, table);
             try (final PreparedStatement statement = connection.prepareStatement(sql)) {
                 final Collection<Throwable> exceptions = new LinkedList<>();
-                for (Property property : properties) {
+                for (final Property property : properties) {
                     JDBCUtils.setBatch(statement, property);
                     // Update property attributes
                     property.getAttributes().ifPresent(a -> {
@@ -954,6 +951,7 @@ final class DbConfigRepository implements ConfigRepository {
             } else {
                 statement.setString(2, null);
             }
+
             statement.setInt(3, version);
             statement.setLong(4, config.getUpdated());
         }
