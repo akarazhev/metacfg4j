@@ -856,6 +856,7 @@ final class DbConfigRepository implements ConfigRepository {
     }
 
     private static final class JDBCUtils {
+        private static final int FETCH_SIZE = 100;
 
         private static void createDataBase(final DataSource dataSource, final Map<String, String> mapping) {
             Connection connection = null;
@@ -969,13 +970,14 @@ final class DbConfigRepository implements ConfigRepository {
         }
 
         private static void set(final PreparedStatement statement, final String[] names) throws SQLException {
+            statement.setFetchSize(FETCH_SIZE);
             for (int i = 0; i < names.length; i++) {
                 statement.setString(i + 1, names[i]);
             }
         }
 
-        private static void set(final PreparedStatement statement, final PageRequest request)
-                throws SQLException {
+        private static void set(final PreparedStatement statement, final PageRequest request) throws SQLException {
+            statement.setFetchSize(FETCH_SIZE);
             statement.setString(1, "%" + request.getName() + "%");
 
             int index = 1;
