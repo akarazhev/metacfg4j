@@ -344,7 +344,8 @@ final class DbConfigRepository implements ConfigRepository {
                         }
 
                         if (exceptions.size() > 0) {
-                            throw new SQLException(INSERT_ATTRIBUTES_ERROR);
+                            throw new SQLException(String.format(INSERT_ATTRIBUTES_ERROR,
+                                    JDBCUtils.getDetails(exceptions)));
                         }
                     }
                 } else {
@@ -399,7 +400,7 @@ final class DbConfigRepository implements ConfigRepository {
     }
 
     private Property[] insert(final Connection connection, final SimpleEntry<Long, Long> confPropIds,
-                              final Property[] properties) throws SQLException {
+                              final Property... properties) throws SQLException {
         if (properties.length > 0) {
             final String sql = String.format(SQL.INSERT.SUB_PROPERTIES, mapping.get(PROPERTIES_TABLE));
             try (final PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -440,7 +441,7 @@ final class DbConfigRepository implements ConfigRepository {
                 }
 
                 if (exceptions.size() > 0) {
-                    throw new SQLException(INSERT_ATTRIBUTES_ERROR);
+                    throw new SQLException(String.format(INSERT_ATTRIBUTES_ERROR, JDBCUtils.getDetails(exceptions)));
                 }
             }
         } else {
@@ -549,7 +550,7 @@ final class DbConfigRepository implements ConfigRepository {
         if (properties.length > 0) {
             final Map<Long, Long> idUpdated =
                     getIdUpdated(connection, String.format(SQL.SELECT.PROPERTY_ID_UPDATED, table), id);
-            final Collection<Property> toUpdate = getToUpdate(connection, id, idUpdated, properties);
+            final Collection<Property> toUpdate = getToUpdate(connection, id, 0, idUpdated, properties);
             // Delete old properties
             for (final long propertyId : idUpdated.keySet()) {
                 delete(connection, String.format(SQL.DELETE.PROPERTY, table), propertyId);
@@ -565,7 +566,8 @@ final class DbConfigRepository implements ConfigRepository {
         return properties;
     }
 
-    private Collection<Property> getToUpdate(final Connection connection, final long id, final Map<Long, Long> idUpdated,
+    private Collection<Property> getToUpdate(final Connection connection, final long configId, final long propertyId,
+                                             final Map<Long, Long> idUpdated,
                                              final Property[] properties) throws SQLException {
         final Collection<Property> toUpdate = new LinkedList<>();
         for (int i = 0; i < properties.length; i++) {
@@ -575,12 +577,14 @@ final class DbConfigRepository implements ConfigRepository {
                     toUpdate.add(properties[i]);
                 }
             } else {
-                properties[i] = insert(connection, id, properties[i])[0];
+                properties[i] = propertyId > 0 ?
+                        insert(connection, new SimpleEntry<>(configId, propertyId), properties[i])[0] :
+                        insert(connection, configId, properties[i])[0];
             }
             // Set indices to delete
             idUpdated.remove(properties[i].getId());
             // Update sub-properties
-            toUpdate.addAll(getToUpdate(connection, id, idUpdated, properties[i]));
+            toUpdate.addAll(getToUpdate(connection, configId, idUpdated, properties[i]));
         }
 
         return toUpdate;
@@ -591,7 +595,7 @@ final class DbConfigRepository implements ConfigRepository {
         final Collection<Property> toUpdate = new LinkedList<>();
         final Property[] properties = property.getProperties().toArray(Property[]::new);
         if (properties.length > 0) {
-            toUpdate.addAll(getToUpdate(connection, id, idUpdated, properties));
+            toUpdate.addAll(getToUpdate(connection, id, property.getId(), idUpdated, properties));
         }
 
         return toUpdate;
@@ -1088,6 +1092,18 @@ final class DbConfigRepository implements ConfigRepository {
             } else {
                 throw new SQLException(error);
             }
+        }
+
+        private static String getDetails(final Collection<Throwable> exceptions) {
+            final StringBuilder details = new StringBuilder();
+            exceptions.forEach(e -> {
+                if (details.length() > 0) {
+                    details.append(", ");
+                }
+
+                details.append(e.getMessage());
+            });
+            return details.toString();
         }
     }
 
