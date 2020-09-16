@@ -27,6 +27,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Clock;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -466,6 +468,83 @@ final class DbConfigRepositoryTest extends UnitTest {
         updatedConfig = firstConfig.get();
         assertTrue(updatedConfig.getId() > 0);
         assertEquals(0, updatedConfig.getProperties().count());
+    }
+
+    @Test
+    @DisplayName("Save and flush an updated config with one properties")
+    void saveAndFlushUpdatedConfigWithOneProperties() {
+        final Property firstProperty = new Property.Builder("Property-1", "Value-1").build();
+        final Optional<Config> newConfig = configRepository.saveAndFlush(
+                Stream.of(new Config.Builder(NEW_CONFIG, Collections.singletonList(firstProperty)).build())
+        ).findFirst();
+        //  Check test results
+        assertTrue(newConfig.isPresent());
+        assertTrue(newConfig.get().getId() > 0);
+        newConfig.get().getProperties().forEach(p -> assertTrue(p.getId() > 0));
+
+        final Collection<Property> properties = new ArrayList<>(2);
+        newConfig.get().getProperty("Property-1").ifPresent(properties::add);
+        properties.add(new Property.Builder("Property-2", "Value-2").attribute("key_2", "value_2").build());
+        final Config copyConfig = new Config.Builder(newConfig.get()).
+                updated(Clock.systemDefaultZone().millis()).
+                properties(properties).build();
+        final Optional<Config> updatedConfig = configRepository.saveAndFlush(Stream.of(copyConfig)).findFirst();
+        // Check test results
+        assertTrue(updatedConfig.isPresent());
+        assertTrue(updatedConfig.get().getId() > 0);
+        updatedConfig.get().getProperty("Property-1").ifPresent(p -> assertTrue(p.getId() > 0));
+        updatedConfig.get().getProperty("Property-2").ifPresent(p -> assertTrue(p.getId() > 0));
+    }
+
+    @Test
+    @DisplayName("Save and flush an updated config with two properties")
+    void saveAndFlushUpdatedConfigWithTwoProperties() {
+        final Property firstProperty = new Property.Builder("Property-1", "Value-1").build();
+        final Optional<Config> newConfig = configRepository.saveAndFlush(
+                Stream.of(new Config.Builder(NEW_CONFIG, Collections.singletonList(firstProperty)).build())
+        ).findFirst();
+        //  Check test results
+        assertTrue(newConfig.isPresent());
+        assertTrue(newConfig.get().getId() > 0);
+        newConfig.get().getProperties().forEach(p -> assertTrue(p.getId() > 0));
+
+        final Property secondProperty = new Property.Builder("Property-2", "Value-2").
+                attribute("key_2", "value_2").build();
+        final Config copyConfig = new Config.Builder(newConfig.get()).
+                updated(Clock.systemDefaultZone().millis()).
+                property(new String[]{"Property-1"}, secondProperty).build();
+        final Optional<Config> updatedConfig = configRepository.saveAndFlush(Stream.of(copyConfig)).findFirst();
+        // Check test results
+        assertTrue(updatedConfig.isPresent());
+        assertTrue(updatedConfig.get().getId() > 0);
+        updatedConfig.get().getProperty("Property-1").ifPresent(p -> assertTrue(p.getId() > 0));
+        updatedConfig.get().getProperty("Property-1", "Property-2").ifPresent(p -> assertTrue(p.getId() > 0));
+    }
+
+    @Test
+    @DisplayName("Save and flush an updated config with three properties")
+    void saveAndFlushUpdatedConfigWithThreeProperties() {
+        final Property firstProperty = new Property.Builder("Property-1", "Value-1").build();
+        final Optional<Config> newConfig = configRepository.saveAndFlush(
+                Stream.of(new Config.Builder(NEW_CONFIG, Collections.singletonList(firstProperty)).build())
+        ).findFirst();
+        //  Check test results
+        assertTrue(newConfig.isPresent());
+        assertTrue(newConfig.get().getId() > 0);
+        newConfig.get().getProperties().forEach(p -> assertTrue(p.getId() > 0));
+
+        final Property thirdProperty = new Property.Builder("Property-3", "Value-3").
+                attribute("key_3", "value_3").build();
+        final Config copyConfig = new Config.Builder(newConfig.get()).
+                updated(Clock.systemDefaultZone().millis()).
+                property(new String[]{"Property-1", "Property-2"}, thirdProperty).build();
+        final Optional<Config> updatedConfig = configRepository.saveAndFlush(Stream.of(copyConfig)).findFirst();
+        // Check test results
+        assertTrue(updatedConfig.isPresent());
+        assertTrue(updatedConfig.get().getId() > 0);
+        updatedConfig.get().getProperty("Property-1").ifPresent(p -> assertTrue(p.getId() > 0));
+        updatedConfig.get().getProperty("Property-1", "Property-2").ifPresent(p -> assertTrue(p.getId() > 0));
+        updatedConfig.get().getProperty("Property-1", "Property-2", "Property-3").ifPresent(p -> assertTrue(p.getId() > 0));
     }
 
     @Test

@@ -37,13 +37,14 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.DB_CONNECTION_E
 import static com.github.akarazhev.metaconfig.Constants.Messages.DB_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DB_ROLLBACK_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DELETE_CONFIGS_ERROR;
-import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_ATTRIBUTES_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_ATTRIBUTES_ERROR_MSG;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIG_NAMES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_PAGE_RESPONSE_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SAVE_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SAVE_PROPERTIES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_ATTRIBUTES_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_ATTRIBUTES_ERROR_MSG;
 import static java.util.AbstractMap.SimpleEntry;
 
 /**
@@ -331,7 +332,7 @@ final class DbConfigRepository implements ConfigRepository {
                                 try {
                                     final String attributesSql = String.format(SQL.INSERT.CONFIG_ATTRIBUTES,
                                             mapping.get(CONFIG_ATTRIBUTES_TABLE));
-                                    execute(connection, attributesSql, configId, a, INSERT_ATTRIBUTES_ERROR);
+                                    execute(connection, attributesSql, configId, a, INSERT_ATTRIBUTES_ERROR_MSG);
                                 } catch (final SQLException e) {
                                     exceptions.add(e);
                                 }
@@ -344,8 +345,8 @@ final class DbConfigRepository implements ConfigRepository {
                         }
 
                         if (exceptions.size() > 0) {
-                            throw new SQLException(String.format(INSERT_ATTRIBUTES_ERROR,
-                                    JDBCUtils.getDetails(exceptions)));
+                            throw new SQLException(String.format(INSERT_ATTRIBUTES_ERROR_MSG,
+                                    JDBCUtils.getMessage(exceptions)));
                         }
                     }
                 } else {
@@ -381,6 +382,23 @@ final class DbConfigRepository implements ConfigRepository {
                 }
             }
         }
+    }
+
+    private Property[] insert(final Connection connection, final long configId, final long propertyId,
+                              final Property[] properties) throws SQLException {
+        for (int i = 0; i < properties.length; i++) {
+            if (properties[i].getId() == 0) {
+                properties[i] = propertyId > 0 ?
+                        insert(connection, new SimpleEntry<>(configId, propertyId), properties[i])[0] :
+                        insert(connection, configId, properties[i])[0];
+            }
+            // Insert sub-properties
+            final Property[] subProps = insert(connection, configId, properties[i].getId(),
+                    properties[i].properties().toArray(new Property[0]));
+            properties[i] = new Property.Builder(properties[i]).properties(Arrays.asList(subProps)).build();
+        }
+
+        return properties;
     }
 
     private Property[] insert(final Connection connection, final long id, final Property... properties)
@@ -428,7 +446,7 @@ final class DbConfigRepository implements ConfigRepository {
                         try {
                             final String sql = String.format(SQL.INSERT.PROPERTY_ATTRIBUTES,
                                     mapping.get(PROPERTY_ATTRIBUTES_TABLE));
-                            execute(connection, sql, propertyId, a, INSERT_ATTRIBUTES_ERROR);
+                            execute(connection, sql, propertyId, a, INSERT_ATTRIBUTES_ERROR_MSG);
                         } catch (final SQLException e) {
                             exceptions.add(e);
                         }
@@ -441,7 +459,7 @@ final class DbConfigRepository implements ConfigRepository {
                 }
 
                 if (exceptions.size() > 0) {
-                    throw new SQLException(String.format(INSERT_ATTRIBUTES_ERROR, JDBCUtils.getDetails(exceptions)));
+                    throw new SQLException(String.format(INSERT_ATTRIBUTES_ERROR_MSG, JDBCUtils.getMessage(exceptions)));
                 }
             }
         } else {
@@ -511,16 +529,16 @@ final class DbConfigRepository implements ConfigRepository {
 
             if (TableId.CONFIG.equals(tableId)) {
                 execute(connection, String.format(SQL.INSERT.CONFIG_ATTRIBUTES, table), id, toInsert,
-                        UPDATE_ATTRIBUTES_ERROR);
+                        UPDATE_ATTRIBUTES_ERROR_MSG);
                 execute(connection, String.format(SQL.UPDATE.ATTRIBUTE, table), id, toUpdate);
                 execute(connection, String.format(SQL.DELETE.CONFIG_ATTRIBUTE, table), id, toDelete,
-                        UPDATE_ATTRIBUTES_ERROR);
+                        UPDATE_ATTRIBUTES_ERROR_MSG);
             } else if (TableId.PROPERTY.equals(tableId)) {
                 execute(connection, String.format(SQL.INSERT.PROPERTY_ATTRIBUTES, table), id, toInsert,
-                        UPDATE_ATTRIBUTES_ERROR);
+                        UPDATE_ATTRIBUTES_ERROR_MSG);
                 execute(connection, String.format(SQL.UPDATE.ATTRIBUTE, table), id, toUpdate);
                 execute(connection, String.format(SQL.DELETE.PROPERTY_ATTRIBUTE, table), id, toDelete,
-                        UPDATE_ATTRIBUTES_ERROR);
+                        UPDATE_ATTRIBUTES_ERROR_MSG);
             }
         } else {
             if (TableId.CONFIG.equals(tableId)) {
@@ -559,6 +577,8 @@ final class DbConfigRepository implements ConfigRepository {
             if (toUpdate.size() > 0) {
                 update(connection, table, toUpdate.toArray(new Property[0]));
             }
+            // Insert properties
+            return insert(connection, id, 0, properties);
         } else {
             delete(connection, String.format(SQL.DELETE.PROPERTIES, table), id);
         }
@@ -1083,7 +1103,7 @@ final class DbConfigRepository implements ConfigRepository {
                                     final String error) throws SQLException {
             if (statement.executeBatch().length == count) {
                 if (exceptions.size() > 0) {
-                    throw new SQLException(UPDATE_ATTRIBUTES_ERROR);
+                    throw new SQLException(String.format(UPDATE_ATTRIBUTES_ERROR_MSG, JDBCUtils.getMessage(exceptions)));
                 }
 
                 if (statement.getUpdateCount() == 0) {
@@ -1094,7 +1114,7 @@ final class DbConfigRepository implements ConfigRepository {
             }
         }
 
-        private static String getDetails(final Collection<Throwable> exceptions) {
+        private static String getMessage(final Collection<Throwable> exceptions) {
             final StringBuilder details = new StringBuilder();
             exceptions.forEach(e -> {
                 if (details.length() > 0) {
