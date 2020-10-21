@@ -70,18 +70,18 @@ interface Configurable extends ExtJsonable {
     /**
      * Returns a property by paths.
      *
-     * @param index  a current path.
+     * @param i      a current path.
      * @param paths  paths
      * @param source a current property stream.
      * @return a property.
      */
-    static Optional<Property> getProperty(final int index, final String[] paths, final Stream<Property> source) {
-        if (index < paths.length) {
+    static Optional<Property> getProperty(final int i, final String[] paths, final Stream<Property> source) {
+        if (i < paths.length) {
             final Optional<Property> current = source.
-                    filter(property -> paths[index].equals(property.getName())).findFirst();
+                    filter(property -> property != null && paths[i].equals(property.getName())).findFirst();
             if (current.isPresent()) {
-                return index == paths.length - 1 ?
-                        current : getProperty(index + 1, paths, current.get().getProperties());
+                return i == paths.length - 1 ?
+                        current : getProperty(i + 1, paths, current.get().getProperties());
             }
         }
 
@@ -164,17 +164,19 @@ interface Configurable extends ExtJsonable {
             }
         }
 
-        private static Collection<Property> deleteByPath(final int index, final String[] paths, final Stream<Property> stream) {
+        private static Collection<Property> deleteByPath(final int i, final String[] paths, final Stream<Property> stream) {
             final Collection<Property> properties = new LinkedList<>();
-            if (index < paths.length) {
+            if (i < paths.length) {
                 stream.forEach(property -> {
-                    if (paths[index].equalsIgnoreCase(property.getName())) {
-                        final Collection<Property> props = deleteByPath(index + 1, paths, property.getProperties());
-                        if (props.size() > 0) {
-                            properties.add(new Property.Builder(property).properties(props).build());
+                    if (property != null) {
+                        if (paths[i].equalsIgnoreCase(property.getName())) {
+                            final Collection<Property> props = deleteByPath(i + 1, paths, property.getProperties());
+                            if (props.size() > 0) {
+                                properties.add(new Property.Builder(property).properties(props).build());
+                            }
+                        } else {
+                            properties.add(property);
                         }
-                    } else {
-                        properties.add(property);
                     }
                 });
             }
@@ -182,18 +184,18 @@ interface Configurable extends ExtJsonable {
             return properties;
         }
 
-        private static void setByPath(final Collection<Property> target, final int index, final String[] paths,
+        private static void setByPath(final Collection<Property> target, final int i, final String[] paths,
                                       final Collection<Property> source) {
-            if (index < paths.length) {
-                final int nextIndex = index + 1;
+            if (i < paths.length) {
+                final int next = i + 1;
                 final Optional<Property> current = target.stream().
-                        filter(property -> paths[index].equals(property.getName())).findFirst();
+                        filter(property -> property != null && paths[i].equals(property.getName())).findFirst();
                 if (current.isPresent()) {
-                    setByPath(current.get().properties(), nextIndex, paths, source);
+                    setByPath(current.get().properties(), next, paths, source);
                 } else {
-                    final Property newProperty = new Property.Builder(paths[index], "").build();
+                    final Property newProperty = new Property.Builder(paths[i], "").build();
                     target.add(newProperty);
-                    setByPath(newProperty.properties(), nextIndex, paths, source);
+                    setByPath(newProperty.properties(), next, paths, source);
                 }
             } else {
                 target.addAll(source);
