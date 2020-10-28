@@ -290,6 +290,7 @@ final class DbConfigRepositoryTest extends UnitTest {
         long time = System.currentTimeMillis();
         final Optional<Config> largeConfig = configRepository.saveAndFlush(Stream.of(getLargeConfig(100))).findFirst();
         System.out.println("End saveAndFlush in " + (System.currentTimeMillis() - time) + " ms.");
+        sleep(1);
         // Check test results
         assertTrue(largeConfig.isPresent());
         // Update a large config
@@ -323,6 +324,7 @@ final class DbConfigRepositoryTest extends UnitTest {
                 attribute("key_2", "value_2").
                 attribute("key_3", "value_3").build();
         final Optional<Config> newConfig = configRepository.saveAndFlush(Stream.of(config)).findFirst();
+        sleep(1);
         // Check test results
         assertTrue(newConfig.isPresent());
         assertTrue(newConfig.get().getId() > 0);
@@ -355,6 +357,7 @@ final class DbConfigRepositoryTest extends UnitTest {
                 attribute("key_2", "value_2").
                 attribute("key_3", "value_3").build();
         final Optional<Config> newConfig = configRepository.saveAndFlush(Stream.of(config)).findFirst();
+        sleep(1);
         // Check test results
         assertTrue(newConfig.isPresent());
         assertTrue(newConfig.get().getId() > 0);
@@ -477,6 +480,7 @@ final class DbConfigRepositoryTest extends UnitTest {
         final Optional<Config> newConfig = configRepository.saveAndFlush(
                 Stream.of(new Config.Builder(NEW_CONFIG, Collections.singletonList(firstProperty)).build())
         ).findFirst();
+        sleep(1);
         //  Check test results
         assertTrue(newConfig.isPresent());
         assertTrue(newConfig.get().getId() > 0);
@@ -503,6 +507,7 @@ final class DbConfigRepositoryTest extends UnitTest {
         final Optional<Config> newConfig = configRepository.saveAndFlush(
                 Stream.of(new Config.Builder(NEW_CONFIG, Collections.singletonList(firstProperty)).build())
         ).findFirst();
+        sleep(1);
         //  Check test results
         assertTrue(newConfig.isPresent());
         assertTrue(newConfig.get().getId() > 0);
@@ -528,6 +533,7 @@ final class DbConfigRepositoryTest extends UnitTest {
         final Optional<Config> newConfig = configRepository.saveAndFlush(
                 Stream.of(new Config.Builder(NEW_CONFIG, Collections.singletonList(firstProperty)).build())
         ).findFirst();
+        sleep(1);
         //  Check test results
         assertTrue(newConfig.isPresent());
         assertTrue(newConfig.get().getId() > 0);

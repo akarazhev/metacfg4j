@@ -173,4 +173,12 @@ public class UnitTest {
         assertThrows(InvocationTargetException.class, constructor::newInstance);
         constructor.setAccessible(false);
     }
+
+    protected void sleep(final long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }
