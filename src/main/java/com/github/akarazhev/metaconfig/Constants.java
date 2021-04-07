@@ -1,4 +1,4 @@
-/* Copyright 2019-2020 Andrey Karazhev
+/* Copyright 2019-2021 Andrey Karazhev
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,6 +34,18 @@ public final class Constants {
         public static final String CONFIG_ATTRIBUTES_TABLE = "config-attributes";
         public static final String PROPERTIES_TABLE = "properties";
         public static final String PROPERTY_ATTRIBUTES_TABLE = "property-attributes";
+    }
+
+    /**
+     * Settings constants for the library.
+     */
+    public final static class Settings {
+
+        public static final String FETCH_SIZE = "fetch-size";
+
+        private Settings() {
+            throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
+        }
     }
 
     /**

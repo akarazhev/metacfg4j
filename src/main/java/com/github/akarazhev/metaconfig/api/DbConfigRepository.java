@@ -1,4 +1,4 @@
-/* Copyright 2019-2020 Andrey Karazhev
+/* Copyright 2019-2021 Andrey Karazhev
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -45,6 +45,7 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.SAVE_CONFIGS_ER
 import static com.github.akarazhev.metaconfig.Constants.Messages.SAVE_PROPERTIES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_ATTRIBUTES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_ATTRIBUTES_ERROR_MSG;
+import static com.github.akarazhev.metaconfig.Constants.Settings.FETCH_SIZE;
 import static java.util.AbstractMap.SimpleEntry;
 
 /**
@@ -53,10 +54,12 @@ import static java.util.AbstractMap.SimpleEntry;
 final class DbConfigRepository implements ConfigRepository {
     private final DataSource dataSource;
     private final Map<String, String> mapping = new HashMap<>();
+    private final Map<String, Object> settings = new HashMap<>();
 
     private DbConfigRepository(final Builder builder) {
         this.dataSource = builder.dataSource;
         this.mapping.putAll(JDBCUtils.createMapping(builder.mapping));
+        this.settings.putAll(JDBCUtils.createSettings(builder.settings));
         JDBCUtils.createDataBase(this.dataSource, this.mapping);
     }
 
@@ -75,7 +78,7 @@ final class DbConfigRepository implements ConfigRepository {
                 try (final Connection connection = dataSource.getConnection();
                      final PreparedStatement statement =
                              connection.prepareStatement(JDBCUtils.concatSql(sql, subSql, names))) {
-                    JDBCUtils.set(statement, names);
+                    JDBCUtils.set(statement, (Integer) settings.get(FETCH_SIZE), names);
 
                     try (final ResultSet resultSet = statement.executeQuery()) {
                         long prevConfigId = -1;
@@ -191,7 +194,7 @@ final class DbConfigRepository implements ConfigRepository {
                 final int total = getCount(connection, configs, attributes, request);
                 if (total > 0) {
                     try (final PreparedStatement statement = connection.prepareStatement(sql)) {
-                        JDBCUtils.set(statement, request);
+                        JDBCUtils.set(statement, (Integer) settings.get(FETCH_SIZE), request);
 
                         try (final ResultSet resultSet = statement.executeQuery()) {
                             final Collection<String> names = new LinkedList<>();
@@ -258,7 +261,7 @@ final class DbConfigRepository implements ConfigRepository {
     private Collection<Property> getLinkedProps(final Map<Long, Property> properties,
                                                 final Collection<SimpleEntry<Long, Long>> links) {
         final Map<Long, Property> linkedProps = new HashMap<>(properties);
-        final Comparator<SimpleEntry<Long, Long>> comparing = Comparator.comparing(SimpleEntry::getValue);
+        final Comparator<Map.Entry<Long, Long>> comparing = Map.Entry.comparingByValue();
         links.stream().
                 sorted(comparing.reversed()).
                 forEach(link -> {
@@ -683,7 +686,7 @@ final class DbConfigRepository implements ConfigRepository {
         final String sql = String.format(SQL.SELECT.COUNT_CONFIG_NAMES_BY_NAME, configs, attributes) +
                 JDBCUtils.getSubSql(request) + ";";
         try (final PreparedStatement statement = connection.prepareStatement(sql)) {
-            JDBCUtils.set(statement, request);
+            JDBCUtils.set(statement, (Integer) settings.get(FETCH_SIZE), request);
 
             try (final ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
@@ -737,7 +740,7 @@ final class DbConfigRepository implements ConfigRepository {
                 final String subSql = String.format(" OR `%s`.`NAME` = ?", configs);
                 try (final PreparedStatement statement =
                              connection.prepareStatement(JDBCUtils.concatSql(sql, subSql, names))) {
-                    JDBCUtils.set(statement, names);
+                    JDBCUtils.set(statement, (Integer) settings.get(FETCH_SIZE), names);
                     final int deleted = statement.executeUpdate();
                     connection.commit();
                     return deleted;
@@ -880,7 +883,6 @@ final class DbConfigRepository implements ConfigRepository {
     }
 
     private static final class JDBCUtils {
-        private static final int FETCH_SIZE = 100;
 
         private static void createDataBase(final DataSource dataSource, final Map<String, String> mapping) {
             Connection connection = null;
@@ -928,6 +930,18 @@ final class DbConfigRepository implements ConfigRepository {
             }
 
             return mapping;
+        }
+
+        private static Map<String, Object> createSettings(final Map<String, Object> settings) {
+            if (settings == null) {
+                final Map<String, Object> defaultSettings = new HashMap<>();
+                defaultSettings.put(FETCH_SIZE, 100);
+                return defaultSettings;
+            } else {
+                settings.putIfAbsent(FETCH_SIZE, 100);
+            }
+
+            return settings;
         }
 
         private static String concatSql(final String sql, final String subSql, final String[] names) {
@@ -993,15 +1007,17 @@ final class DbConfigRepository implements ConfigRepository {
             statement.setLong(4, config.getUpdated());
         }
 
-        private static void set(final PreparedStatement statement, final String[] names) throws SQLException {
-            statement.setFetchSize(FETCH_SIZE);
+        private static void set(final PreparedStatement statement, final int fetchSize, final String[] names)
+                throws SQLException {
+            statement.setFetchSize(fetchSize);
             for (int i = 0; i < names.length; i++) {
                 statement.setString(i + 1, names[i]);
             }
         }
 
-        private static void set(final PreparedStatement statement, final PageRequest request) throws SQLException {
-            statement.setFetchSize(FETCH_SIZE);
+        private static void set(final PreparedStatement statement, final int fetchSize, final PageRequest request)
+                throws SQLException {
+            statement.setFetchSize(fetchSize);
             statement.setString(1, "%" + request.getName() + "%");
 
             int index = 1;
@@ -1133,6 +1149,7 @@ final class DbConfigRepository implements ConfigRepository {
     final static class Builder {
         private final DataSource dataSource;
         private Map<String, String> mapping;
+        private Map<String, Object> settings;
 
         /**
          * Constructs a DB config repository with a required parameter.
@@ -1157,6 +1174,25 @@ final class DbConfigRepository implements ConfigRepository {
                     validate(m -> validate(m, PROPERTIES_TABLE), PROPERTIES_TABLE + " mapping is wrong.").
                     validate(m -> validate(m, PROPERTY_ATTRIBUTES_TABLE), PROPERTY_ATTRIBUTES_TABLE +
                             " mapping is wrong.").get();
+            return this;
+        }
+
+        /**
+         * Constructs a DB config repository with settings.
+         *
+         * @param settings DB settings.
+         * @return a builder of the DB config repository.
+         */
+        Builder settings(final Map<String, Object> settings) {
+            this.settings = Validator.of(settings).
+                    validate(m -> {
+                        if (settings.containsKey(FETCH_SIZE)) {
+                            final Object value = settings.get(FETCH_SIZE);
+                            return value instanceof Integer;
+                        }
+
+                        return true;
+                    }, FETCH_SIZE + " setting is wrong.").get();
             return this;
         }
 

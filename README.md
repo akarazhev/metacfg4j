@@ -26,8 +26,8 @@ Add a maven dependency into your project:
 ```xml
 <dependency>
     <groupId>com.github.akarazhev</groupId>
-    <artifactId>metacfg4j</artifactId>
-    <version>1.16</version>
+ <artifactId>metacfg4j</artifactId>
+ <version>1.17</version>
 </dependency>
 ```
 Instantiate the meta configuration class in your project with the default configuration:
@@ -47,24 +47,28 @@ NOTE: The web-server will not be started, since it requires the related configur
 ### Advanced Configuration
 
 You can instantiate the meta configuration with the custom configuration:
+
 ```java
-public MetaConfig metaConfig() {
-    // Create the custom data mapping
-    final Map<String, String> dataMapping = new HashMap<>();
-    dataMapping.put(Constants.Mapping.CONFIGS_TABLE, "CONFIGS");
-    dataMapping.put(Constants.Mapping.CONFIG_ATTRIBUTES_TABLE, "CONFIG_ATTRIBUTES");
-    dataMapping.put(Constants.Mapping.PROPERTIES_TABLE, "PROPERTIES");
-    dataMapping.put(Constants.Mapping.PROPERTY_ATTRIBUTES_TABLE, "PROPERTY_ATTRIBUTES");
-    // Create the web server config
-    final Config webServer = new Config.Builder(Server.Settings.CONFIG_NAME,
+public MetaConfig metaConfig(){
+// Create the custom data mapping
+final Map<String, String> dataMapping=new HashMap<>();
+        dataMapping.put(Constants.Mapping.CONFIGS_TABLE,"CONFIGS");
+        dataMapping.put(Constants.Mapping.CONFIG_ATTRIBUTES_TABLE,"CONFIG_ATTRIBUTES");
+        dataMapping.put(Constants.Mapping.PROPERTIES_TABLE,"PROPERTIES");
+        dataMapping.put(Constants.Mapping.PROPERTY_ATTRIBUTES_TABLE,"PROPERTY_ATTRIBUTES");
+// Set a fetch size
+final Map<String, String> settings=new HashMap<>();
+        settings.put(FETCH_SIZE,100);
+// Create the web server config
+final Config webServer=new Config.Builder(Server.Settings.CONFIG_NAME,
         Arrays.asList(
-                new Property.Builder(Server.Settings.HOSTNAME, "localhost").build(),
-                new Property.Builder(Server.Settings.API_PATH, "/api/metacfg/").build(),
-                new Property.Builder(Constants.Endpoints.ACCEPT_CONFIG, "accept_config").build(),
-                new Property.Builder(Constants.Endpoints.CONFIG_NAMES, "config_names").build(),
-                new Property.Builder(Constants.Endpoints.CONFIG, "config").build(),
-                new Property.Builder(Server.Settings.PORT, 8000).build(),
-                new Property.Builder(Server.Settings.BACKLOG, 0).build(),
+        new Property.Builder(Server.Settings.HOSTNAME,"localhost").build(),
+        new Property.Builder(Server.Settings.API_PATH,"/api/metacfg/").build(),
+        new Property.Builder(Constants.Endpoints.ACCEPT_CONFIG,"accept_config").build(),
+        new Property.Builder(Constants.Endpoints.CONFIG_NAMES,"config_names").build(),
+        new Property.Builder(Constants.Endpoints.CONFIG,"config").build(),
+        new Property.Builder(Server.Settings.PORT,8000).build(),
+        new Property.Builder(Server.Settings.BACKLOG,0).build(),
                 new Property.Builder(Server.Settings.KEY_STORE_FILE, "./data/metacfg4j.keystore").build(),
                 new Property.Builder(Server.Settings.ALIAS, "alias").build(),
                 new Property.Builder(Server.Settings.STORE_PASSWORD, "password").build(),
@@ -75,6 +79,7 @@ public MetaConfig metaConfig() {
         webServer(webServer).
         dataSource(getDataSource()).
         dataMapping(dataMapping).
+        dbSettings(settings).
         build();
 }
 ```
