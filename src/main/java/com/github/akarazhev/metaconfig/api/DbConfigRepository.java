@@ -829,7 +829,7 @@ final class DbConfigRepository implements ConfigRepository {
             static final String CONFIG_ATTRIBUTES =
                     "SELECT `CA`.`KEY`, `CA`.`VALUE` FROM `%s` AS `CA` WHERE `CA`.`CONFIG_ID` = ?;";
             static final String PROPERTY_ATTRIBUTES =
-                    "SELECT `PA`.`KEY`, `PA`.`VALUE` FROM `%s` AS `PA` WHERE `PA`.`ID` = ?;";
+                    "SELECT `PA`.`KEY`, `PA`.`VALUE` FROM `%s` AS `PA` WHERE `PA`.`PROPERTY_ID` = ?;";
             static final String PROPERTY_ID_UPDATED =
                     "SELECT `P`.`ID`, `P`.`UPDATED` FROM `%s` AS `P` WHERE `P`.`CONFIG_ID` = ?;";
             static final String CONFIG_VERSION_UPDATED =
