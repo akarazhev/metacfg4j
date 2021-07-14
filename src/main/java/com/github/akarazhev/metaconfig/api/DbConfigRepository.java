@@ -788,12 +788,12 @@ final class DbConfigRepository implements ConfigRepository {
                     "UPDATE `%s` SET `NAME` = ?, `DESCRIPTION` = ?, `VERSION` = ?, `UPDATED` = ? " +
                             "WHERE `ID` = ? AND `VERSION` = ?;";
             static final String CONFIG_ATTRIBUTE =
-                    "UPDATE `%s` SET `KEY` = ?, `VALUE` = ? WHERE `CONFIG_ID` = ?;";
+                    "UPDATE `%s` SET `VALUE` = ? WHERE `CONFIG_ID` = ? AND `KEY` = ?;";
             static final String PROPERTIES =
                     "UPDATE `%s` SET `NAME` = ?, `CAPTION` = ?, `DESCRIPTION` = ?, `TYPE` = ?, `VALUE` = ?, " +
                             "`UPDATED` = ? WHERE `ID` = ?;";
             static final String PROPERTY_ATTRIBUTE =
-                    "UPDATE `%s` SET `KEY` = ?, `VALUE` = ? WHERE `PROPERTY_ID` = ?;";
+                    "UPDATE `%s` SET `VALUE` = ? WHERE `PROPERTY_ID` = ? AND `KEY` = ?;";
         }
 
         private final static class DELETE {
@@ -1033,9 +1033,9 @@ final class DbConfigRepository implements ConfigRepository {
         private static void setBatch(final PreparedStatement statement, final Map<String, String> attributes,
                                      final long id) throws SQLException {
             for (final String key : attributes.keySet()) {
-                statement.setString(1, key);
-                statement.setString(2, attributes.get(key));
-                statement.setLong(3, id);
+                statement.setString(1, attributes.get(key));
+                statement.setLong(2, id);
+                statement.setString(3, key);
                 statement.addBatch();
             }
         }
