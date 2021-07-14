@@ -103,6 +103,24 @@ final class DbConfigRepositoryTest extends UnitTest {
     @Test
     @DisplayName("Find configs by names")
     void findConfigsByNames() {
+        Config[] configs = configRepository.findByNames(Stream.of(FIRST_CONFIG)).toArray(Config[]::new);
+        // Check test results
+        assertEquals(1, configs.length);
+        final Config firstExpected = getConfigWithSubProperties(FIRST_CONFIG);
+        assertEqualsConfig(firstExpected, configs[0]);
+        assertEqualsProperty(firstExpected, configs[0]);
+
+        configs = configRepository.findByNames(Stream.of(SECOND_CONFIG)).toArray(Config[]::new);
+        // Check test results
+        assertEquals(1, configs.length);
+        final Config secondExpected = getConfigWithSubProperties(SECOND_CONFIG);
+        assertEqualsConfig(secondExpected, configs[0]);
+        assertEqualsProperty(secondExpected, configs[0]);
+    }
+
+    @Test
+    @DisplayName("Find all configs by names")
+    void findAllConfigsByNames() {
         final Config[] configs =
                 configRepository.findByNames(Stream.of(FIRST_CONFIG, SECOND_CONFIG)).toArray(Config[]::new);
         // Check test results

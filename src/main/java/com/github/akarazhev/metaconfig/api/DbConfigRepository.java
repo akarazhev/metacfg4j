@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
@@ -84,7 +85,7 @@ final class DbConfigRepository implements ConfigRepository {
                         long prevConfigId = -1;
                         final Map<Long, Config> configs = new HashMap<>();
                         final Map<Long, Property> properties = new HashMap<>();
-                        final Collection<SimpleEntry<Long, Long>> links = new LinkedList<>();
+                        final Collection<SimpleEntry<Long, Long>> links = new HashSet<>();
                         while (resultSet.next()) {
                             // Create properties
                             final long propertyId = resultSet.getLong(8);
@@ -109,7 +110,12 @@ final class DbConfigRepository implements ConfigRepository {
                                 // Set a property
                                 properties.put(propertyId, builder.build());
                                 // Create links
-                                links.add(new SimpleEntry<>(propertyId, resultSet.getLong(9)));
+                                final long id = resultSet.getLong(9);
+                                if (id > 0) {
+                                    links.add(new SimpleEntry<>(propertyId, id));
+                                } else {
+                                    links.add(new SimpleEntry<>(propertyId, resultSet.getLong(1)));
+                                }
                             }
                             // Create configs
                             final Config.Builder builder;
@@ -133,7 +139,7 @@ final class DbConfigRepository implements ConfigRepository {
                             // Set properties to the config
                             if (prevConfigId > -1 && configId != prevConfigId) {
                                 configs.put(prevConfigId, new Config.Builder(configs.get(prevConfigId)).
-                                        properties(new String[0], getLinkedProps(properties, links)).build());
+                                        properties(new String[0], getLinkedProps(prevConfigId, properties, links)).build());
                                 links.clear();
                                 properties.clear();
                             }
@@ -143,7 +149,7 @@ final class DbConfigRepository implements ConfigRepository {
 
                         if (configs.size() > 0) {
                             configs.put(prevConfigId, new Config.Builder(configs.get(prevConfigId)).
-                                    properties(new String[0], getLinkedProps(properties, links)).build());
+                                    properties(new String[0], getLinkedProps(prevConfigId, properties, links)).build());
                         }
 
                         return configs.values().stream();
@@ -258,7 +264,7 @@ final class DbConfigRepository implements ConfigRepository {
         return count;
     }
 
-    private Collection<Property> getLinkedProps(final Map<Long, Property> properties,
+    private Collection<Property> getLinkedProps(final long configId, final Map<Long, Property> properties,
                                                 final Collection<SimpleEntry<Long, Long>> links) {
         final Map<Long, Property> linkedProps = new HashMap<>(properties);
         final Comparator<Map.Entry<Long, Long>> comparing = Map.Entry.comparingByValue();
@@ -271,6 +277,11 @@ final class DbConfigRepository implements ConfigRepository {
                         linkedProps.put(link.getValue(),
                                 new Property.Builder(parentProp).property(new String[0], childProp).build());
                         linkedProps.remove(link.getKey());
+                    } else {
+                        final Property prop = parentProp == null ? childProp : parentProp;
+                        if (!links.contains(new SimpleEntry<>(prop.getId(), configId))) {
+                            linkedProps.remove(prop.getId());
+                        }
                     }
                 });
 
