@@ -533,13 +533,13 @@ final class DbConfigRepository implements ConfigRepository {
             if (TableId.CONFIG.equals(tableId)) {
                 execute(connection, String.format(SQL.INSERT.CONFIG_ATTRIBUTES, table), id, toInsert,
                         UPDATE_ATTRIBUTES_ERROR_MSG);
-                execute(connection, String.format(SQL.UPDATE.ATTRIBUTE, table), id, toUpdate);
+                execute(connection, String.format(SQL.UPDATE.CONFIG_ATTRIBUTE, table), id, toUpdate);
                 execute(connection, String.format(SQL.DELETE.CONFIG_ATTRIBUTE, table), id, toDelete,
                         UPDATE_ATTRIBUTES_ERROR_MSG);
             } else if (TableId.PROPERTY.equals(tableId)) {
                 execute(connection, String.format(SQL.INSERT.PROPERTY_ATTRIBUTES, table), id, toInsert,
                         UPDATE_ATTRIBUTES_ERROR_MSG);
-                execute(connection, String.format(SQL.UPDATE.ATTRIBUTE, table), id, toUpdate);
+                execute(connection, String.format(SQL.UPDATE.PROPERTY_ATTRIBUTE, table), id, toUpdate);
                 execute(connection, String.format(SQL.DELETE.PROPERTY_ATTRIBUTE, table), id, toDelete,
                         UPDATE_ATTRIBUTES_ERROR_MSG);
             }
@@ -787,11 +787,13 @@ final class DbConfigRepository implements ConfigRepository {
             static final String CONFIGS =
                     "UPDATE `%s` SET `NAME` = ?, `DESCRIPTION` = ?, `VERSION` = ?, `UPDATED` = ? " +
                             "WHERE `ID` = ? AND `VERSION` = ?;";
-            static final String ATTRIBUTE =
-                    "UPDATE `%s` SET `KEY` = ?, `VALUE` = ? WHERE `ID` = ?;";
+            static final String CONFIG_ATTRIBUTE =
+                    "UPDATE `%s` SET `KEY` = ?, `VALUE` = ? WHERE `CONFIG_ID` = ?;";
             static final String PROPERTIES =
                     "UPDATE `%s` SET `NAME` = ?, `CAPTION` = ?, `DESCRIPTION` = ?, `TYPE` = ?, `VALUE` = ?, " +
                             "`UPDATED` = ? WHERE `ID` = ?;";
+            static final String PROPERTY_ATTRIBUTE =
+                    "UPDATE `%s` SET `KEY` = ?, `VALUE` = ? WHERE `PROPERTY_ID` = ?;";
         }
 
         private final static class DELETE {
