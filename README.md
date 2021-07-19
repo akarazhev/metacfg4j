@@ -28,7 +28,7 @@ Add a maven dependency into your project:
  <version>2.1</version>
 </dependency>
 ```
-Note: This version is adopted for Java 14+, use please a 1.x version for Java 8.
+Note: This version is adopted for Java 16+, use please a 1.x version for Java 8.
 
 Instantiate the meta configuration class in your project with the default configuration:
 ```java
@@ -205,8 +205,8 @@ has a list of config names and pagination settings. <br/>
 
 ## Build Requirements
 
- &#8658; Java 14+ <br/>
- &#8658; Maven 3.6+ <br/>
+&#8658; Java 16+ <br/>
+&#8658; Maven 3.6+ <br/>
  
 ## Contribution
  
