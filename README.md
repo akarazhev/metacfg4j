@@ -24,8 +24,8 @@ Add a maven dependency into your project:
 ```xml
 <dependency>
     <groupId>com.github.akarazhev</groupId>
-    <artifactId>metacfg4j</artifactId>
-    <version>2.0</version>
+ <artifactId>metacfg4j</artifactId>
+ <version>2.1</version>
 </dependency>
 ```
 Note: This version is adopted for Java 14+, use please a 1.x version for Java 8.
