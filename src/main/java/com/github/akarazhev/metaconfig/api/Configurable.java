@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_HELPER_CLASS_ERROR;
+
 /**
  * Extends the basic interface of <code>ExtJsonable</code>
  * and provides functionality for getting attributes and properties.
@@ -92,6 +94,11 @@ interface Configurable extends ExtJsonable {
      * Provides methods to make building of configuration and property objects easier.
      */
     final class ConfigBuilder {
+
+        private ConfigBuilder() {
+            throw new AssertionError(CREATE_HELPER_CLASS_ERROR);
+        }
+
         /**
          * Returns attributes which belong to configurations.
          *
@@ -102,8 +109,8 @@ interface Configurable extends ExtJsonable {
             final JsonObject jsonAttributes = (JsonObject) jsonObject.get("attributes");
             if (jsonAttributes != null) {
                 final Map<String, String> attributes = new HashMap<>();
-                for (final Object key : jsonAttributes.keySet()) {
-                    attributes.put((String) key, (String) jsonAttributes.get(key));
+                for (final String key : jsonAttributes.keySet()) {
+                    attributes.put(key, (String) jsonAttributes.get(key));
                 }
 
                 return Optional.of(attributes);
