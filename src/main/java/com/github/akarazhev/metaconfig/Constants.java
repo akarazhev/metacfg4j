@@ -1,4 +1,4 @@
-/* Copyright 2019-2020 Andrey Karazhev
+/* Copyright 2019-2021 Andrey Karazhev
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -37,6 +37,18 @@ public final class Constants {
     }
 
     /**
+     * Settings constants for the library.
+     */
+    public final static class Settings {
+
+        public static final String FETCH_SIZE = "fetch-size";
+
+        private Settings() {
+            throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);
+        }
+    }
+
+    /**
      * Endpoints constants for the library.
      */
     public final static class Endpoints {
@@ -64,6 +76,7 @@ public final class Constants {
 
         public static final String CREATE_FACTORY_CLASS_ERROR = "Factory class can not be created.";
         public static final String CREATE_UTILS_CLASS_ERROR = "Utils class can not be created.";
+        public static final String CREATE_HELPER_CLASS_ERROR = "Helper class can not be created.";
         public static final String META_CONFIG_ERROR = "MetaConfig can not be instantiated.";
         public static final String STRING_TO_JSON_ERROR = "String can not be parsed to JSON.";
         public static final String WRONG_ID_VALUE = "Id value must be greater than zero.";
@@ -85,8 +98,9 @@ public final class Constants {
         public static final String CONFIG_ACCEPT_ERROR = "Config accept error.";
         public static final String CREATE_CONFIG_TABLE_ERROR = "'Configs' table can not be created.";
         public static final String SAVE_CONFIGS_ERROR = "Config(s) instances can not be saved.";
-        public static final String INSERT_ATTRIBUTES_ERROR = "Attributes can not be inserted.";
-        public static final String UPDATE_ATTRIBUTES_ERROR = "Attributes can not be updated.";
+        public static final String INSERT_ATTRIBUTES_ERROR_MSG = "Attribute(s) can not be inserted: '%s'.";
+        public static final String UPDATE_ATTRIBUTES_ERROR_MSG = "Attribute(s) can not be updated: '%s'.";
+        public static final String UPDATE_ATTRIBUTES_ERROR = "Attribute(s) can not be updated.";
         public static final String SAVE_PROPERTIES_ERROR = "Propert(y/ies) instances can not be saved.";
         public static final String RECEIVED_CONFIGS_ERROR = "Config instances can not be received.";
         public static final String RECEIVED_CONFIG_NAMES_ERROR = "Config names can not be received.";
