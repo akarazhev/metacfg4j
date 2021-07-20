@@ -1,4 +1,4 @@
-/* Copyright 2019-2020 Andrey Karazhev
+/* Copyright 2019-2021 Andrey Karazhev
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -117,6 +117,7 @@ public final class MetaConfig implements ConfigService, Closeable {
         private Config webClient;
         private Config webConfig;
         private Map<String, String> dataMapping;
+        private Map<String, Object> dbSettings;
         private DataSource dataSource;
         private boolean isDefaultConfig;
 
@@ -161,6 +162,17 @@ public final class MetaConfig implements ConfigService, Closeable {
         }
 
         /**
+         * Constructs the core configuration class with the custom DB settings.
+         *
+         * @param settings DB settings.
+         * @return a builder of the core configuration class.
+         */
+        public Builder dbSettings(final Map<String, Object> settings) {
+            this.dbSettings = Validator.of(settings).get();
+            return this;
+        }
+
+        /**
          * Constructs the core configuration class with an existed data source.
          *
          * @param dataSource a data source.
@@ -190,9 +202,11 @@ public final class MetaConfig implements ConfigService, Closeable {
             try {
                 // init a mapping
                 final Map<String, String> mapping = dataMapping != null ? dataMapping : new HashMap<>();
+                // init settings
+                final Map<String, Object> settings = dbSettings != null ? dbSettings : new HashMap<>();
                 // Init the repository
                 final var configRepository = dataSource != null ?
-                        new DbConfigRepository.Builder(dataSource).mapping(mapping).build() :
+                        new DbConfigRepository.Builder(dataSource).mapping(mapping).settings(settings).build() :
                         new WebConfigRepository.Builder(webClient).build();
                 // Init the config service
                 final var configService = new ConfigServiceImpl.Builder(configRepository).build();

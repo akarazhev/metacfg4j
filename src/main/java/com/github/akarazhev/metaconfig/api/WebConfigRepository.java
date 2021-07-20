@@ -1,4 +1,4 @@
-/* Copyright 2019-2020 Andrey Karazhev
+/* Copyright 2019-2021 Andrey Karazhev
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -96,7 +96,7 @@ final class WebConfigRepository implements ConfigRepository {
     public PageResponse findByPageRequest(final PageRequest request) {
         // Set the configuration
         final var properties = getProperties(request);
-        final String content = (String) getContent(properties, RECEIVED_PAGE_RESPONSE_ERROR);
+        final var content = (String) getContent(properties, RECEIVED_PAGE_RESPONSE_ERROR);
         try {
             return new PageResponse.Builder((JsonObject) Jsoner.deserialize(content)).build();
         } catch (final Exception e) {

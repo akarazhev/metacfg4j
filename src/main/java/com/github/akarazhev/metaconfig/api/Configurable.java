@@ -1,4 +1,4 @@
-/* Copyright 2019-2020 Andrey Karazhev
+/* Copyright 2019-2021 Andrey Karazhev
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,6 +22,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import static com.github.akarazhev.metaconfig.Constants.Messages.CREATE_HELPER_CLASS_ERROR;
 
 /**
  * Extends the basic interface of <code>ExtJsonable</code>
@@ -70,17 +72,18 @@ interface Configurable extends ExtJsonable {
     /**
      * Returns a property by paths.
      *
-     * @param index  a current path.
+     * @param i      a current path.
      * @param paths  paths
      * @param source a current property stream.
      * @return a property.
      */
-    static Optional<Property> getProperty(final int index, final String[] paths, final Stream<Property> source) {
-        if (index < paths.length) {
-            final var current = source.filter(property -> paths[index].equals(property.getName())).findFirst();
+    static Optional<Property> getProperty(final int i, final String[] paths, final Stream<Property> source) {
+        if (i < paths.length) {
+            final var current = source.
+                    filter(property -> property != null && paths[i].equals(property.getName())).findFirst();
             if (current.isPresent()) {
-                return index == paths.length - 1 ?
-                        current : getProperty(index + 1, paths, current.get().getProperties());
+                return i == paths.length - 1 ?
+                        current : getProperty(i + 1, paths, current.get().getProperties());
             }
         }
 
@@ -91,6 +94,11 @@ interface Configurable extends ExtJsonable {
      * Provides methods to make building of configuration and property objects easier.
      */
     final class ConfigBuilder {
+
+        private ConfigBuilder() {
+            throw new AssertionError(CREATE_HELPER_CLASS_ERROR);
+        }
+
         /**
          * Returns attributes which belong to configurations.
          *
@@ -163,17 +171,19 @@ interface Configurable extends ExtJsonable {
             }
         }
 
-        private static Collection<Property> deleteByPath(final int index, final String[] paths, final Stream<Property> stream) {
+        private static Collection<Property> deleteByPath(final int i, final String[] paths, final Stream<Property> stream) {
             final Collection<Property> properties = new LinkedList<>();
-            if (index < paths.length) {
+            if (i < paths.length) {
                 stream.forEach(property -> {
-                    if (paths[index].equalsIgnoreCase(property.getName())) {
-                        final Collection<Property> props = deleteByPath(index + 1, paths, property.getProperties());
-                        if (props.size() > 0) {
-                            properties.add(new Property.Builder(property).properties(props).build());
+                    if (property != null) {
+                        if (paths[i].equalsIgnoreCase(property.getName())) {
+                            final Collection<Property> props = deleteByPath(i + 1, paths, property.getProperties());
+                            if (props.size() > 0) {
+                                properties.add(new Property.Builder(property).properties(props).build());
+                            }
+                        } else {
+                            properties.add(property);
                         }
-                    } else {
-                        properties.add(property);
                     }
                 });
             }
@@ -181,17 +191,18 @@ interface Configurable extends ExtJsonable {
             return properties;
         }
 
-        private static void setByPath(final Collection<Property> target, final int index, final String[] paths,
+        private static void setByPath(final Collection<Property> target, final int i, final String[] paths,
                                       final Collection<Property> source) {
-            if (index < paths.length) {
-                final var nextIndex = index + 1;
-                final var current = target.stream().filter(property -> paths[index].equals(property.getName())).findFirst();
+            if (i < paths.length) {
+                final var next = i + 1;
+                final var current = target.stream().
+                        filter(property -> property != null && paths[i].equals(property.getName())).findFirst();
                 if (current.isPresent()) {
-                    setByPath(current.get().properties(), nextIndex, paths, source);
+                    setByPath(current.get().properties(), next, paths, source);
                 } else {
-                    final var newProperty = new Property.Builder(paths[index], "").build();
+                    final var newProperty = new Property.Builder(paths[i], "").build();
                     target.add(newProperty);
-                    setByPath(newProperty.properties(), nextIndex, paths, source);
+                    setByPath(newProperty.properties(), next, paths, source);
                 }
             } else {
                 target.addAll(source);
