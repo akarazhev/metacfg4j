@@ -1,4 +1,4 @@
-/* Copyright 2019-2020 Andrey Karazhev
+/* Copyright 2019-2021 Andrey Karazhev
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -172,5 +172,13 @@ public class UnitTest {
         constructor.setAccessible(true);
         assertThrows(InvocationTargetException.class, constructor::newInstance);
         constructor.setAccessible(false);
+    }
+
+    protected void sleep(final long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2019-2020 Andrey Karazhev
+/* Copyright 2019-2021 Andrey Karazhev
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -96,15 +96,9 @@ public final class Server implements DbServer {
                 map(Property::getValue).
                 orElse(TYPE_TCP);
         switch (type) {
-            case TYPE_WEB:
-                dbServer = org.h2.tools.Server.createWebServer(args);
-                break;
-            case TYPE_PG:
-                dbServer = org.h2.tools.Server.createPgServer(args);
-                break;
-            case TYPE_TCP:
-                dbServer = org.h2.tools.Server.createTcpServer(args);
-                break;
+            case TYPE_WEB -> dbServer = org.h2.tools.Server.createWebServer(args);
+            case TYPE_PG -> dbServer = org.h2.tools.Server.createPgServer(args);
+            case TYPE_TCP -> dbServer = org.h2.tools.Server.createTcpServer(args);
         }
     }
 

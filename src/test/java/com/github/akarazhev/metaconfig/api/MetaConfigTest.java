@@ -1,4 +1,4 @@
-/* Copyright 2019-2020 Andrey Karazhev
+/* Copyright 2019-2021 Andrey Karazhev
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -10,6 +10,7 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
+import com.github.akarazhev.metaconfig.Constants;
 import com.github.akarazhev.metaconfig.UnitTest;
 import com.github.akarazhev.metaconfig.engine.db.DbServer;
 import com.github.akarazhev.metaconfig.engine.db.DbServers;
@@ -28,9 +29,12 @@ import java.io.IOException;
 import java.time.Clock;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static com.github.akarazhev.metaconfig.Constants.Settings.FETCH_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -63,9 +67,21 @@ final class MetaConfigTest extends UnitTest {
                             new Property.Builder(Server.Settings.STORE_PASSWORD, "password").build(),
                             new Property.Builder(Server.Settings.KEY_PASSWORD, "password").build()))
                     .build();
+
+            final Map<String, String> dataMapping = new HashMap<>();
+            dataMapping.put(Constants.Mapping.CONFIGS_TABLE, "CONFIGS");
+            dataMapping.put(Constants.Mapping.CONFIG_ATTRIBUTES_TABLE, "CONFIG_ATTRIBUTES");
+            dataMapping.put(Constants.Mapping.PROPERTIES_TABLE, "PROPERTIES");
+            dataMapping.put(Constants.Mapping.PROPERTY_ATTRIBUTES_TABLE, "PROPERTY_ATTRIBUTES");
+
+            final Map<String, Object> dbSettings = new HashMap<>();
+            dbSettings.put(FETCH_SIZE, 100);
+
             dbMetaConfig = new MetaConfig.Builder().
                     webServer(webServer).
                     dataSource(connectionPool.getDataSource()).
+                    dataMapping(dataMapping).
+                    dbSettings(dbSettings).
                     build();
         }
 

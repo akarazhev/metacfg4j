@@ -8,18 +8,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License. */
-package com.github.akarazhev.metaconfig.engine.web;
+package com.github.akarazhev.metaconfig.api;
 
 import com.github.akarazhev.metaconfig.UnitTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("Web client test")
-final class WebClientTest extends UnitTest {
+@DisplayName("Configurable test")
+final class ConfigurableTest extends UnitTest {
 
     @Test
-    @DisplayName("Settings constructor")
-    void settingsConstructor() throws Exception {
-        assertPrivate(WebClient.Settings.class);
+    @DisplayName("Config builder constructor")
+    void configBuilderConstructor() throws Exception {
+        assertPrivate(Configurable.ConfigBuilder.class);
     }
 }
