@@ -56,16 +56,16 @@ You can instantiate the meta configuration with the custom configuration:
 ```java
 public MetaConfig metaConfig(){
 // Create the custom data mapping
-final Map<String, String> dataMapping=new HashMap<>();
+final var dataMapping=new HashMap<String, String>();
         dataMapping.put(Constants.Mapping.CONFIGS_TABLE,"CONFIGS");
         dataMapping.put(Constants.Mapping.CONFIG_ATTRIBUTES_TABLE,"CONFIG_ATTRIBUTES");
         dataMapping.put(Constants.Mapping.PROPERTIES_TABLE,"PROPERTIES");
         dataMapping.put(Constants.Mapping.PROPERTY_ATTRIBUTES_TABLE,"PROPERTY_ATTRIBUTES");
 // Set a fetch size
-final Map<String, String> settings=new HashMap<>();
+final var settings=new HashMap<String, String>();
         settings.put(FETCH_SIZE,100);
 // Create the web server config
-final Config webServer=new Config.Builder(Server.Settings.CONFIG_NAME,
+final var webServer=new Config.Builder(Server.Settings.CONFIG_NAME,
         Arrays.asList(
         new Property.Builder(Server.Settings.HOSTNAME,"localhost").build(),
         new Property.Builder(Server.Settings.API_PATH,"/api/metacfg/").build(),
@@ -77,8 +77,8 @@ final Config webServer=new Config.Builder(Server.Settings.CONFIG_NAME,
         new Property.Builder(Server.Settings.KEY_STORE_FILE,"./data/metacfg4j.keystore").build(),
         new Property.Builder(Server.Settings.ALIAS,"alias").build(),
         new Property.Builder(Server.Settings.STORE_PASSWORD,"password").build(),
-        new Property.Builder(Server.Settings.KEY_PASSWORD,"password").build()))
-        .build();
+        new Property.Builder(Server.Settings.KEY_PASSWORD,"password").build())
+        ).build();
         // Create the meta configuration
         return new MetaConfig.Builder().
         webServer(webServer).
@@ -92,16 +92,16 @@ final Config webServer=new Config.Builder(Server.Settings.CONFIG_NAME,
 It's possible to configure the meta configuration as a client:
 ```java
 public MetaConfig metaConfig() {
-    // Create the web client config
-    final Config webClient = new Config.Builder(WebClient.Settings.CONFIG_NAME,
+// Create the web client config
+final var webClient=new Config.Builder(WebClient.Settings.CONFIG_NAME,
         Arrays.asList(
                 new Property.Builder(WebClient.Settings.URL, "https://localhost:8000/api/metacfg").build(),
                 new Property.Builder(Constants.Endpoints.ACCEPT_CONFIG_ENDPOINT, "accept_config").build(),
                 new Property.Builder(Constants.Endpoints.CONFIG_NAMES_ENDPOINT, "config_names").build(),
                 new Property.Builder(Constants.Endpoints.CONFIG_ENDPOINT, "config").build(),
-                new Property.Builder(WebClient.Settings.ACCEPT_ALL_HOSTS, true).build()))
+        new Property.Builder(WebClient.Settings.ACCEPT_ALL_HOSTS,true).build()))
         .build();
-    // Create the meta configuration
+        // Create the meta configuration
     return new MetaConfig.Builder().webClient(webClient).build();
 }
 ```

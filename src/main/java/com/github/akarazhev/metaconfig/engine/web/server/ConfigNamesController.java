@@ -56,7 +56,7 @@ final class ConfigNamesController extends AbstractController {
                             new OperationResponse.Builder<PageResponse>().error(STRING_TO_JSON_ERROR).build());
                 }
             } else {
-                final List<String> names = configService.getNames().collect(Collectors.toList());
+                final var names = configService.getNames().collect(Collectors.toList());
                 writeResponse(httpExchange, new OperationResponse.Builder<List<String>>().result(names).build());
             }
         } else {

@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -270,7 +269,7 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Compare two properties")
     void compareTwoProperties() {
-        final Map<String, String> attributes = new HashMap<>();
+        final var attributes = new HashMap<String, String>();
         attributes.put("key_1", "value_1");
         attributes.put("key_2", "value_2");
         final Property firstProperty = new Property.Builder("Property-1", "Value-1").

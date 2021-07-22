@@ -30,7 +30,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
@@ -90,7 +89,7 @@ public final class WebClient {
             final Optional<Property> urlProperty = config.getProperty(Settings.URL);
             if (urlProperty.isPresent()) {
                 // Accept all hosts
-                final List<Throwable> exceptions = new ArrayList<>(1);
+                final var exceptions = new ArrayList<Throwable>(1);
                 config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(prop -> {
                             if (prop.asBool()) {
                                 try {

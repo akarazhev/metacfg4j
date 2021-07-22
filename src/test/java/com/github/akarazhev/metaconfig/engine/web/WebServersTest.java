@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collection;
 import java.util.Collections;
 
 import static com.github.akarazhev.metaconfig.Constants.Endpoints.ACCEPT_CONFIG_VALUE;
@@ -81,7 +80,7 @@ final class WebServersTest extends UnitTest {
     @Test
     @DisplayName("Accept a config")
     void acceptConfig() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(3);
+        final var properties = new ArrayList<Property>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/" + ACCEPT_CONFIG_VALUE + "/" +
                 new String(Base64.getEncoder().encode("[\"name_1\", \"name_2\", \"name_3\"]".getBytes()),
@@ -99,7 +98,7 @@ final class WebServersTest extends UnitTest {
     @Test
     @DisplayName("Accept a config not encoded")
     void acceptConfigNotEncoded() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(3);
+        final var properties = new ArrayList<Property>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/" + ACCEPT_CONFIG_VALUE + "/" +
                 WebUtils.encode("[\"name_1\", \"name_2\", \"name_3\"]", StandardCharsets.UTF_8)).build());
@@ -118,7 +117,7 @@ final class WebServersTest extends UnitTest {
     @Test
     @DisplayName("Accept a config not in the json format")
     void acceptConfigNotJsonFormat() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(3);
+        final var properties = new ArrayList<Property>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/" + ACCEPT_CONFIG_VALUE + "/" +
                 WebUtils.encode("[name_1, name_2, name_3]", StandardCharsets.UTF_8)).build());
@@ -137,7 +136,7 @@ final class WebServersTest extends UnitTest {
     @Test
     @DisplayName("Accept a config with a wrong method")
     void acceptConfigWrongMethod() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(3);
+        final var properties = new ArrayList<Property>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/" + ACCEPT_CONFIG_VALUE + "/" +
                 new String(Base64.getEncoder().encode("[\"name_1\", \"name_2\", \"name_3\"]".getBytes()),
@@ -157,7 +156,7 @@ final class WebServersTest extends UnitTest {
     @Test
     @DisplayName("Get config names")
     void getConfigNames() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(3);
+        final var properties = new ArrayList<Property>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_NAMES_VALUE).build());
         properties.add(new Property.Builder(METHOD, GET).build());
@@ -173,7 +172,7 @@ final class WebServersTest extends UnitTest {
     @Test
     @DisplayName("Get config names with a wrong method")
     void getConfigNamesWrongMethod() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(3);
+        final var properties = new ArrayList<Property>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_NAMES_VALUE).build());
         properties.add(new Property.Builder(METHOD, POST).build());
@@ -191,7 +190,7 @@ final class WebServersTest extends UnitTest {
     @Test
     @DisplayName("Get configs")
     void getConfigs() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(3);
+        final var properties = new ArrayList<Property>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE).build());
         properties.add(new Property.Builder(METHOD, GET).build());
@@ -207,7 +206,7 @@ final class WebServersTest extends UnitTest {
     @Test
     @DisplayName("Get configs by names")
     void getConfigsByNames() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(3);
+        final var properties = new ArrayList<Property>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE + "?names=" +
                 new String(Base64.getEncoder().encode("[\"name_1\", \"name_2\", \"name_3\"]".getBytes()),
@@ -225,7 +224,7 @@ final class WebServersTest extends UnitTest {
     @Test
     @DisplayName("Get configs by names not encoded")
     void getConfigsByNamesNotEncoded() throws JsonException {
-        final Collection<Property> properties = new ArrayList<>(3);
+        final var properties = new ArrayList<Property>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE + "?names=" +
                 WebUtils.encode("[\"name_1\", \"name_2\", \"name_3\"]", StandardCharsets.UTF_8)).build());
@@ -244,7 +243,7 @@ final class WebServersTest extends UnitTest {
     @Test
     @DisplayName("Get configs by names not in the json format")
     void getConfigsByNamesNotJsonFormat() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(3);
+        final var properties = new ArrayList<Property>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE + "?names=" +
                 WebUtils.encode("[name_1, name_2, name_3]", StandardCharsets.UTF_8)).build());
@@ -263,7 +262,7 @@ final class WebServersTest extends UnitTest {
     @Test
     @DisplayName("Get configs with a wrong method")
     void getConfigsWrongMethod() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(3);
+        final var properties = new ArrayList<Property>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE).build());
         properties.add(new Property.Builder(METHOD, POST).build());
@@ -281,13 +280,13 @@ final class WebServersTest extends UnitTest {
     @Test
     @DisplayName("Update a config")
     void updateConfig() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(2);
+        final var properties = new ArrayList<Property>(2);
         properties.add(new Property.Builder("Property_1", "Value_1").build());
         properties.add(new Property.Builder("Property_2", "Value_2").build());
         Config config = new Config.Builder("Meta Config", properties).
                 attributes(Collections.singletonMap("key", "value")).build();
 
-        final Collection<Property> props = new ArrayList<>(6);
+        final var props = new ArrayList<Property>(6);
         props.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         props.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE).build());
         props.add(new Property.Builder(METHOD, PUT).build());
@@ -307,13 +306,13 @@ final class WebServersTest extends UnitTest {
     @Test
     @DisplayName("Update a config not in the json format")
     void updateConfigNotJsonFormat() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(2);
+        final var properties = new ArrayList<Property>(2);
         properties.add(new Property.Builder("Property_1", "Value_1").build());
         properties.add(new Property.Builder("Property_2", "Value_2").build());
         Config config = new Config.Builder("Meta Config", properties).
                 attributes(Collections.singletonMap("key", "value")).build();
 
-        final Collection<Property> props = new ArrayList<>(6);
+        final var props = new ArrayList<Property>(6);
         props.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         props.add(new Property.Builder(URL, API_URL + "/config").build());
         props.add(new Property.Builder(METHOD, PUT).build());
@@ -334,7 +333,7 @@ final class WebServersTest extends UnitTest {
     @Test
     @DisplayName("Delete a configs by names")
     void deleteConfigsByNames() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(3);
+        final var properties = new ArrayList<Property>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE + "?names=" +
                 new String(Base64.getEncoder().encode("[\"name\"]".getBytes()), StandardCharsets.UTF_8)).build());
@@ -353,7 +352,7 @@ final class WebServersTest extends UnitTest {
     @Test
     @DisplayName("Delete a config")
     void deleteConfig() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(3);
+        final var properties = new ArrayList<Property>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE).build());
         properties.add(new Property.Builder(METHOD, DELETE).build());
@@ -371,7 +370,7 @@ final class WebServersTest extends UnitTest {
     @Test
     @DisplayName("Delete a config not in the json format")
     void deleteConfigNotJsonFormat() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(3);
+        final var properties = new ArrayList<Property>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE + "?names=" +
                 new String(Base64.getEncoder().encode("[name]".getBytes()), StandardCharsets.UTF_8)).build());

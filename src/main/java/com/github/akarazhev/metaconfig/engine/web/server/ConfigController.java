@@ -56,18 +56,17 @@ final class ConfigController extends AbstractController {
         final URI uri = httpExchange.getRequestURI();
         final String method = httpExchange.getRequestMethod();
         if (GET.equals(method)) {
-            final OperationResponse<Collection<Config>> response = getRequestParam(uri, REQ_PARAM_NAMES).
+            final var response = getRequestParam(uri, REQ_PARAM_NAMES).
                     map(param -> {
                         try {
-                            final Collection<Config> configs =
-                                    configService.get(getValues(param)).collect(Collectors.toList());
+                            final var configs = configService.get(getValues(param)).collect(Collectors.toList());
                             return new OperationResponse.Builder<Collection<Config>>().result(configs).build();
                         } catch (final Exception e) {
                             return new OperationResponse.Builder<Collection<Config>>().error(STRING_TO_JSON_ERROR).build();
                         }
                     }).
                     orElseGet(() -> {
-                        final Collection<Config> configs = configService.get().collect(Collectors.toList());
+                        final var configs = configService.get().collect(Collectors.toList());
                         return new OperationResponse.Builder<Collection<Config>>().result(configs).build();
                     });
             writeResponse(httpExchange, response);
@@ -77,7 +76,7 @@ final class ConfigController extends AbstractController {
                 final JsonArray jsonConfigs = (JsonArray) Jsoner.deserialize(bufferedReader);
                 final Stream<Config> stream = jsonConfigs.stream().
                         map(config -> new Config.Builder((JsonObject) config).build());
-                final Collection<Config> updatedConfigs = configService.update(stream).
+                final var updatedConfigs = configService.update(stream).
                         collect(Collectors.toList());
                 writeResponse(httpExchange, new OperationResponse.Builder<>().result(updatedConfigs).build());
             } catch (final JsonException e) {

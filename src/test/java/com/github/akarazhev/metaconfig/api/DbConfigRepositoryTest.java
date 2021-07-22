@@ -28,10 +28,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Clock;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -491,31 +489,14 @@ final class DbConfigRepositoryTest extends UnitTest {
         assertEquals(0, updatedConfig.getProperties().count());
     }
 
-    @Test
-    @DisplayName("Save and flush an updated config with one properties")
-    void saveAndFlushUpdatedConfigWithOneProperties() {
-        final Property firstProperty = new Property.Builder("Property-1", "Value-1").build();
-        final Optional<Config> newConfig = configRepository.saveAndFlush(
-                Stream.of(new Config.Builder(NEW_CONFIG, Collections.singletonList(firstProperty)).build())
-        ).findFirst();
-        sleep(1);
-        //  Check test results
-        assertTrue(newConfig.isPresent());
-        assertTrue(newConfig.get().getId() > 0);
-        newConfig.get().getProperties().forEach(p -> assertTrue(p.getId() > 0));
+    private static void createRepository() {
+        final var mapping = new HashMap<String, String>();
+        mapping.put("configs", "CONFIGS");
+        mapping.put("config-attributes", "CONFIG_ATTRIBUTES");
+        mapping.put("properties", "PROPERTIES");
+        mapping.put("property-attributes", "PROPERTY_ATTRIBUTES");
 
-        final Collection<Property> properties = new ArrayList<>(2);
-        newConfig.get().getProperty("Property-1").ifPresent(properties::add);
-        properties.add(new Property.Builder("Property-2", "Value-2").attribute("key_2", "value_2").build());
-        final Config copyConfig = new Config.Builder(newConfig.get()).
-                updated(Clock.systemDefaultZone().millis()).
-                properties(properties).build();
-        final Optional<Config> updatedConfig = configRepository.saveAndFlush(Stream.of(copyConfig)).findFirst();
-        // Check test results
-        assertTrue(updatedConfig.isPresent());
-        assertTrue(updatedConfig.get().getId() > 0);
-        updatedConfig.get().getProperty("Property-1").ifPresent(p -> assertTrue(p.getId() > 0));
-        updatedConfig.get().getProperty("Property-2").ifPresent(p -> assertTrue(p.getId() > 0));
+        configRepository = new DbConfigRepository.Builder(connectionPool.getDataSource()).mapping(mapping).build();
     }
 
     @Test
@@ -613,14 +594,31 @@ final class DbConfigRepositoryTest extends UnitTest {
         assertEquals(2, configRepository.delete(Stream.of(FIRST_CONFIG, SECOND_CONFIG)));
     }
 
-    private static void createRepository() {
-        final Map<String, String> mapping = new HashMap<>();
-        mapping.put("configs", "CONFIGS");
-        mapping.put("config-attributes", "CONFIG_ATTRIBUTES");
-        mapping.put("properties", "PROPERTIES");
-        mapping.put("property-attributes", "PROPERTY_ATTRIBUTES");
+    @Test
+    @DisplayName("Save and flush an updated config with one properties")
+    void saveAndFlushUpdatedConfigWithOneProperties() {
+        final Property firstProperty = new Property.Builder("Property-1", "Value-1").build();
+        final Optional<Config> newConfig = configRepository.saveAndFlush(
+                Stream.of(new Config.Builder(NEW_CONFIG, Collections.singletonList(firstProperty)).build())
+        ).findFirst();
+        sleep(1);
+        //  Check test results
+        assertTrue(newConfig.isPresent());
+        assertTrue(newConfig.get().getId() > 0);
+        newConfig.get().getProperties().forEach(p -> assertTrue(p.getId() > 0));
 
-        configRepository = new DbConfigRepository.Builder(connectionPool.getDataSource()).mapping(mapping).build();
+        final var properties = new ArrayList<Property>(2);
+        newConfig.get().getProperty("Property-1").ifPresent(properties::add);
+        properties.add(new Property.Builder("Property-2", "Value-2").attribute("key_2", "value_2").build());
+        final Config copyConfig = new Config.Builder(newConfig.get()).
+                updated(Clock.systemDefaultZone().millis()).
+                properties(properties).build();
+        final Optional<Config> updatedConfig = configRepository.saveAndFlush(Stream.of(copyConfig)).findFirst();
+        // Check test results
+        assertTrue(updatedConfig.isPresent());
+        assertTrue(updatedConfig.get().getId() > 0);
+        updatedConfig.get().getProperty("Property-1").ifPresent(p -> assertTrue(p.getId() > 0));
+        updatedConfig.get().getProperty("Property-2").ifPresent(p -> assertTrue(p.getId() > 0));
     }
 
     private static void dropConfigAttributesTables() throws SQLException {

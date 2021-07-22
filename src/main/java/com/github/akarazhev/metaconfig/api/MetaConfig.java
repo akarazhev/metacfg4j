@@ -201,9 +201,9 @@ public final class MetaConfig implements ConfigService, Closeable {
         public MetaConfig build() {
             try {
                 // init a mapping
-                final Map<String, String> mapping = dataMapping != null ? dataMapping : new HashMap<>();
+                final var mapping = dataMapping != null ? dataMapping : new HashMap<String, String>();
                 // init settings
-                final Map<String, Object> settings = dbSettings != null ? dbSettings : new HashMap<>();
+                final var settings = dbSettings != null ? dbSettings : new HashMap<String, Object>();
                 // Init the repository
                 final var configRepository = dataSource != null ?
                         new DbConfigRepository.Builder(dataSource).mapping(mapping).settings(settings).build() :

@@ -108,7 +108,7 @@ interface Configurable extends ExtJsonable {
         static Optional<Map<String, String>> getAttributes(final JsonObject jsonObject) {
             final var jsonAttributes = (JsonObject) jsonObject.get("attributes");
             if (jsonAttributes != null) {
-                final Map<String, String> attributes = new HashMap<>();
+                final var attributes = new HashMap<String, String>();
                 for (final var key : jsonAttributes.keySet()) {
                     attributes.put(key, (String) jsonAttributes.get(key));
                 }
@@ -172,12 +172,12 @@ interface Configurable extends ExtJsonable {
         }
 
         private static Collection<Property> deleteByPath(final int i, final String[] paths, final Stream<Property> stream) {
-            final Collection<Property> properties = new LinkedList<>();
+            final var properties = new LinkedList<Property>();
             if (i < paths.length) {
                 stream.forEach(property -> {
                     if (property != null) {
                         if (paths[i].equalsIgnoreCase(property.getName())) {
-                            final Collection<Property> props = deleteByPath(i + 1, paths, property.getProperties());
+                            final var props = deleteByPath(i + 1, paths, property.getProperties());
                             if (props.size() > 0) {
                                 properties.add(new Property.Builder(property).properties(props).build());
                             }

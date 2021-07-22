@@ -16,7 +16,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 import static com.github.akarazhev.metaconfig.engine.web.Constants.Method.GET;
 import static com.github.akarazhev.metaconfig.engine.web.WebClient.Settings.ACCEPT_ALL_HOSTS;
@@ -49,7 +48,7 @@ final class WebServerTest {
     }
 
     private void assertGetConfigNames() throws Exception {
-        final Collection<Property> properties = new ArrayList<>(3);
+        final var properties = new ArrayList<Property>(3);
         properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
         properties.add(new Property.Builder(URL, "https://localhost:8000/api/metacfg/config_names").build());
         properties.add(new Property.Builder(METHOD, GET).build());

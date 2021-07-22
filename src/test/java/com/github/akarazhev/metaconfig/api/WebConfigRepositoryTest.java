@@ -21,7 +21,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -42,7 +41,7 @@ final class WebConfigRepositoryTest extends UnitTest {
     static void beforeAll() throws Exception {
         webServer = WebServers.newTestServer().start();
         if (configRepository == null) {
-            final Collection<Property> properties = new ArrayList<>(2);
+            final var properties = new ArrayList<Property>(2);
             properties.add(new Property.Builder(URL, "https://localhost:8000/api/metacfg").build());
             properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, true).build());
 

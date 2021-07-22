@@ -81,7 +81,7 @@ final class WebConfigRepository implements ConfigRepository {
     @Override
     public Stream<String> findNames() {
         // Set the configuration
-        final Collection<Property> properties = new ArrayList<>(3);
+        final var properties = new ArrayList<Property>(3);
         this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
         setProperties(GET, CONFIG_NAMES, CONFIG_NAMES_VALUE, properties);
@@ -110,7 +110,7 @@ final class WebConfigRepository implements ConfigRepository {
     @Override
     public Stream<Config> saveAndFlush(final Stream<Config> stream) {
         // Set the configuration
-        final Collection<Property> properties = new ArrayList<>(6);
+        final var properties = new ArrayList<Property>(6);
         this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
         setProperties(PUT, CONFIG, CONFIG_VALUE, properties);
@@ -137,7 +137,7 @@ final class WebConfigRepository implements ConfigRepository {
      */
     public void accept(final Stream<String> stream) {
         // Set the configuration
-        final Collection<Property> properties = new ArrayList<>(3);
+        final var properties = new ArrayList<Property>(3);
         this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
         this.config.getProperty(URL).ifPresent(property ->
@@ -153,7 +153,7 @@ final class WebConfigRepository implements ConfigRepository {
 
     private Collection<Property> getProperties(final Stream<String> stream, final String method) {
         // Set the configuration
-        final Collection<Property> properties = new ArrayList<>(3);
+        final var properties = new ArrayList<Property>(3);
         this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
         this.config.getProperty(URL).ifPresent(property ->
@@ -168,7 +168,7 @@ final class WebConfigRepository implements ConfigRepository {
         final var pageRequest = new String(Base64.getEncoder().encode(request.toJson().getBytes()),
                 StandardCharsets.UTF_8);
         // Set the configuration
-        final Collection<Property> properties = new ArrayList<>(3);
+        final var properties = new ArrayList<Property>(3);
         this.config.getProperty(ACCEPT_ALL_HOSTS).ifPresent(property ->
                 properties.add(new Property.Builder(ACCEPT_ALL_HOSTS, property.asBool()).build()));
         this.config.getProperty(URL).ifPresent(property ->

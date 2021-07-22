@@ -172,7 +172,7 @@ final class DbConfigRepository implements ConfigRepository {
             try (final var connection = dataSource.getConnection();
                  final var statement = connection.createStatement();
                  final var resultSet = statement.executeQuery(sql)) {
-                final Collection<String> names = new LinkedList<>();
+                final var names = new LinkedList<String>();
                 while (resultSet.next()) {
                     names.add(resultSet.getString(1));
                 }
@@ -202,7 +202,7 @@ final class DbConfigRepository implements ConfigRepository {
                         JDBCUtils.set(statement, (Integer) settings.get(FETCH_SIZE), request);
 
                         try (final var resultSet = statement.executeQuery()) {
-                            final Collection<String> names = new LinkedList<>();
+                            final var names = new LinkedList<String>();
                             while (resultSet.next()) {
                                 names.add(resultSet.getString(1));
                             }
@@ -292,8 +292,8 @@ final class DbConfigRepository implements ConfigRepository {
     }
 
     private Config[] saveAndFlush(final Connection connection, final Config[] configs) throws SQLException {
-        final Collection<Config> toUpdate = new LinkedList<>();
-        final Collection<Config> toInsert = new LinkedList<>();
+        final var toUpdate = new LinkedList<Config>();
+        final var toInsert = new LinkedList<Config>();
         for (final var config : configs) {
             if (config.getId() > 0) {
                 toUpdate.add(config);
@@ -398,7 +398,7 @@ final class DbConfigRepository implements ConfigRepository {
 
     private Property[] insert(final Connection connection, final long configId, final long propertyId,
                               final Property[] properties) throws SQLException {
-        for (int i = 0; i < properties.length; i++) {
+        for (var i = 0; i < properties.length; i++) {
             if (properties[i].getId() == 0) {
                 properties[i] = propertyId > 0 ?
                         insert(connection, new SimpleEntry<>(configId, propertyId), properties[i])[0] :
@@ -486,12 +486,12 @@ final class DbConfigRepository implements ConfigRepository {
         if (configs.length > 0) {
             updated = new Config[configs.length];
             final String sql = String.format(SQL.UPDATE.CONFIGS, mapping.get(CONFIGS_TABLE));
-            final Map<Long, SimpleEntry<Integer, Long>> entries = getVerUpdEntries(connection, configs);
-            try (final PreparedStatement statement = connection.prepareStatement(sql)) {
-                final Collection<Throwable> exceptions = new LinkedList<>();
-                for (int i = 0; i < configs.length; i++) {
-                    final Config config = configs[i];
-                    final SimpleEntry<Integer, Long> entry = entries.get(config.getId());
+            final var entries = getVerUpdEntries(connection, configs);
+            try (final var statement = connection.prepareStatement(sql)) {
+                final var exceptions = new LinkedList<Throwable>();
+                for (var i = 0; i < configs.length; i++) {
+                    final var config = configs[i];
+                    final var entry = entries.get(config.getId());
                     if (config.getUpdated() > entry.getValue()) {
                         final int version = entry.getKey() + 1;
                         statement.setLong(5, config.getId());
@@ -526,10 +526,10 @@ final class DbConfigRepository implements ConfigRepository {
     private void update(final Connection connection, final TableId tableId, final String table, final long id,
                         final Map<String, String> attributes) throws SQLException {
         if (attributes.size() > 0) {
-            final Map<String, String> toInsert = new HashMap<>();
-            final Map<String, String> toUpdate = new HashMap<>();
-            final Map<String, String> toDelete = new HashMap<>();
-            final Map<String, String> existed = new HashMap<>();
+            final var toInsert = new HashMap<String, String>();
+            final var toUpdate = new HashMap<String, String>();
+            final var toDelete = new HashMap<String, String>();
+            final var existed = new HashMap<String, String>();
             if (TableId.CONFIG.equals(tableId)) {
                 existed.putAll(getAttributes(connection, String.format(SQL.SELECT.CONFIG_ATTRIBUTES, table), id));
             } else if (TableId.PROPERTY.equals(tableId)) {
@@ -601,7 +601,7 @@ final class DbConfigRepository implements ConfigRepository {
     private Collection<Property> getToUpdate(final Connection connection, final long configId, final long propertyId,
                                              final Map<Long, Long> idUpdated,
                                              final Property[] properties) throws SQLException {
-        final Collection<Property> toUpdate = new LinkedList<>();
+        final var toUpdate = new LinkedList<Property>();
         for (var i = 0; i < properties.length; i++) {
             if (properties[i].getId() > 0) {
                 final var updated = idUpdated.get(properties[i].getId());
@@ -675,7 +675,7 @@ final class DbConfigRepository implements ConfigRepository {
 
     private Map<String, String> getAttributes(final Connection connection, final String sql, final long id)
             throws SQLException {
-        final Map<String, String> attributes = new HashMap<>();
+        final var attributes = new HashMap<String, String>();
         try (final var statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
 
@@ -709,10 +709,10 @@ final class DbConfigRepository implements ConfigRepository {
 
     private Map<Long, SimpleEntry<Integer, Long>> getVerUpdEntries(final Connection connection, final Config[] configs)
             throws SQLException {
-        final Map<Long, SimpleEntry<Integer, Long>> entries = new HashMap<>();
-        final StringBuilder sql = new StringBuilder();
+        final var entries = new HashMap<Long, SimpleEntry<Integer, Long>>();
+        final var sql = new StringBuilder();
         sql.append(String.format(SQL.SELECT.CONFIG_VERSION_UPDATED, mapping.get(CONFIGS_TABLE)));
-        for (int i = 0; i < configs.length; i++) {
+        for (var i = 0; i < configs.length; i++) {
             if (i > 0) {
                 sql.append(" OR ");
             }
@@ -726,7 +726,7 @@ final class DbConfigRepository implements ConfigRepository {
         }
 
         try (final PreparedStatement statement = connection.prepareStatement(sql.toString())) {
-            for (int i = 0; i < configs.length; i++) {
+            for (var i = 0; i < configs.length; i++) {
                 statement.setLong(i + 1, configs[i].getId());
             }
 
@@ -1217,7 +1217,7 @@ final class DbConfigRepository implements ConfigRepository {
 
         private boolean validate(final Map<String, String> mapping, final String key) {
             if (mapping.containsKey(key)) {
-                final String configs = mapping.get(key);
+                final var configs = mapping.get(key);
                 return configs != null && configs.length() > 0;
             }
 

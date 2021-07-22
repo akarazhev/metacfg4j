@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,7 +35,7 @@ public class UnitTest {
     protected static final String CONFIG = "Config";
 
     protected Config getConfig(final Collection<Property> properties) {
-        final Map<String, String> attributes = new HashMap<>();
+        final var attributes = new HashMap<String, String>();
         attributes.put("key_1", "value_1");
         attributes.put("key_2", "value_2");
         return new Config.Builder(CONFIG, properties).
@@ -51,7 +50,7 @@ public class UnitTest {
     }
 
     protected Property getProperty() {
-        final Map<String, String> attributes = new HashMap<>();
+        final var attributes = new HashMap<String, String>();
         attributes.put("key_1", "value_1");
         attributes.put("key_2", "value_2");
         return new Property.Builder("Property-1", "Value-1").
@@ -66,8 +65,8 @@ public class UnitTest {
     }
 
     protected Collection<Property> getProperties(final int start, final int length) {
-        final Collection<Property> properties = new ArrayList<>(length);
-        for (int i = start; i < start + length; i++) {
+        final var properties = new ArrayList<Property>(length);
+        for (var i = start; i < start + length; i++) {
             properties.add(new Property.Builder("Property-" + i, "Value-" + i).
                     caption("Caption-" + i).
                     description("Description-" + i).
@@ -79,9 +78,9 @@ public class UnitTest {
     }
 
     protected Config getLargeConfig(final int size) {
-        final Config.Builder builder = new Config.Builder(NEW_CONFIG, getProperties(0, size)).
+        final var builder = new Config.Builder(NEW_CONFIG, getProperties(0, size)).
                 description("Description").attribute("key_1", "value_1");
-        for (int i = 0; i < size; i++) {
+        for (var i = 0; i < size; i++) {
             builder.properties(new String[]{"Property-" + i}, getProperties(i, size));
         }
 
@@ -104,7 +103,7 @@ public class UnitTest {
                 property(new String[]{"Sub-Property-1", "Sub-Property-2"}, thirdSubProperty).
                 build();
 
-        final Map<String, String> attributes = new HashMap<>();
+        final var attributes = new HashMap<String, String>();
         attributes.put("key_1", "value_1");
         attributes.put("key_2", "value_2");
         attributes.put("key_3", "value_3");
@@ -128,7 +127,7 @@ public class UnitTest {
                 property(new String[0], thirdProperty).
                 build();
 
-        final Map<String, String> attributes = new HashMap<>();
+        final var attributes = new HashMap<String, String>();
         attributes.put("key_1", "value_1");
         attributes.put("key_2", "value_2");
         attributes.put("key_3", "value_3");

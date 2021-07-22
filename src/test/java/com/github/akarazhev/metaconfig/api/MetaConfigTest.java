@@ -30,7 +30,6 @@ import java.time.Clock;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -68,13 +67,13 @@ final class MetaConfigTest extends UnitTest {
                             new Property.Builder(Server.Settings.KEY_PASSWORD, "password").build()))
                     .build();
 
-            final Map<String, String> dataMapping = new HashMap<>();
+            final var dataMapping = new HashMap<String, String>();
             dataMapping.put(Constants.Mapping.CONFIGS_TABLE, "CONFIGS");
             dataMapping.put(Constants.Mapping.CONFIG_ATTRIBUTES_TABLE, "CONFIG_ATTRIBUTES");
             dataMapping.put(Constants.Mapping.PROPERTIES_TABLE, "PROPERTIES");
             dataMapping.put(Constants.Mapping.PROPERTY_ATTRIBUTES_TABLE, "PROPERTY_ATTRIBUTES");
 
-            final Map<String, Object> dbSettings = new HashMap<>();
+            final var dbSettings = new HashMap<String, Object>();
             dbSettings.put(FETCH_SIZE, 100);
 
             dbMetaConfig = new MetaConfig.Builder().

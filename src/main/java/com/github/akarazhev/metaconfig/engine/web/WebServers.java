@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -56,10 +55,10 @@ public final class WebServers {
              */
             @Override
             public Stream<Config> update(final Stream<Config> stream) {
-                final Config[] input = stream.toArray(Config[]::new);
-                final Config[] output = new Config[input.length];
-                for (int i = 0; i < input.length; i++) {
-                    final Config config = dataStorage.get(input[i].getName());
+                final var input = stream.toArray(Config[]::new);
+                final var output = new Config[input.length];
+                for (var i = 0; i < input.length; i++) {
+                    final var config = dataStorage.get(input[i].getName());
                     if (config != null) {
                         if (config.getVersion() == input[i].getVersion()) {
                             input[i] = new Config.Builder(input[i]).version(input[i].getVersion() + 1).build();
@@ -89,7 +88,7 @@ public final class WebServers {
 
             @Override
             public PageResponse getNames(final PageRequest request) {
-                final List<String> data = dataStorage.values().stream().
+                final var data = dataStorage.values().stream().
                         filter(config -> {
                             if (config.getName().toLowerCase().contains(request.getName().toLowerCase())) {
                                 if (config.getAttributes().isPresent()) {
@@ -104,7 +103,7 @@ public final class WebServers {
                         map(Config::getName).
                         sorted(request.isAscending() ? String::compareTo : Collections.reverseOrder()).
                         collect(Collectors.toList());
-                final int size = Math.min(request.getSize(), data.size());
+                final var size = Math.min(request.getSize(), data.size());
                 final Collection<String> names = data.size() > 0 ?
                         data.subList(request.getPage() * size, request.getPage() * size + size) :
                         Collections.emptyList();
@@ -128,9 +127,9 @@ public final class WebServers {
              */
             @Override
             public Stream<Config> get(final Stream<String> stream) {
-                final Collection<Config> configs = new LinkedList<>();
+                final var configs = new LinkedList<Config>();
                 stream.forEach(name -> {
-                    final Config config = dataStorage.get(name);
+                    final var config = dataStorage.get(name);
                     if (config != null) {
                         configs.add(config);
                     }
@@ -144,7 +143,7 @@ public final class WebServers {
              */
             @Override
             public int remove(final Stream<String> stream) {
-                final int size = dataStorage.size();
+                final var size = dataStorage.size();
                 stream.forEach(dataStorage::remove);
                 return size - dataStorage.size();
             }
@@ -169,10 +168,10 @@ public final class WebServers {
 
             private boolean contains(final Map<String, String> filter, final Map<String, String> data) {
                 if (filter.size() > 0) {
-                    for (final String dataKey : data.keySet()) {
-                        final String dataValue = data.get(dataKey);
-                        for (final String filterKey : filter.keySet()) {
-                            final String filterValue = filter.get(filterKey);
+                    for (final var dataKey : data.keySet()) {
+                        final var dataValue = data.get(dataKey);
+                        for (final var filterKey : filter.keySet()) {
+                            final var filterValue = filter.get(filterKey);
                             if (dataKey.toLowerCase().contains(filterKey.toLowerCase()) &&
                                     dataValue.toLowerCase().contains(filterValue.toLowerCase())) {
                                 return true;

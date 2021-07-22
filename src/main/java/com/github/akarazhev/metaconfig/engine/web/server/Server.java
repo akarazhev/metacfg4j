@@ -33,9 +33,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedList;
-import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -238,15 +236,15 @@ public final class Server implements WebServer {
     }
 
     private SSLContext getSSLContext(final Config serverConfig) throws Exception {
-        final Optional<Property> keyStoreFile = serverConfig.getProperty(KEY_STORE_FILE);
+        final var keyStoreFile = serverConfig.getProperty(KEY_STORE_FILE);
         if (keyStoreFile.isEmpty()) {
             throw new Exception(CERTIFICATE_LOAD_ERROR);
         }
 
-        final Collection<Throwable> exceptions = new LinkedList<>();
-        final FileInputStream fileInputStream = new FileInputStream(keyStoreFile.get().getValue());
+        final var exceptions = new LinkedList<Throwable>();
+        final var fileInputStream = new FileInputStream(keyStoreFile.get().getValue());
 
-        final KeyStore keyStore = KeyStore.getInstance("JKS");
+        final var keyStore = KeyStore.getInstance("JKS");
         serverConfig.getProperty(STORE_PASSWORD).ifPresent(property -> {
             try {
                 keyStore.load(fileInputStream, property.getValue().toCharArray());
