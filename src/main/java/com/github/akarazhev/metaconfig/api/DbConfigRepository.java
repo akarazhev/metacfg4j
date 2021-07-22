@@ -1,4 +1,4 @@
-/* Copyright 2019-2020 Andrey Karazhev
+/* Copyright 2019-2021 Andrey Karazhev
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
@@ -37,13 +38,15 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.DB_CONNECTION_E
 import static com.github.akarazhev.metaconfig.Constants.Messages.DB_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DB_ROLLBACK_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.DELETE_CONFIGS_ERROR;
-import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_ATTRIBUTES_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.INSERT_ATTRIBUTES_ERROR_MSG;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_CONFIG_NAMES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.RECEIVED_PAGE_RESPONSE_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SAVE_CONFIGS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.SAVE_PROPERTIES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_ATTRIBUTES_ERROR;
+import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_ATTRIBUTES_ERROR_MSG;
+import static com.github.akarazhev.metaconfig.Constants.Settings.FETCH_SIZE;
 import static java.util.AbstractMap.SimpleEntry;
 
 /**
@@ -52,10 +55,12 @@ import static java.util.AbstractMap.SimpleEntry;
 final class DbConfigRepository implements ConfigRepository {
     private final DataSource dataSource;
     private final Map<String, String> mapping = new HashMap<>();
+    private final Map<String, Object> settings = new HashMap<>();
 
     private DbConfigRepository(final Builder builder) {
         this.dataSource = builder.dataSource;
         this.mapping.putAll(JDBCUtils.createMapping(builder.mapping));
+        this.settings.putAll(JDBCUtils.createSettings(builder.settings));
         JDBCUtils.createDataBase(this.dataSource, this.mapping);
     }
 
@@ -73,13 +78,13 @@ final class DbConfigRepository implements ConfigRepository {
                 final var subSql = " OR `C`.`NAME` = ?";
                 try (final var connection = dataSource.getConnection();
                      final var statement = connection.prepareStatement(JDBCUtils.concatSql(sql, subSql, names))) {
-                    JDBCUtils.set(statement, names);
+                    JDBCUtils.set(statement, (Integer) settings.get(FETCH_SIZE), names);
 
                     try (final var resultSet = statement.executeQuery()) {
                         long prevConfigId = -1;
                         final var configs = new HashMap<Long, Config>();
                         final var properties = new HashMap<Long, Property>();
-                        final var links = new LinkedList<SimpleEntry<Long, Long>>();
+                        final var links = new HashSet<SimpleEntry<Long, Long>>();
                         while (resultSet.next()) {
                             // Create properties
                             final var propertyId = resultSet.getLong(8);
@@ -104,11 +109,16 @@ final class DbConfigRepository implements ConfigRepository {
                                 // Set a property
                                 properties.put(propertyId, builder.build());
                                 // Create links
-                                links.add(new SimpleEntry<>(propertyId, resultSet.getLong(9)));
+                                final var id = resultSet.getLong(9);
+                                if (id > 0) {
+                                    links.add(new SimpleEntry<>(propertyId, id));
+                                } else {
+                                    links.add(new SimpleEntry<>(propertyId, resultSet.getLong(1)));
+                                }
                             }
                             // Create configs
                             final Config.Builder builder;
-                            final long configId = resultSet.getLong(1);
+                            final long configId = resultSet.getInt(1);
                             final var config = configs.get(configId);
                             final var optional =
                                     getAttributes(resultSet.getString(6), resultSet.getString(7));
@@ -128,7 +138,7 @@ final class DbConfigRepository implements ConfigRepository {
                             // Set properties to the config
                             if (prevConfigId > -1 && configId != prevConfigId) {
                                 configs.put(prevConfigId, new Config.Builder(configs.get(prevConfigId)).
-                                        properties(new String[0], getLinkedProps(properties, links)).build());
+                                        properties(new String[0], getLinkedProps(prevConfigId, properties, links)).build());
                                 links.clear();
                                 properties.clear();
                             }
@@ -138,7 +148,7 @@ final class DbConfigRepository implements ConfigRepository {
 
                         if (configs.size() > 0) {
                             configs.put(prevConfigId, new Config.Builder(configs.get(prevConfigId)).
-                                    properties(new String[0], getLinkedProps(properties, links)).build());
+                                    properties(new String[0], getLinkedProps(prevConfigId, properties, links)).build());
                         }
 
                         return configs.values().stream();
@@ -189,7 +199,7 @@ final class DbConfigRepository implements ConfigRepository {
                 final var total = getCount(connection, configs, attributes, request);
                 if (total > 0) {
                     try (final var statement = connection.prepareStatement(sql)) {
-                        JDBCUtils.set(statement, request);
+                        JDBCUtils.set(statement, (Integer) settings.get(FETCH_SIZE), request);
 
                         try (final var resultSet = statement.executeQuery()) {
                             final Collection<String> names = new LinkedList<>();
@@ -253,10 +263,10 @@ final class DbConfigRepository implements ConfigRepository {
         return count;
     }
 
-    private Collection<Property> getLinkedProps(final Map<Long, Property> properties,
+    private Collection<Property> getLinkedProps(final long configId, final Map<Long, Property> properties,
                                                 final Collection<SimpleEntry<Long, Long>> links) {
         final var linkedProps = new HashMap<>(properties);
-        final Comparator<SimpleEntry<Long, Long>> comparing = Comparator.comparing(SimpleEntry::getValue);
+        final Comparator<Map.Entry<Long, Long>> comparing = Map.Entry.comparingByValue();
         links.stream().
                 sorted(comparing.reversed()).
                 forEach(link -> {
@@ -266,6 +276,11 @@ final class DbConfigRepository implements ConfigRepository {
                         linkedProps.put(link.getValue(),
                                 new Property.Builder(parentProp).property(new String[0], childProp).build());
                         linkedProps.remove(link.getKey());
+                    } else {
+                        final var prop = parentProp == null ? childProp : parentProp;
+                        if (!links.contains(new SimpleEntry<>(prop.getId(), configId))) {
+                            linkedProps.remove(prop.getId());
+                        }
                     }
                 });
 
@@ -319,17 +334,17 @@ final class DbConfigRepository implements ConfigRepository {
 
                 if (statement.executeBatch().length == configs.length) {
                     try (final var resultSet = statement.getGeneratedKeys()) {
-                        final var exceptions = new LinkedList<>();
+                        final var exceptions = new LinkedList<Throwable>();
                         for (var i = 0; i < configs.length; i++) {
                             resultSet.absolute(i + 1);
-                            final var configId = resultSet.getLong(1);
+                            final var configId = resultSet.getInt(1);
                             final var properties = configs[i].getProperties().toArray(Property[]::new);
                             // Create config attributes
                             configs[i].getAttributes().ifPresent(a -> {
                                 try {
                                     final var attributesSql = String.format(SQL.INSERT.CONFIG_ATTRIBUTES,
                                             mapping.get(CONFIG_ATTRIBUTES_TABLE));
-                                    execute(connection, attributesSql, configId, a, INSERT_ATTRIBUTES_ERROR);
+                                    execute(connection, attributesSql, configId, a, INSERT_ATTRIBUTES_ERROR_MSG);
                                 } catch (final SQLException e) {
                                     exceptions.add(e);
                                 }
@@ -342,7 +357,8 @@ final class DbConfigRepository implements ConfigRepository {
                         }
 
                         if (exceptions.size() > 0) {
-                            throw new SQLException(INSERT_ATTRIBUTES_ERROR);
+                            throw new SQLException(String.format(INSERT_ATTRIBUTES_ERROR_MSG,
+                                    JDBCUtils.getMessage(exceptions)));
                         }
                     }
                 } else {
@@ -380,6 +396,23 @@ final class DbConfigRepository implements ConfigRepository {
         }
     }
 
+    private Property[] insert(final Connection connection, final long configId, final long propertyId,
+                              final Property[] properties) throws SQLException {
+        for (int i = 0; i < properties.length; i++) {
+            if (properties[i].getId() == 0) {
+                properties[i] = propertyId > 0 ?
+                        insert(connection, new SimpleEntry<>(configId, propertyId), properties[i])[0] :
+                        insert(connection, configId, properties[i])[0];
+            }
+            // Insert sub-properties
+            final Property[] subProps = insert(connection, configId, properties[i].getId(),
+                    properties[i].properties().toArray(new Property[0]));
+            properties[i] = new Property.Builder(properties[i]).properties(Arrays.asList(subProps)).build();
+        }
+
+        return properties;
+    }
+
     private Property[] insert(final Connection connection, final long id, final Property... properties)
             throws SQLException {
         if (properties.length > 0) {
@@ -397,7 +430,7 @@ final class DbConfigRepository implements ConfigRepository {
     }
 
     private Property[] insert(final Connection connection, final SimpleEntry<Long, Long> confPropIds,
-                              final Property[] properties) throws SQLException {
+                              final Property... properties) throws SQLException {
         if (properties.length > 0) {
             final var sql = String.format(SQL.INSERT.SUB_PROPERTIES, mapping.get(PROPERTIES_TABLE));
             try (final var statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -416,7 +449,7 @@ final class DbConfigRepository implements ConfigRepository {
                               final Property... properties) throws SQLException {
         if (statement.executeBatch().length == properties.length) {
             try (final var resultSet = statement.getGeneratedKeys()) {
-                final var exceptions = new LinkedList<>();
+                final var exceptions = new LinkedList<Throwable>();
                 for (var i = 0; i < properties.length; i++) {
                     resultSet.absolute(i + 1);
                     final var propertyId = resultSet.getLong(1);
@@ -425,7 +458,7 @@ final class DbConfigRepository implements ConfigRepository {
                         try {
                             final var sql = String.format(SQL.INSERT.PROPERTY_ATTRIBUTES,
                                     mapping.get(PROPERTY_ATTRIBUTES_TABLE));
-                            execute(connection, sql, propertyId, a, INSERT_ATTRIBUTES_ERROR);
+                            execute(connection, sql, propertyId, a, INSERT_ATTRIBUTES_ERROR_MSG);
                         } catch (final SQLException e) {
                             exceptions.add(e);
                         }
@@ -438,7 +471,7 @@ final class DbConfigRepository implements ConfigRepository {
                 }
 
                 if (exceptions.size() > 0) {
-                    throw new SQLException(INSERT_ATTRIBUTES_ERROR);
+                    throw new SQLException(String.format(INSERT_ATTRIBUTES_ERROR_MSG, JDBCUtils.getMessage(exceptions)));
                 }
             }
         } else {
@@ -508,16 +541,16 @@ final class DbConfigRepository implements ConfigRepository {
 
             if (TableId.CONFIG.equals(tableId)) {
                 execute(connection, String.format(SQL.INSERT.CONFIG_ATTRIBUTES, table), id, toInsert,
-                        UPDATE_ATTRIBUTES_ERROR);
-                execute(connection, String.format(SQL.UPDATE.ATTRIBUTE, table), id, toUpdate);
+                        UPDATE_ATTRIBUTES_ERROR_MSG);
+                execute(connection, String.format(SQL.UPDATE.CONFIG_ATTRIBUTE, table), id, toUpdate);
                 execute(connection, String.format(SQL.DELETE.CONFIG_ATTRIBUTE, table), id, toDelete,
-                        UPDATE_ATTRIBUTES_ERROR);
+                        UPDATE_ATTRIBUTES_ERROR_MSG);
             } else if (TableId.PROPERTY.equals(tableId)) {
                 execute(connection, String.format(SQL.INSERT.PROPERTY_ATTRIBUTES, table), id, toInsert,
-                        UPDATE_ATTRIBUTES_ERROR);
-                execute(connection, String.format(SQL.UPDATE.ATTRIBUTE, table), id, toUpdate);
+                        UPDATE_ATTRIBUTES_ERROR_MSG);
+                execute(connection, String.format(SQL.UPDATE.PROPERTY_ATTRIBUTE, table), id, toUpdate);
                 execute(connection, String.format(SQL.DELETE.PROPERTY_ATTRIBUTE, table), id, toDelete,
-                        UPDATE_ATTRIBUTES_ERROR);
+                        UPDATE_ATTRIBUTES_ERROR_MSG);
             }
         } else {
             if (TableId.CONFIG.equals(tableId)) {
@@ -545,8 +578,9 @@ final class DbConfigRepository implements ConfigRepository {
     private Property[] update(final Connection connection, final String table, final long id,
                               final Property[] properties) throws SQLException {
         if (properties.length > 0) {
-            final var idUpdated = getIdUpdated(connection, String.format(SQL.SELECT.PROPERTY_ID_UPDATED, table), id);
-            final var toUpdate = getToUpdate(connection, id, idUpdated, properties);
+            final var idUpdated =
+                    getIdUpdated(connection, String.format(SQL.SELECT.PROPERTY_ID_UPDATED, table), id);
+            final var toUpdate = getToUpdate(connection, id, 0, idUpdated, properties);
             // Delete old properties
             for (final var propertyId : idUpdated.keySet()) {
                 delete(connection, String.format(SQL.DELETE.PROPERTY, table), propertyId);
@@ -555,6 +589,8 @@ final class DbConfigRepository implements ConfigRepository {
             if (toUpdate.size() > 0) {
                 update(connection, table, toUpdate.toArray(new Property[0]));
             }
+            // Insert properties
+            return insert(connection, id, 0, properties);
         } else {
             delete(connection, String.format(SQL.DELETE.PROPERTIES, table), id);
         }
@@ -562,7 +598,8 @@ final class DbConfigRepository implements ConfigRepository {
         return properties;
     }
 
-    private Collection<Property> getToUpdate(final Connection connection, final long id, final Map<Long, Long> idUpdated,
+    private Collection<Property> getToUpdate(final Connection connection, final long configId, final long propertyId,
+                                             final Map<Long, Long> idUpdated,
                                              final Property[] properties) throws SQLException {
         final Collection<Property> toUpdate = new LinkedList<>();
         for (var i = 0; i < properties.length; i++) {
@@ -572,12 +609,14 @@ final class DbConfigRepository implements ConfigRepository {
                     toUpdate.add(properties[i]);
                 }
             } else {
-                properties[i] = insert(connection, id, properties[i])[0];
+                properties[i] = propertyId > 0 ?
+                        insert(connection, new SimpleEntry<>(configId, propertyId), properties[i])[0] :
+                        insert(connection, configId, properties[i])[0];
             }
             // Set indices to delete
             idUpdated.remove(properties[i].getId());
             // Update sub-properties
-            toUpdate.addAll(getToUpdate(connection, id, idUpdated, properties[i]));
+            toUpdate.addAll(getToUpdate(connection, configId, idUpdated, properties[i]));
         }
 
         return toUpdate;
@@ -585,10 +624,10 @@ final class DbConfigRepository implements ConfigRepository {
 
     private Collection<Property> getToUpdate(final Connection connection, final long id, final Map<Long, Long> idUpdated,
                                              final Property property) throws SQLException {
-        final Collection<Property> toUpdate = new LinkedList<>();
+        final var toUpdate = new LinkedList<Property>();
         final var properties = property.getProperties().toArray(Property[]::new);
         if (properties.length > 0) {
-            toUpdate.addAll(getToUpdate(connection, id, idUpdated, properties));
+            toUpdate.addAll(getToUpdate(connection, id, property.getId(), idUpdated, properties));
         }
 
         return toUpdate;
@@ -599,7 +638,7 @@ final class DbConfigRepository implements ConfigRepository {
         if (properties.length > 0) {
             final var sql = String.format(SQL.UPDATE.PROPERTIES, table);
             try (final var statement = connection.prepareStatement(sql)) {
-                final Collection<Throwable> exceptions = new LinkedList<>();
+                final var exceptions = new LinkedList<Throwable>();
                 for (final var property : properties) {
                     JDBCUtils.setBatch(statement, property);
                     // Update property attributes
@@ -620,7 +659,7 @@ final class DbConfigRepository implements ConfigRepository {
 
     private Map<Long, Long> getIdUpdated(final Connection connection, final String sql, final long id)
             throws SQLException {
-        final Map<Long, Long> attributes = new HashMap<>();
+        final var attributes = new HashMap<Long, Long>();
         try (final var statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
 
@@ -656,7 +695,7 @@ final class DbConfigRepository implements ConfigRepository {
         final var sql = String.format(SQL.SELECT.COUNT_CONFIG_NAMES_BY_NAME, configs, attributes) +
                 JDBCUtils.getSubSql(request) + ";";
         try (final var statement = connection.prepareStatement(sql)) {
-            JDBCUtils.set(statement, request);
+            JDBCUtils.set(statement, (Integer) settings.get(FETCH_SIZE), request);
 
             try (final var resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
@@ -709,7 +748,7 @@ final class DbConfigRepository implements ConfigRepository {
                 final var sql = String.format(SQL.DELETE.CONFIGS, configs);
                 final var subSql = String.format(" OR `%s`.`NAME` = ?", configs);
                 try (final var statement = connection.prepareStatement(JDBCUtils.concatSql(sql, subSql, names))) {
-                    JDBCUtils.set(statement, names);
+                    JDBCUtils.set(statement, (Integer) settings.get(FETCH_SIZE), names);
                     final var deleted = statement.executeUpdate();
                     connection.commit();
                     return deleted;
@@ -756,11 +795,13 @@ final class DbConfigRepository implements ConfigRepository {
             static final String CONFIGS =
                     "UPDATE `%s` SET `NAME` = ?, `DESCRIPTION` = ?, `VERSION` = ?, `UPDATED` = ? " +
                             "WHERE `ID` = ? AND `VERSION` = ?;";
-            static final String ATTRIBUTE =
-                    "UPDATE `%s` SET `KEY` = ?, `VALUE` = ? WHERE `ID` = ?;";
+            static final String CONFIG_ATTRIBUTE =
+                    "UPDATE `%s` SET `VALUE` = ? WHERE `CONFIG_ID` = ? AND `KEY` = ?;";
             static final String PROPERTIES =
                     "UPDATE `%s` SET `NAME` = ?, `CAPTION` = ?, `DESCRIPTION` = ?, `TYPE` = ?, `VALUE` = ?, " +
                             "`UPDATED` = ? WHERE `ID` = ?;";
+            static final String PROPERTY_ATTRIBUTE =
+                    "UPDATE `%s` SET `VALUE` = ? WHERE `PROPERTY_ID` = ? AND `KEY` = ?;";
         }
 
         private final static class DELETE {
@@ -796,7 +837,7 @@ final class DbConfigRepository implements ConfigRepository {
             static final String CONFIG_ATTRIBUTES =
                     "SELECT `CA`.`KEY`, `CA`.`VALUE` FROM `%s` AS `CA` WHERE `CA`.`CONFIG_ID` = ?;";
             static final String PROPERTY_ATTRIBUTES =
-                    "SELECT `PA`.`KEY`, `PA`.`VALUE` FROM `%s` AS `PA` WHERE `PA`.`ID` = ?;";
+                    "SELECT `PA`.`KEY`, `PA`.`VALUE` FROM `%s` AS `PA` WHERE `PA`.`PROPERTY_ID` = ?;";
             static final String PROPERTY_ID_UPDATED =
                     "SELECT `P`.`ID`, `P`.`UPDATED` FROM `%s` AS `P` WHERE `P`.`CONFIG_ID` = ?;";
             static final String CONFIG_VERSION_UPDATED =
@@ -852,7 +893,6 @@ final class DbConfigRepository implements ConfigRepository {
     }
 
     private static final class JDBCUtils {
-        private static final int FETCH_SIZE = 100;
 
         private static void createDataBase(final DataSource dataSource, final Map<String, String> mapping) {
             Connection connection = null;
@@ -886,7 +926,7 @@ final class DbConfigRepository implements ConfigRepository {
 
         private static Map<String, String> createMapping(final Map<String, String> mapping) {
             if (mapping == null) {
-                final Map<String, String> defaultMapping = new HashMap<>();
+                final var defaultMapping = new HashMap<String, String>();
                 defaultMapping.put(CONFIGS_TABLE, "CONFIGS");
                 defaultMapping.put(CONFIG_ATTRIBUTES_TABLE, "CONFIG_ATTRIBUTES");
                 defaultMapping.put(PROPERTIES_TABLE, "PROPERTIES");
@@ -900,6 +940,18 @@ final class DbConfigRepository implements ConfigRepository {
             }
 
             return mapping;
+        }
+
+        private static Map<String, Object> createSettings(final Map<String, Object> settings) {
+            if (settings == null) {
+                final var defaultSettings = new HashMap<String, Object>();
+                defaultSettings.put(FETCH_SIZE, 100);
+                return defaultSettings;
+            } else {
+                settings.putIfAbsent(FETCH_SIZE, 100);
+            }
+
+            return settings;
         }
 
         private static String concatSql(final String sql, final String subSql, final String[] names) {
@@ -965,15 +1017,17 @@ final class DbConfigRepository implements ConfigRepository {
             statement.setLong(4, config.getUpdated());
         }
 
-        private static void set(final PreparedStatement statement, final String[] names) throws SQLException {
-            statement.setFetchSize(FETCH_SIZE);
+        private static void set(final PreparedStatement statement, final int fetchSize, final String[] names)
+                throws SQLException {
+            statement.setFetchSize(fetchSize);
             for (var i = 0; i < names.length; i++) {
                 statement.setString(i + 1, names[i]);
             }
         }
 
-        private static void set(final PreparedStatement statement, final PageRequest request) throws SQLException {
-            statement.setFetchSize(FETCH_SIZE);
+        private static void set(final PreparedStatement statement, final int fetchSize, final PageRequest request)
+                throws SQLException {
+            statement.setFetchSize(fetchSize);
             statement.setString(1, "%" + request.getName() + "%");
 
             var index = 1;
@@ -987,9 +1041,9 @@ final class DbConfigRepository implements ConfigRepository {
         private static void setBatch(final PreparedStatement statement, final Map<String, String> attributes,
                                      final long id) throws SQLException {
             for (final var key : attributes.keySet()) {
-                statement.setString(1, key);
-                statement.setString(2, attributes.get(key));
-                statement.setLong(3, id);
+                statement.setString(1, attributes.get(key));
+                statement.setLong(2, id);
+                statement.setString(3, key);
                 statement.addBatch();
             }
         }
@@ -1075,7 +1129,7 @@ final class DbConfigRepository implements ConfigRepository {
                                     final String error) throws SQLException {
             if (statement.executeBatch().length == count) {
                 if (exceptions.size() > 0) {
-                    throw new SQLException(UPDATE_ATTRIBUTES_ERROR);
+                    throw new SQLException(String.format(UPDATE_ATTRIBUTES_ERROR_MSG, JDBCUtils.getMessage(exceptions)));
                 }
 
                 if (statement.getUpdateCount() == 0) {
@@ -1085,6 +1139,18 @@ final class DbConfigRepository implements ConfigRepository {
                 throw new SQLException(error);
             }
         }
+
+        private static String getMessage(final Collection<Throwable> exceptions) {
+            final var details = new StringBuilder();
+            exceptions.forEach(e -> {
+                if (details.length() > 0) {
+                    details.append(", ");
+                }
+
+                details.append(e.getMessage());
+            });
+            return details.toString();
+        }
     }
 
     /**
@@ -1093,6 +1159,7 @@ final class DbConfigRepository implements ConfigRepository {
     final static class Builder {
         private final DataSource dataSource;
         private Map<String, String> mapping;
+        private Map<String, Object> settings;
 
         /**
          * Constructs a DB config repository with a required parameter.
@@ -1121,6 +1188,25 @@ final class DbConfigRepository implements ConfigRepository {
         }
 
         /**
+         * Constructs a DB config repository with settings.
+         *
+         * @param settings DB settings.
+         * @return a builder of the DB config repository.
+         */
+        Builder settings(final Map<String, Object> settings) {
+            this.settings = Validator.of(settings).
+                    validate(m -> {
+                        if (settings.containsKey(FETCH_SIZE)) {
+                            final Object value = settings.get(FETCH_SIZE);
+                            return value instanceof Integer;
+                        }
+
+                        return true;
+                    }, FETCH_SIZE + " setting is wrong.").get();
+            return this;
+        }
+
+        /**
          * Builds a DB config repository with a required parameter.
          *
          * @return a builder of the DB config repository.
@@ -1131,7 +1217,7 @@ final class DbConfigRepository implements ConfigRepository {
 
         private boolean validate(final Map<String, String> mapping, final String key) {
             if (mapping.containsKey(key)) {
-                final var configs = mapping.get(key);
+                final String configs = mapping.get(key);
                 return configs != null && configs.length() > 0;
             }
 
