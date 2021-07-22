@@ -83,22 +83,22 @@ public final class ConnectionPools {
      */
     public static ConnectionPool newPool(final Config config) {
         // Validate the config
-        final Config poolConfig = Validator.of(config).
+        final var poolConfig = Validator.of(config).
                 validate(c -> CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
                 validate(c -> c.getProperty(URL).isPresent(), String.format(PARAM_NOT_PRESENTED, URL)).
-                validate(c -> c.getProperty(USER).isPresent(), String.format(PARAM_NOT_PRESENTED,  USER)).
+                validate(c -> c.getProperty(USER).isPresent(), String.format(PARAM_NOT_PRESENTED, USER)).
                 validate(c -> c.getProperty(PASSWORD).isPresent(), String.format(PARAM_NOT_PRESENTED, PASSWORD)).
                 get();
         // Get the url
-        final String url = poolConfig.getProperty(URL).
+        final var url = poolConfig.getProperty(URL).
                 map(Property::getValue).
                 orElse(URL_VALUE);
         // Get the user
-        final String user = poolConfig.getProperty(USER).
+        final var user = poolConfig.getProperty(USER).
                 map(Property::getValue).
                 orElse(USER_VALUE);
         // Get the password
-        final String password = poolConfig.getProperty(PASSWORD).
+        final var password = poolConfig.getProperty(PASSWORD).
                 map(Property::getValue).
                 orElse(PASSWORD_VALUE);
         // Create the connection pool

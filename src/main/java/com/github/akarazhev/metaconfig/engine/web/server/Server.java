@@ -21,8 +21,6 @@ import com.sun.net.httpserver.HttpsServer;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -148,7 +146,7 @@ public final class Server implements WebServer {
      */
     public Server(final Config config, final ConfigService configService) throws Exception {
         // Validate the config
-        final Config serverConfig = Validator.of(config).
+        final var serverConfig = Validator.of(config).
                 validate(c -> CONFIG_NAME.equals(c.getName()), WRONG_CONFIG_NAME).
                 validate(c -> c.getProperty(KEY_STORE_FILE).isPresent(), String.format(PARAM_NOT_PRESENTED, KEY_STORE_FILE)).
                 validate(c -> c.getProperty(ALIAS).isPresent(), String.format(PARAM_NOT_PRESENTED, ALIAS)).
@@ -156,38 +154,38 @@ public final class Server implements WebServer {
                 validate(c -> c.getProperty(KEY_PASSWORD).isPresent(), String.format(PARAM_NOT_PRESENTED, KEY_PASSWORD)).
                 get();
         // Get the hostname
-        final String hostname = serverConfig.getProperty(HOSTNAME).
+        final var hostname = serverConfig.getProperty(HOSTNAME).
                 map(Property::getValue).
                 orElse(HOSTNAME_VALUE);
         // Get the api path
-        final String apiPath = serverConfig.getProperty(API_PATH).
+        final var apiPath = serverConfig.getProperty(API_PATH).
                 map(Property::getValue).
                 orElse(API_PATH_VALUE);
         // Get the port
-        final int port = serverConfig.getProperty(PORT).
+        final var port = serverConfig.getProperty(PORT).
                 map(property -> (int) property.asLong()).
                 orElse(PORT_VALUE);
         // Get the backlog
-        final int backlog = serverConfig.getProperty(BACKLOG).
+        final var backlog = serverConfig.getProperty(BACKLOG).
                 map(property -> (int) property.asLong()).
                 orElse(BACKLOG_VALUE);
         // Init the server
         httpsServer = HttpsServer.create(new InetSocketAddress(hostname, port), backlog);
         // Get the accept config endpoint
-        final String acceptConfigEndpoint = serverConfig.getProperty(ACCEPT_CONFIG).
+        final var acceptConfigEndpoint = serverConfig.getProperty(ACCEPT_CONFIG).
                 map(Property::getValue).
                 orElse(ACCEPT_CONFIG_VALUE);
-        final String acceptApi = apiPath + acceptConfigEndpoint;
+        final var acceptApi = apiPath + acceptConfigEndpoint;
         httpsServer.createContext(acceptApi,
                 new AcceptConfigController.Builder(acceptApi, configService).build()::handle);
         // Get the config names endpoint
-        final String configNamesEndpoint = serverConfig.getProperty(CONFIG_NAMES).
+        final var configNamesEndpoint = serverConfig.getProperty(CONFIG_NAMES).
                 map(Property::getValue).
                 orElse(CONFIG_NAMES_VALUE);
         httpsServer.createContext(apiPath + configNamesEndpoint,
                 new ConfigNamesController.Builder(configService).build()::handle);
         // Get the config endpoint
-        final String configEndpoint = serverConfig.getProperty(CONFIG).
+        final var configEndpoint = serverConfig.getProperty(CONFIG).
                 map(Property::getValue).
                 orElse(CONFIG_VALUE);
         httpsServer.createContext(apiPath + configEndpoint,
@@ -201,12 +199,12 @@ public final class Server implements WebServer {
             @Override
             public void configure(final HttpsParameters params) {
                 try {
-                    final SSLContext sslContext = SSLContext.getDefault();
-                    final SSLEngine sslEngine = sslContext.createSSLEngine();
+                    final var sslContext = SSLContext.getDefault();
+                    final var sslEngine = sslContext.createSSLEngine();
                     params.setNeedClientAuth(false);
                     params.setCipherSuites(sslEngine.getEnabledCipherSuites());
                     params.setProtocols(sslEngine.getEnabledProtocols());
-                    final SSLParameters defaultSSLParameters = sslContext.getDefaultSSLParameters();
+                    final var defaultSSLParameters = sslContext.getDefaultSSLParameters();
                     params.setSSLParameters(defaultSSLParameters);
                 } catch (final Exception e) {
                     LOGGER.log(Level.SEVERE, SERVER_CREATE_ERROR);
@@ -261,7 +259,7 @@ public final class Server implements WebServer {
             }
         });
 
-        final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+        final var keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
         serverConfig.getProperty(STORE_PASSWORD).ifPresent(property -> {
             try {
                 keyManagerFactory.init(keyStore, property.getValue().toCharArray());
@@ -274,10 +272,10 @@ public final class Server implements WebServer {
             throw new Exception(CERTIFICATE_LOAD_ERROR);
         }
 
-        final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+        final var trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
         trustManagerFactory.init(keyStore);
 
-        final SSLContext sslContext = SSLContext.getInstance("TLS");
+        final var sslContext = SSLContext.getInstance("TLS");
         sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
         return sslContext;
     }

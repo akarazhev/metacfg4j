@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.time.Clock;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -49,7 +48,7 @@ final class ConfigServiceTest extends UnitTest {
         }
 
         if (configService == null) {
-            final ConfigRepository configRepository =
+            final var configRepository =
                     new DbConfigRepository.Builder(connectionPool.getDataSource()).build();
             configService = new ConfigServiceImpl.Builder(configRepository).build();
         }
@@ -99,11 +98,11 @@ final class ConfigServiceTest extends UnitTest {
     @Test
     @DisplayName("Get configs by names")
     void getConfigsByNames() {
-        final Config[] configs = configService.get(Stream.of(FIRST_CONFIG, SECOND_CONFIG)).toArray(Config[]::new);
+        final var configs = configService.get(Stream.of(FIRST_CONFIG, SECOND_CONFIG)).toArray(Config[]::new);
         // Check test results
         assertEquals(2, configs.length);
-        final Config firstExpected = getConfigWithSubProperties(FIRST_CONFIG);
-        final Config secondExpected = getConfigWithSubProperties(SECOND_CONFIG);
+        final var firstExpected = getConfigWithSubProperties(FIRST_CONFIG);
+        final var secondExpected = getConfigWithSubProperties(SECOND_CONFIG);
         assertEqualsConfig(firstExpected, configs[0]);
         assertEqualsProperty(firstExpected, configs[0]);
         assertEqualsConfig(secondExpected, configs[1]);
@@ -117,15 +116,14 @@ final class ConfigServiceTest extends UnitTest {
         // Check test results
         assertThrows(RuntimeException.class, () -> configService.get(Stream.of(FIRST_CONFIG, SECOND_CONFIG)));
         connectionPool = ConnectionPools.newPool();
-        final ConfigRepository configRepository =
-                new DbConfigRepository.Builder(connectionPool.getDataSource()).build();
+        final var configRepository = new DbConfigRepository.Builder(connectionPool.getDataSource()).build();
         configService = new ConfigServiceImpl.Builder(configRepository).build();
     }
 
     @Test
     @DisplayName("Get config names")
     void getNames() {
-        final String[] names = configService.getNames().toArray(String[]::new);
+        final var names = configService.getNames().toArray(String[]::new);
         // Check test results
         assertEquals(2, names.length);
         assertEquals(FIRST_CONFIG, names[0]);
@@ -139,19 +137,18 @@ final class ConfigServiceTest extends UnitTest {
         // Check test results
         assertThrows(RuntimeException.class, () -> configService.getNames());
         connectionPool = ConnectionPools.newPool();
-        final ConfigRepository configRepository =
-                new DbConfigRepository.Builder(connectionPool.getDataSource()).build();
+        final var configRepository = new DbConfigRepository.Builder(connectionPool.getDataSource()).build();
         configService = new ConfigServiceImpl.Builder(configRepository).build();
     }
 
     @Test
     @DisplayName("Get config names by a page request")
     void getNamesByPageRequest() {
-        final PageResponse page = configService.getNames(new PageRequest.Builder(CONFIG).build());
+        final var page = configService.getNames(new PageRequest.Builder(CONFIG).build());
         // Check test results
         assertEquals(0, page.getPage());
         assertEquals(2, page.getTotal());
-        final String[] names = page.getNames().toArray(String[]::new);
+        final var names = page.getNames().toArray(String[]::new);
         assertEquals(2, names.length);
         assertEquals(FIRST_CONFIG, names[0]);
         assertEquals(SECOND_CONFIG, names[1]);
@@ -164,15 +161,14 @@ final class ConfigServiceTest extends UnitTest {
         // Check test results
         assertThrows(RuntimeException.class, () -> configService.getNames(new PageRequest.Builder(CONFIG).build()));
         connectionPool = ConnectionPools.newPool();
-        final ConfigRepository configRepository =
-                new DbConfigRepository.Builder(connectionPool.getDataSource()).build();
+        final var configRepository = new DbConfigRepository.Builder(connectionPool.getDataSource()).build();
         configService = new ConfigServiceImpl.Builder(configRepository).build();
     }
 
     @Test
     @DisplayName("Get configs")
     void getConfigs() {
-        final Config[] configs = configService.get().toArray(Config[]::new);
+        final var configs = configService.get().toArray(Config[]::new);
         // Check test results
         assertEquals(2, configs.length);
         assertEquals(FIRST_CONFIG, configs[0].getName());
@@ -182,8 +178,7 @@ final class ConfigServiceTest extends UnitTest {
     @Test
     @DisplayName("Update a new config")
     void updateNewConfig() {
-        final Optional<Config> newConfig =
-                configService.update(Stream.of(getConfigWithProperties(NEW_CONFIG))).findFirst();
+        final var newConfig = configService.update(Stream.of(getConfigWithProperties(NEW_CONFIG))).findFirst();
         // Check test results
         assertTrue(newConfig.isPresent());
         assertTrue(newConfig.get().getId() > 0);
@@ -199,13 +194,13 @@ final class ConfigServiceTest extends UnitTest {
     @Test
     @DisplayName("Update by the config id")
     void updateConfigById() {
-        final Optional<Config> firstConfig = configService.get(Stream.of(FIRST_CONFIG)).findFirst();
+        final var firstConfig = configService.get(Stream.of(FIRST_CONFIG)).findFirst();
         // Check test results
         assertTrue(firstConfig.isPresent());
-        final Config newConfig = new Config.Builder(NEW_CONFIG, Collections.emptyList()).
+        final var newConfig = new Config.Builder(NEW_CONFIG, Collections.emptyList()).
                 id(firstConfig.get().getId()).
                 build();
-        Optional<Config> updatedConfig = configService.update(Stream.of(newConfig)).findFirst();
+        var updatedConfig = configService.update(Stream.of(newConfig)).findFirst();
         assertTrue(updatedConfig.isPresent());
         assertTrue(updatedConfig.get().getId() > 0);
     }
@@ -213,9 +208,9 @@ final class ConfigServiceTest extends UnitTest {
     @Test
     @DisplayName("Optimistic locking error")
     void optimisticLockingError() {
-        final Optional<Config> firstConfig = configService.get(Stream.of(FIRST_CONFIG)).findFirst();
+        final var firstConfig = configService.get(Stream.of(FIRST_CONFIG)).findFirst();
         assertTrue(firstConfig.isPresent());
-        final Config newConfig = new Config.Builder(firstConfig.get()).
+        final var newConfig = new Config.Builder(firstConfig.get()).
                 updated(Clock.systemDefaultZone().millis()).
                 build();
         configService.update(Stream.of(newConfig));
@@ -246,7 +241,7 @@ final class ConfigServiceTest extends UnitTest {
     @Test
     @DisplayName("Add a consumer for the config")
     void addConsumer() {
-        final StringBuilder message = new StringBuilder();
+        final var message = new StringBuilder();
         configService.addConsumer(config -> {
             if (FIRST_CONFIG.equals(config.getName())) {
                 message.append(FIRST_CONFIG);
@@ -265,7 +260,7 @@ final class ConfigServiceTest extends UnitTest {
     @Test
     @DisplayName("Accept config by different names")
     void acceptByDifferentNames() {
-        final StringBuilder message = new StringBuilder();
+        final var message = new StringBuilder();
         configService.addConsumer(config -> {
             if (FIRST_CONFIG.equals(config.getName())) {
                 message.append(FIRST_CONFIG);

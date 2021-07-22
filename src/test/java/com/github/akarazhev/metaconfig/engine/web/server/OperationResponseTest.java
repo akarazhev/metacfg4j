@@ -31,7 +31,7 @@ final class OperationResponseTest extends UnitTest {
     @Test
     @DisplayName("Result is success")
     void resultIsSuccess() {
-        final OperationResponse<String> response = new OperationResponse.Builder<String>().result("Ok").build();
+        final var response = new OperationResponse.Builder<String>().result("Ok").build();
         // Check test results
         assertTrue(response.isSuccess());
         assertEquals("Ok", response.getResult());
@@ -41,7 +41,7 @@ final class OperationResponseTest extends UnitTest {
     @Test
     @DisplayName("Result is not success")
     void resultIsNotSuccess() {
-        final OperationResponse<String> response = new OperationResponse.Builder<String>().error("Error").build();
+        final var response = new OperationResponse.Builder<String>().error("Error").build();
         // Check test results
         assertFalse(response.isSuccess());
         assertEquals("Error", response.getError());

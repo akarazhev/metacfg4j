@@ -29,7 +29,7 @@ final class PageRequestTest extends UnitTest {
     @Test
     @DisplayName("Create a page request")
     void createPageRequest() {
-        final PageRequest request = new PageRequest.Builder(CONFIG).
+        final var request = new PageRequest.Builder(CONFIG).
                 attribute("key_1", "value_1").
                 attributes(Collections.singletonMap("key_2", "value_2")).
                 page(0).
@@ -47,9 +47,9 @@ final class PageRequestTest extends UnitTest {
     @Test
     @DisplayName("Create a page request via the json builder")
     void createPageRequestViaJsonBuilder() throws JsonException {
-        final String json = "{\"size\":10,\"name\":\"Config\",\"attributes\":{\"key_2\":\"value_2\"," +
+        final var json = "{\"size\":10,\"name\":\"Config\",\"attributes\":{\"key_2\":\"value_2\"," +
                 "\"key_1\":\"value_1\"},\"page\":1,\"ascending\":true}";
-        final PageRequest request = new PageRequest.Builder((JsonObject) Jsoner.deserialize(json)).build();
+        final var request = new PageRequest.Builder((JsonObject) Jsoner.deserialize(json)).build();
         // Check test results
         assertEquals(CONFIG, request.getName());
         assertEquals(1, request.getPage());
@@ -61,8 +61,8 @@ final class PageRequestTest extends UnitTest {
     @Test
     @DisplayName("Check toString() of two page requests")
     void checkToStringOfTwoRequests() {
-        final PageRequest firstRequest = new PageRequest.Builder(CONFIG).build();
-        final PageRequest secondRequest = new PageRequest.Builder(CONFIG).build();
+        final var firstRequest = new PageRequest.Builder(CONFIG).build();
+        final var secondRequest = new PageRequest.Builder(CONFIG).build();
         // Check test results
         assertEquals(firstRequest.toString(), secondRequest.toString());
     }

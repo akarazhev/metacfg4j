@@ -77,7 +77,7 @@ public final class WebUtils {
      * @return a stream of path params.
      */
     public static Stream<String> getPathParams(final URI uri, final String api) {
-        final String path = uri.getPath();
+        final var path = uri.getPath();
         return path.contains(api) ?
                 Arrays.stream(path.substring(api.length() + 1).split("/")).map(param ->
                         decode(param, StandardCharsets.UTF_8)) :
@@ -92,7 +92,7 @@ public final class WebUtils {
      * @return a value of a param.
      */
     public static Optional<String> getRequestParam(final URI uri, final String param) {
-        final String query = uri.getQuery();
+        final var query = uri.getQuery();
         return query != null ?
                 Arrays.stream(query.split("&")).
                         filter(q -> q.contains(param)).
@@ -109,7 +109,7 @@ public final class WebUtils {
      * @throws JsonException when a parser encounters a problem.
      */
     public static Stream<String> getValues(final String param) throws JsonException {
-        final String json = new String(Base64.getDecoder().decode(param), StandardCharsets.UTF_8);
+        final var json = new String(Base64.getDecoder().decode(param), StandardCharsets.UTF_8);
         return ((JsonArray) Jsoner.deserialize(json)).stream().map(Objects::toString);
     }
 
@@ -121,7 +121,7 @@ public final class WebUtils {
      * @throws JsonException when a parser encounters a problem.
      */
     public static JsonObject getValue(final String param) throws JsonException {
-        final String json = new String(Base64.getDecoder().decode(param), StandardCharsets.UTF_8);
+        final var json = new String(Base64.getDecoder().decode(param), StandardCharsets.UTF_8);
         return (JsonObject) Jsoner.deserialize(json);
     }
 }

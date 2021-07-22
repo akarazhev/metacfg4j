@@ -11,7 +11,6 @@
 package com.github.akarazhev.metaconfig.engine.web;
 
 import com.github.akarazhev.metaconfig.api.Config;
-import com.github.akarazhev.metaconfig.api.Property;
 import com.github.akarazhev.metaconfig.extension.Validator;
 import com.github.cliftonlabs.json_simple.JsonException;
 import com.github.cliftonlabs.json_simple.JsonObject;
@@ -25,12 +24,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Optional;
 
 import static com.github.akarazhev.metaconfig.Constants.CREATE_CONSTANT_CLASS_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.PARAM_NOT_PRESENTED;
@@ -84,9 +81,9 @@ public final class WebClient {
     private String content;
 
     private WebClient(final Builder builder) {
-        final Config config = builder.config;
+        final var config = builder.config;
         try {
-            final Optional<Property> urlProperty = config.getProperty(Settings.URL);
+            final var urlProperty = config.getProperty(Settings.URL);
             if (urlProperty.isPresent()) {
                 // Accept all hosts
                 final var exceptions = new ArrayList<Throwable>(1);
@@ -104,9 +101,8 @@ public final class WebClient {
                     throw new Exception(exceptions.get(0));
                 }
                 // Open a connection
-                final HttpsURLConnection connection =
-                        (HttpsURLConnection) new URL(urlProperty.get().getValue()).openConnection();
-                final Optional<Property> methodProperty = config.getProperty(METHOD);
+                final var connection = (HttpsURLConnection) new URL(urlProperty.get().getValue()).openConnection();
+                final var methodProperty = config.getProperty(METHOD);
                 if (methodProperty.isPresent()) {
                     // Set a method
                     connection.setRequestMethod(methodProperty.get().getValue());
@@ -117,7 +113,7 @@ public final class WebClient {
                 // Set the content type
                 config.getProperty(CONTENT_TYPE).ifPresent(contentTypeProp ->
                         connection.setRequestProperty("Content-Type", contentTypeProp.getValue()));
-                final Optional<Property> contentProperty = config.getProperty(CONTENT);
+                final var contentProperty = config.getProperty(CONTENT);
                 if (contentProperty.isPresent()) {
                     // Enable the output stream
                     connection.setDoOutput(true);
@@ -169,8 +165,8 @@ public final class WebClient {
     }
 
     private String readContent(final InputStream inputStream) throws IOException {
-        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-            final StringBuilder content = new StringBuilder();
+        try (final var reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            final var content = new StringBuilder();
             String inputLine;
             while ((inputLine = reader.readLine()) != null) {
                 content.append(inputLine);
@@ -181,14 +177,14 @@ public final class WebClient {
     }
 
     private void writeContent(final HttpsURLConnection connection, final String content) throws IOException {
-        try (final OutputStream outputStream = connection.getOutputStream()) {
-            final byte[] input = content.getBytes(StandardCharsets.UTF_8);
+        try (final var outputStream = connection.getOutputStream()) {
+            final var input = content.getBytes(StandardCharsets.UTF_8);
             outputStream.write(input, 0, input.length);
         }
     }
 
     private void acceptAllHosts() throws Exception {
-        final SSLContext sslContext = SSLContext.getInstance("SSL");
+        final var sslContext = SSLContext.getInstance("SSL");
         sslContext.init(null, new TrustManager[]{
                 new X509TrustManager() {
                     public X509Certificate[] getAcceptedIssuers() {

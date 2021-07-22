@@ -33,7 +33,7 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Create a config")
     void createConfig() {
-        final Config config = new Config.Builder(CONFIG, Collections.emptyList()).build();
+        final var config = new Config.Builder(CONFIG, Collections.emptyList()).build();
         // Check test results
         assertEquals(CONFIG, config.getName());
         assertFalse(config.getDescription().isPresent());
@@ -60,7 +60,7 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Create a config with properties")
     void createConfigWithParameters() {
-        final Config config = getConfig(Collections.singletonList(getProperty()));
+        final var config = getConfig(Collections.singletonList(getProperty()));
         // Check test results
         assertEquals(100, config.getId());
         assertEquals(CONFIG, config.getName());
@@ -78,15 +78,15 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Create a config with deleted properties")
     void createConfigWithDeletedProperties() {
-        final String[] path = new String[]{"Property", "Sub-property-1", "Sub-property-2", "Sub-property-3"};
-        final Property property = new Property.Builder("Property", "Value").
+        final var path = new String[]{"Property", "Sub-property-1", "Sub-property-2", "Sub-property-3"};
+        final var property = new Property.Builder("Property", "Value").
                 property(new String[]{"Sub-property-1", "Sub-property-2"},
                         new Property.Builder("Sub-property-3", "Sub-value-3").build()).build();
-        final Config config = new Config.Builder(CONFIG, Collections.singletonList(property)).build();
+        final var config = new Config.Builder(CONFIG, Collections.singletonList(property)).build();
         // Check test results
         assertTrue(config.getProperty(path).isPresent());
 
-        final Config updatedConfig = new Config.Builder(config).deleteProperty(path).build();
+        final var updatedConfig = new Config.Builder(config).deleteProperty(path).build();
         // Check test results
         assertFalse(updatedConfig.getProperty(path).isPresent());
     }
@@ -94,19 +94,19 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Create a config with updated properties")
     void createConfigWithUpdatedProperties() {
-        final String[] path = new String[]{"Property", "Property-2"};
-        final Property property = new Property.Builder("Property", "Value").
+        final var path = new String[]{"Property", "Property-2"};
+        final var property = new Property.Builder("Property", "Value").
                 property(new String[]{"Property-1", "Property-1.2"},
                         new Property.Builder("Property-1.3", "Value-1.3").build()).
                 property(new String[]{"Property-2", "Property-2.2"},
                         new Property.Builder("Property-2.3", "Value-2.3").build()).
                 property(new String[]{"Property-3", "Property-3.2"},
                         new Property.Builder("Property-3.3", "Value-3.3").build()).build();
-        final Config config = new Config.Builder(CONFIG, Collections.singletonList(property)).build();
+        final var config = new Config.Builder(CONFIG, Collections.singletonList(property)).build();
         // Check test results
         assertTrue(config.getProperty(path).isPresent());
 
-        final Config updatedConfig = new Config.Builder(config).deleteProperty(path).build();
+        final var updatedConfig = new Config.Builder(config).deleteProperty(path).build();
         // Check test results
         assertFalse(updatedConfig.getProperty(path).isPresent());
     }
@@ -128,7 +128,7 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Compare a config")
     void compareConfig() {
-        final Config firstConfig = getConfig(Collections.emptyList());
+        final var firstConfig = getConfig(Collections.emptyList());
         // Check test results
         assertEquals(firstConfig, firstConfig);
     }
@@ -136,8 +136,8 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Compare two simple configs")
     void compareTwoSimpleConfigs() {
-        final Config firstConfig = getConfig(Collections.emptyList());
-        final Config secondConfig = getConfig(Collections.emptyList());
+        final var firstConfig = getConfig(Collections.emptyList());
+        final var secondConfig = getConfig(Collections.emptyList());
         // Check test results
         assertEquals(firstConfig, secondConfig);
     }
@@ -145,8 +145,8 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Compare two configs")
     void compareTwoConfigs() {
-        final Property firstProperty = new Property.Builder("Property-1", "Value-1").build();
-        final Config firstConfig = new Config.Builder(CONFIG, Collections.singletonList(firstProperty)).
+        final var firstProperty = new Property.Builder("Property-1", "Value-1").build();
+        final var firstConfig = new Config.Builder(CONFIG, Collections.singletonList(firstProperty)).
                 id(1).
                 description("Description").
                 version(1).
@@ -155,8 +155,8 @@ final class ConfigTest extends UnitTest {
                 attributes(Collections.singletonMap("key_2", "value_2")).
                 property(new String[0], new Property.Builder("Property-2", "Value-2").build()).
                 build();
-        final Property secondProperty = new Property.Builder("Property-1", "Value-1").build();
-        final Config secondConfig = new Config.Builder(CONFIG, Collections.singletonList(secondProperty)).
+        final var secondProperty = new Property.Builder("Property-1", "Value-1").build();
+        final var secondConfig = new Config.Builder(CONFIG, Collections.singletonList(secondProperty)).
                 id(1).
                 description("Description").
                 version(1).
@@ -172,8 +172,8 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Check hash codes of two configs")
     void checkHashCodesOfTwoConfigs() {
-        final Config firstConfig = new Config.Builder(CONFIG, Collections.emptyList()).build();
-        final Config secondConfig = new Config.Builder(CONFIG, Collections.emptyList()).build();
+        final var firstConfig = new Config.Builder(CONFIG, Collections.emptyList()).build();
+        final var secondConfig = new Config.Builder(CONFIG, Collections.emptyList()).build();
         // Check test results
         assertEquals(firstConfig.hashCode(), secondConfig.hashCode());
     }
@@ -181,8 +181,8 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Check toString() of two configs")
     void checkToStringOfTwoConfigs() {
-        final Config firstConfig = new Config.Builder(CONFIG, Collections.emptyList()).build();
-        final Config secondConfig = new Config.Builder(CONFIG, Collections.emptyList()).build();
+        final var firstConfig = new Config.Builder(CONFIG, Collections.emptyList()).build();
+        final var secondConfig = new Config.Builder(CONFIG, Collections.emptyList()).build();
         // Check test results
         assertEquals(firstConfig.toString(), secondConfig.toString());
     }
@@ -190,8 +190,8 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Create a config via the builder")
     void createConfigViaBuilder() {
-        final Config firstConfig = getConfig(Collections.singletonList(getProperty()));
-        final Config secondConfig = new Config.Builder(firstConfig).build();
+        final var firstConfig = getConfig(Collections.singletonList(getProperty()));
+        final var secondConfig = new Config.Builder(firstConfig).build();
         // Check test results
         assertEquals(firstConfig, secondConfig);
     }
@@ -200,7 +200,7 @@ final class ConfigTest extends UnitTest {
     @DisplayName("Create a config via the json builder")
     void createConfigViaJsonBuilder() throws JsonException {
         final String json = "{\"name\":\"Config\",\"description\":\"Description\"}";
-        final Config firstConfig = new Config.Builder((JsonObject) Jsoner.deserialize(json)).build();
+        final var firstConfig = new Config.Builder((JsonObject) Jsoner.deserialize(json)).build();
         // Check test results
         assertTrue(firstConfig.getAttributes().isPresent());
         assertEquals(0, firstConfig.getProperties().count());
@@ -209,8 +209,8 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Create a config with params via the json builder")
     void createConfigWithParamsViaJsonBuilder() throws JsonException {
-        final Config firstConfig = getConfig(Collections.singletonList(getProperty()));
-        final Config secondConfig =
+        final var firstConfig = getConfig(Collections.singletonList(getProperty()));
+        final var secondConfig =
                 new Config.Builder((JsonObject) Jsoner.deserialize(firstConfig.toJson())).build();
         // Check test results
         assertEquals(firstConfig, secondConfig);
@@ -219,8 +219,8 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Convert a config to a json")
     void convertConfigToJson() throws IOException {
-        final Config config = getConfig(Collections.emptyList());
-        final StringWriter writer = new StringWriter();
+        final var config = getConfig(Collections.emptyList());
+        final var writer = new StringWriter();
         config.toJson(writer);
         // Check test results
         assertEquals(writer.toString(), config.toJson());
@@ -229,7 +229,7 @@ final class ConfigTest extends UnitTest {
     @Test
     @DisplayName("Convert a config with properties to a json")
     void convertConfigWithPropertiesToJson() throws IOException {
-        final Config config = getConfig(Collections.singletonList(getProperty()));
+        final var config = getConfig(Collections.singletonList(getProperty()));
         final StringWriter writer = new StringWriter();
         config.toJson(writer);
         // Check test results

@@ -88,12 +88,12 @@ final class WebConfigRepositoryTest extends UnitTest {
     @Test
     @DisplayName("Find configs by names")
     void findConfigsByNames() {
-        final Config[] configs =
+        final var configs =
                 configRepository.findByNames(Stream.of(FIRST_CONFIG, SECOND_CONFIG)).toArray(Config[]::new);
         // Check test results
         assertEquals(2, configs.length);
-        final Config firstExpected = getConfigWithSubProperties(FIRST_CONFIG);
-        final Config secondExpected = getConfigWithSubProperties(SECOND_CONFIG);
+        final var firstExpected = getConfigWithSubProperties(FIRST_CONFIG);
+        final var secondExpected = getConfigWithSubProperties(SECOND_CONFIG);
         assertEqualsConfig(firstExpected, configs[0]);
         assertEqualsProperty(firstExpected, configs[0]);
         assertEqualsConfig(secondExpected, configs[1]);
@@ -112,7 +112,7 @@ final class WebConfigRepositoryTest extends UnitTest {
     @Test
     @DisplayName("Find config names")
     void findNames() {
-        final String[] names = configRepository.findNames().toArray(String[]::new);
+        final var names = configRepository.findNames().toArray(String[]::new);
         // Check test results
         assertEquals(2, names.length);
         assertEquals(FIRST_CONFIG, names[0]);
@@ -131,11 +131,11 @@ final class WebConfigRepositoryTest extends UnitTest {
     @Test
     @DisplayName("Find config names by a page request")
     void findByPageRequest() {
-        final PageResponse page = configRepository.findByPageRequest(new PageRequest.Builder(CONFIG).build());
+        final var page = configRepository.findByPageRequest(new PageRequest.Builder(CONFIG).build());
         // Check test results
         assertEquals(0, page.getPage());
         assertEquals(2, page.getTotal());
-        final String[] names = page.getNames().toArray(String[]::new);
+        final var names = page.getNames().toArray(String[]::new);
         assertEquals(2, names.length);
         assertEquals(FIRST_CONFIG, names[0]);
         assertEquals(SECOND_CONFIG, names[1]);
@@ -144,14 +144,14 @@ final class WebConfigRepositoryTest extends UnitTest {
     @Test
     @DisplayName("Find config names by a page request")
     void findByPageRequestAndAttributes() {
-        final PageRequest request = new PageRequest.Builder(CONFIG).
+        final var request = new PageRequest.Builder(CONFIG).
                 attributes(Collections.singletonMap("key", "value")).
                 build();
-        final PageResponse page = configRepository.findByPageRequest(request);
+        final var page = configRepository.findByPageRequest(request);
         // Check test results
         assertEquals(0, page.getPage());
         assertEquals(2, page.getTotal());
-        final String[] names = page.getNames().toArray(String[]::new);
+        final var names = page.getNames().toArray(String[]::new);
         assertEquals(2, names.length);
         assertEquals(FIRST_CONFIG, names[0]);
         assertEquals(SECOND_CONFIG, names[1]);
@@ -160,17 +160,17 @@ final class WebConfigRepositoryTest extends UnitTest {
     @Test
     @DisplayName("Find config names by a name, page, size and sorting")
     void findByNameAndPageAndSizeAndSorting() {
-        final PageRequest request = new PageRequest.Builder(CONFIG).
+        final var request = new PageRequest.Builder(CONFIG).
                 page(1).
                 size(1).
                 attribute("key", "value").
                 ascending(false).
                 build();
-        final PageResponse page = configRepository.findByPageRequest(request);
+        final var page = configRepository.findByPageRequest(request);
         // Check test results
         assertEquals(1, page.getPage());
         assertEquals(2, page.getTotal());
-        final String[] names = page.getNames().toArray(String[]::new);
+        final var names = page.getNames().toArray(String[]::new);
         assertEquals(1, names.length);
         assertEquals(FIRST_CONFIG, names[0]);
     }
@@ -178,7 +178,7 @@ final class WebConfigRepositoryTest extends UnitTest {
     @Test
     @DisplayName("Find config names by a wrong name")
     void findByWrongName() {
-        final PageResponse page = configRepository.findByPageRequest(new PageRequest.Builder(NEW_CONFIG).build());
+        final var page = configRepository.findByPageRequest(new PageRequest.Builder(NEW_CONFIG).build());
         // Check test results
         assertEquals(0, page.getPage());
         assertEquals(0, page.getTotal());
@@ -198,7 +198,7 @@ final class WebConfigRepositoryTest extends UnitTest {
     @Test
     @DisplayName("Save and flush a new config")
     void saveAndFlushNewConfig() {
-        final Optional<Config> newConfig =
+        final var newConfig =
                 configRepository.saveAndFlush(Stream.of(getConfigWithProperties(NEW_CONFIG))).findFirst();
         // Check test results
         assertTrue(newConfig.isPresent());
@@ -215,10 +215,10 @@ final class WebConfigRepositoryTest extends UnitTest {
     @Test
     @DisplayName("Save and flush by the config id")
     void saveAndFlushConfigById() {
-        final Optional<Config> firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
+        final var firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
         // Check test results
         assertTrue(firstConfig.isPresent());
-        final Config newConfig = new Config.Builder(NEW_CONFIG, Collections.emptyList()).
+        final var newConfig = new Config.Builder(NEW_CONFIG, Collections.emptyList()).
                 id(firstConfig.get().getId()).
                 build();
         Optional<Config> updatedConfig = configRepository.saveAndFlush(Stream.of(newConfig)).findFirst();
@@ -229,9 +229,9 @@ final class WebConfigRepositoryTest extends UnitTest {
     @Test
     @DisplayName("Optimistic locking error")
     void optimisticLockingError() {
-        final Optional<Config> firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
+        final var firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
         assertTrue(firstConfig.isPresent());
-        final Config newConfig = new Config.Builder(firstConfig.get()).build();
+        final var newConfig = new Config.Builder(firstConfig.get()).build();
         configRepository.saveAndFlush(Stream.of(newConfig));
         assertThrows(RuntimeException.class, () -> configRepository.saveAndFlush(Stream.of(newConfig)));
     }

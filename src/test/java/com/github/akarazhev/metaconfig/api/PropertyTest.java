@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -35,7 +34,7 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Create a property")
     void createProperty() {
-        final Property property = new Property.Builder("Property", "Value").
+        final var property = new Property.Builder("Property", "Value").
                 id(200).
                 build();
         // Check test results
@@ -69,10 +68,10 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Create a property with parameters")
     void createPropertyWithParameters() {
-        final Property firstSubProperty = new Property.Builder("Sub-Property-1", "Sub-Value-1").build();
-        final Property secondSubProperty = new Property.Builder("Sub-Property-2", "Sub-Value-2").build();
-        final Property thirdSubProperty = new Property.Builder("Sub-Property-3", "Sub-Value-3").build();
-        final Property property = new Property.Builder("Property", "Value").
+        final var firstSubProperty = new Property.Builder("Sub-Property-1", "Sub-Value-1").build();
+        final var secondSubProperty = new Property.Builder("Sub-Property-2", "Sub-Value-2").build();
+        final var thirdSubProperty = new Property.Builder("Sub-Property-3", "Sub-Value-3").build();
+        final var property = new Property.Builder("Property", "Value").
                 caption("Caption").
                 description("Description").
                 attributes(Collections.singletonMap("key", "value")).
@@ -101,13 +100,13 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Create a property with property by the empty path")
     void createPropertyWithPropertyByEmptyPath() {
-        final Property property = new Property.Builder("Property", "Value").
+        final var property = new Property.Builder("Property", "Value").
                 property(new String[0], new Property.Builder("Sub-property", "Sub-value").build()).build();
         // Check test results
         assertEquals("Property", property.getName());
         assertEquals(Property.Type.STRING, property.getType());
         assertEquals("Value", property.getValue());
-        final Optional<Property> subProperty = property.getProperty("Sub-property");
+        final var subProperty = property.getProperty("Sub-property");
         assertTrue(subProperty.isPresent());
         assertEquals("Sub-property", subProperty.get().getName());
     }
@@ -115,7 +114,7 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Create a property with property by the single path")
     void createPropertyWithPropertyBySinglePath() {
-        final Property property = new Property.Builder("Property", "Value").
+        final var property = new Property.Builder("Property", "Value").
                 property(new String[]{"Sub-property-1"},
                         new Property.Builder("Sub-property-2", "Sub-value-2").build()).build();
         // Check test results
@@ -123,14 +122,14 @@ final class PropertyTest extends UnitTest {
         assertEquals(Property.Type.STRING, property.getType());
         assertEquals("Value", property.getValue());
         // Check Sub-property-1
-        final Optional<Property> firstSubProperty = property.getProperty("Sub-property-1");
+        final var firstSubProperty = property.getProperty("Sub-property-1");
         assertTrue(firstSubProperty.isPresent());
         assertEquals("Sub-property-1", firstSubProperty.get().getName());
         // Check Sub-property-2
-        final Optional<Property> secondSubProperty = firstSubProperty.get().getProperty("Sub-property-2");
+        final var secondSubProperty = firstSubProperty.get().getProperty("Sub-property-2");
         assertTrue(secondSubProperty.isPresent());
         assertEquals("Sub-property-2", secondSubProperty.get().getName());
-        final Optional<Property> lastSubProperty = property.getProperty("Sub-property-1", "Sub-property-2");
+        final var lastSubProperty = property.getProperty("Sub-property-1", "Sub-property-2");
         assertTrue(lastSubProperty.isPresent());
         assertEquals("Sub-property-2", lastSubProperty.get().getName());
     }
@@ -138,7 +137,7 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Create a property with property by the multiple path")
     void createPropertyWithPropertyByMultiplePath() {
-        final Property property = new Property.Builder("Property", "Value").
+        final var property = new Property.Builder("Property", "Value").
                 property(new String[]{"Sub-property-1", "Sub-property-2"},
                         new Property.Builder("Sub-property-3", "Sub-value-3").build()).build();
         // Check test results
@@ -146,15 +145,15 @@ final class PropertyTest extends UnitTest {
         assertEquals(Property.Type.STRING, property.getType());
         assertEquals("Value", property.getValue());
         // Check Sub-property-1
-        final Optional<Property> firstSubProperty = property.getProperty("Sub-property-1");
+        final var firstSubProperty = property.getProperty("Sub-property-1");
         assertTrue(firstSubProperty.isPresent());
         assertEquals("Sub-property-1", firstSubProperty.get().getName());
         // Check Sub-property-2
-        final Optional<Property> secondSubProperty = firstSubProperty.get().getProperty("Sub-property-2");
+        final var secondSubProperty = firstSubProperty.get().getProperty("Sub-property-2");
         assertTrue(secondSubProperty.isPresent());
         assertEquals("Sub-property-2", secondSubProperty.get().getName());
         // Check Sub-property-3
-        final Optional<Property> thirdSubProperty = secondSubProperty.get().getProperty("Sub-property-3");
+        final var thirdSubProperty = secondSubProperty.get().getProperty("Sub-property-3");
         assertTrue(thirdSubProperty.isPresent());
         assertEquals("Sub-property-3", thirdSubProperty.get().getName());
     }
@@ -162,13 +161,13 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Create a custom property with deleted properties")
     void createCustomPropertyWithDeletedProperties() {
-        final String[] path = new String[]{"Sub-property-1", "Sub-property-2", "Sub-property-3"};
-        final Property property = new Property.Builder("Property", "Value").
+        final var path = new String[]{"Sub-property-1", "Sub-property-2", "Sub-property-3"};
+        final var property = new Property.Builder("Property", "Value").
                 property(new String[]{"Sub-property-1", "Sub-property-2"},
                         new Property.Builder("Sub-property-3", "Sub-value-3").build()).build();
         // Check test results
         assertTrue(property.getProperty(path).isPresent());
-        final Property updatedProperty = new Property.Builder(property).deleteProperty(path).build();
+        final var updatedProperty = new Property.Builder(property).deleteProperty(path).build();
         // Check test results
         assertFalse(updatedProperty.getProperty(path).isPresent());
     }
@@ -176,14 +175,14 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Create a custom property with updated properties")
     void createCustomPropertyWithUpdatedProperties() {
-        final int count = 10;
-        final String[] path = new String[]{"Property-0"};
-        final Property property = new Property.Builder("Property", "Value").
+        final var count = 10;
+        final var path = new String[]{"Property-0"};
+        final var property = new Property.Builder("Property", "Value").
                 properties(getProperties(0, count)).build();
         // Check test results
         assertTrue(property.getProperty(path).isPresent());
         assertEquals(count, property.getProperties().count());
-        final Property updatedProperty = new Property.Builder(property).deleteProperty(path).build();
+        final var updatedProperty = new Property.Builder(property).deleteProperty(path).build();
         // Check test results
         assertFalse(updatedProperty.getProperty(path).isPresent());
         assertEquals(count - 1, updatedProperty.getProperties().count());
@@ -192,7 +191,7 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Create a custom property")
     void createCustomProperty() {
-        final Property property =
+        final var property =
                 new Property.Builder("Property", Property.Type.STRING.name(), "Value").build();
         // Check test results
         assertEquals(Property.Type.STRING, property.getType());
@@ -202,7 +201,7 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Create a bool property")
     void createBoolProperty() {
-        final Property property = new Property.Builder("Property", true).build();
+        final var property = new Property.Builder("Property", true).build();
         // Check test results
         assertEquals(Property.Type.BOOL, property.getType());
         assertTrue(property.asBool());
@@ -211,7 +210,7 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Create a double property")
     void createDoubleProperty() {
-        final Property property = new Property.Builder("Property", 0.0).build();
+        final var property = new Property.Builder("Property", 0.0).build();
         // Check test results
         assertEquals(Property.Type.DOUBLE, property.getType());
         assertEquals(0.0, property.asDouble());
@@ -220,7 +219,7 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Create a long property")
     void createLongProperty() {
-        final Property property = new Property.Builder("Property", 0L).build();
+        final var property = new Property.Builder("Property", 0L).build();
         // Check test results
         assertEquals(Property.Type.LONG, property.getType());
         assertEquals(0L, property.asLong());
@@ -229,7 +228,7 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Create a array property")
     void createArrayProperty() {
-        final Property property = new Property.Builder("Property", new String[]{"Value"}).build();
+        final var property = new Property.Builder("Property", new String[]{"Value"}).build();
         // Check test results
         assertEquals(Property.Type.STRING_ARRAY, property.getType());
         assertEquals(new String[]{"Value"}[0], property.asArray()[0]);
@@ -252,7 +251,7 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Compare a property")
     void compareProperty() {
-        final Property firstProperty = getProperty();
+        final var firstProperty = getProperty();
         // Check test results
         assertEquals(firstProperty, firstProperty);
     }
@@ -260,8 +259,8 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Compare two simple properties")
     void compareTwoSimpleProperties() {
-        final Property firstProperty = getProperty();
-        final Property secondProperty = getProperty();
+        final var firstProperty = getProperty();
+        final var secondProperty = getProperty();
         // Check test results
         assertEquals(firstProperty, secondProperty);
     }
@@ -272,14 +271,14 @@ final class PropertyTest extends UnitTest {
         final var attributes = new HashMap<String, String>();
         attributes.put("key_1", "value_1");
         attributes.put("key_2", "value_2");
-        final Property firstProperty = new Property.Builder("Property-1", "Value-1").
+        final var firstProperty = new Property.Builder("Property-1", "Value-1").
                 caption("Caption").
                 description("Description").
                 attribute("key_1", "value_1").
                 attributes(attributes).
                 property(new String[0], new Property.Builder("Sub-property-1", "Sub-value-1").build()).
                 build();
-        final Property secondProperty = new Property.Builder("Property-1", "Value-1").
+        final var secondProperty = new Property.Builder("Property-1", "Value-1").
                 caption("Caption").
                 description("Description").
                 attribute("key_1", "value_1").
@@ -293,8 +292,8 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Check hash codes of two properties")
     void checkHashCodesOfTwoProperties() {
-        final Property firstProperty = new Property.Builder("Property", new String[]{"Value"}).build();
-        final Property secondProperty = new Property.Builder("Property", new String[]{"Value"}).build();
+        final var firstProperty = new Property.Builder("Property", new String[]{"Value"}).build();
+        final var secondProperty = new Property.Builder("Property", new String[]{"Value"}).build();
         // Check test results
         assertEquals(firstProperty.hashCode(), secondProperty.hashCode());
     }
@@ -302,8 +301,8 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Check toString() of two properties")
     void checkToStringOfTwoProperties() {
-        final Property firstProperty = new Property.Builder("Property", new String[]{"Value"}).build();
-        final Property secondProperty = new Property.Builder("Property", new String[]{"Value"}).build();
+        final var firstProperty = new Property.Builder("Property", new String[]{"Value"}).build();
+        final var secondProperty = new Property.Builder("Property", new String[]{"Value"}).build();
         // Check test results
         assertEquals(firstProperty.toString(), secondProperty.toString());
     }
@@ -311,8 +310,8 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Create a property via the builder")
     void createPropertyViaBuilder() {
-        final Property firstProperty = getProperty();
-        final Property secondProperty = new Property.Builder(firstProperty).build();
+        final var firstProperty = getProperty();
+        final var secondProperty = new Property.Builder(firstProperty).build();
         // Check test results
         assertEquals(firstProperty, secondProperty);
     }
@@ -320,9 +319,9 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Create a property via the json builder")
     void createPropertyViaJsonBuilder() throws JsonException {
-        final String json = "{\"name\":\"Property\",\"caption\":\"Caption\",\"description\":\"Description\"," +
+        final var json = "{\"name\":\"Property\",\"caption\":\"Caption\",\"description\":\"Description\"," +
                 "\"type\":\"STRING\",\"value\":\"Value\"}";
-        final Property firstProperty = new Property.Builder((JsonObject) Jsoner.deserialize(json)).build();
+        final var firstProperty = new Property.Builder((JsonObject) Jsoner.deserialize(json)).build();
         // Check test results
         assertTrue(firstProperty.getAttributes().isPresent());
         assertEquals(0, firstProperty.getProperties().count());
@@ -331,8 +330,8 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Create a property with params via the json builder")
     void createPropertyWithParamsViaJsonBuilder() throws JsonException {
-        final Property firstProperty = getProperty();
-        final Property secondProperty =
+        final var firstProperty = getProperty();
+        final var secondProperty =
                 new Property.Builder((JsonObject) Jsoner.deserialize(firstProperty.toJson())).build();
         // Check test results
         assertEquals(firstProperty, secondProperty);
@@ -341,8 +340,8 @@ final class PropertyTest extends UnitTest {
     @Test
     @DisplayName("Convert a property to a json")
     void convertPropertyToJson() throws IOException {
-        final Property property = getProperty();
-        final StringWriter writer = new StringWriter();
+        final var property = getProperty();
+        final var writer = new StringWriter();
         property.toJson(writer);
         // Check test results
         assertEquals(writer.toString(), property.toJson());

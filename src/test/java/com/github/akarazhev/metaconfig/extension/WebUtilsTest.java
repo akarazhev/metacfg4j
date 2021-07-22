@@ -16,8 +16,6 @@ import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -63,7 +61,7 @@ final class WebUtilsTest extends UnitTest {
     @Test
     @DisplayName("Get path params")
     void getPathParams() {
-        final Stream<String> params = WebUtils.getPathParams(URI.create("path"), "api");
+        final var params = WebUtils.getPathParams(URI.create("path"), "api");
         // Check test results
         assertEquals(0, params.count());
     }
@@ -71,7 +69,7 @@ final class WebUtilsTest extends UnitTest {
     @Test
     @DisplayName("Get request param")
     void getRequestParam() {
-        final Optional<String> param = WebUtils.getRequestParam(URI.create("http://path?path"), "api");
+        final var param = WebUtils.getRequestParam(URI.create("http://path?path"), "api");
         // Check test results
         assertFalse(param.isPresent());
     }

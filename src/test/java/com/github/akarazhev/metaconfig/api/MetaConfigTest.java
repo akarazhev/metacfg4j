@@ -56,7 +56,7 @@ final class MetaConfigTest extends UnitTest {
         }
 
         if (dbMetaConfig == null) {
-            final Config webServer = new Config.Builder(Server.Settings.CONFIG_NAME,
+            final var webServer = new Config.Builder(Server.Settings.CONFIG_NAME,
                     Arrays.asList(
                             new Property.Builder(Server.Settings.HOSTNAME, "localhost").build(),
                             new Property.Builder(Server.Settings.PORT, 8000).build(),
@@ -85,7 +85,7 @@ final class MetaConfigTest extends UnitTest {
         }
 
         if (webMetaConfig == null) {
-            final Config webClient = new Config.Builder(WebClient.Settings.CONFIG_NAME,
+            final var webClient = new Config.Builder(WebClient.Settings.CONFIG_NAME,
                     Arrays.asList(
                             new Property.Builder(WebClient.Settings.URL, "https://localhost:8000/api/metacfg").build(),
                             new Property.Builder(WebClient.Settings.ACCEPT_ALL_HOSTS, true).build()))
@@ -166,10 +166,10 @@ final class MetaConfigTest extends UnitTest {
     @Test
     @DisplayName("Get config with empty attributes")
     void getConfigWithEmptyAttributes() {
-        final Property property = new Property.Builder("Property", "value").build();
-        final Config newConfig = new Config.Builder(NEW_CONFIG, Collections.singleton(property)).build();
+        final var property = new Property.Builder("Property", "value").build();
+        final var newConfig = new Config.Builder(NEW_CONFIG, Collections.singleton(property)).build();
         dbMetaConfig.update(Stream.of(newConfig));
-        final Optional<Config> dbConfig = dbMetaConfig.get(Stream.of(NEW_CONFIG)).findFirst();
+        final var dbConfig = dbMetaConfig.get(Stream.of(NEW_CONFIG)).findFirst();
         assertTrue(dbConfig.isPresent());
         assertEquals(NEW_CONFIG, dbConfig.get().getName());
     }
@@ -184,12 +184,12 @@ final class MetaConfigTest extends UnitTest {
     @Test
     @DisplayName("Get config names by a page request")
     void getNamesByPageRequest() {
-        final PageResponse dbPageResponse = dbMetaConfig.getNames(new PageRequest.Builder(CONFIG).build());
+        final var dbPageResponse = dbMetaConfig.getNames(new PageRequest.Builder(CONFIG).build());
         // Check test results
         assertEquals(0, dbPageResponse.getPage());
         assertEquals(2, dbPageResponse.getTotal());
         assertEqualsNames(dbPageResponse.getNames().toArray(String[]::new));
-        final PageResponse webPageResponse = webMetaConfig.getNames(new PageRequest.Builder(CONFIG).build());
+        final var webPageResponse = webMetaConfig.getNames(new PageRequest.Builder(CONFIG).build());
         // Check test results
         assertEquals(0, webPageResponse.getPage());
         assertEquals(2, webPageResponse.getTotal());
@@ -206,9 +206,9 @@ final class MetaConfigTest extends UnitTest {
     @Test
     @DisplayName("Update a new config")
     void updateNewConfig() {
-        final Optional<Config> newDbConfig =
+        final var newDbConfig =
                 dbMetaConfig.update(Stream.of(getConfigWithProperties(NEW_CONFIG))).findFirst();
-        final Optional<Config> newWebConfig =
+        final var newWebConfig =
                 webMetaConfig.update(Stream.of(getConfigWithProperties(NEW_CONFIG))).findFirst();
         // Check test results
         assertTrue(newDbConfig.isPresent());
@@ -228,10 +228,10 @@ final class MetaConfigTest extends UnitTest {
     @Test
     @DisplayName("Update by the first config id")
     void updateConfigByFirstId() {
-        final Optional<Config> firstConfig = dbMetaConfig.get(Stream.of(FIRST_CONFIG)).findFirst();
+        final var firstConfig = dbMetaConfig.get(Stream.of(FIRST_CONFIG)).findFirst();
         // Check test results
         assertTrue(firstConfig.isPresent());
-        final Config newConfig = new Config.Builder(NEW_CONFIG, Collections.emptyList()).
+        final var newConfig = new Config.Builder(NEW_CONFIG, Collections.emptyList()).
                 id(firstConfig.get().getId()).
                 build();
         Optional<Config> updatedDbConfig = dbMetaConfig.update(Stream.of(newConfig)).findFirst();
@@ -242,10 +242,10 @@ final class MetaConfigTest extends UnitTest {
     @Test
     @DisplayName("Update by the second config id")
     void updateConfigBySecondId() {
-        final Optional<Config> secondConfig = dbMetaConfig.get(Stream.of(FIRST_CONFIG)).findFirst();
+        final var secondConfig = dbMetaConfig.get(Stream.of(FIRST_CONFIG)).findFirst();
         // Check test results
         assertTrue(secondConfig.isPresent());
-        final Config newConfig = new Config.Builder(NEW_CONFIG, Collections.emptyList()).
+        final var newConfig = new Config.Builder(NEW_CONFIG, Collections.emptyList()).
                 id(secondConfig.get().getId()).
                 build();
         Optional<Config> updatedWebConfig = webMetaConfig.update(Stream.of(newConfig)).findFirst();
@@ -256,9 +256,9 @@ final class MetaConfigTest extends UnitTest {
     @Test
     @DisplayName("Optimistic locking error")
     void optimisticLockingError() {
-        final Optional<Config> firstConfig = dbMetaConfig.get(Stream.of(FIRST_CONFIG)).findFirst();
+        final var firstConfig = dbMetaConfig.get(Stream.of(FIRST_CONFIG)).findFirst();
         assertTrue(firstConfig.isPresent());
-        final Config newConfig = new Config.Builder(firstConfig.get()).
+        final var newConfig = new Config.Builder(firstConfig.get()).
                 updated(Clock.systemDefaultZone().millis()).
                 build();
         dbMetaConfig.update(Stream.of(newConfig));
@@ -293,7 +293,7 @@ final class MetaConfigTest extends UnitTest {
     @Test
     @DisplayName("Add a consumer for the config")
     void addConsumer() {
-        final StringBuilder message = new StringBuilder();
+        final var message = new StringBuilder();
         dbMetaConfig.addConsumer(config -> {
             if (FIRST_CONFIG.equals(config.getName())) {
                 message.append(FIRST_CONFIG);
@@ -312,7 +312,7 @@ final class MetaConfigTest extends UnitTest {
     @Test
     @DisplayName("Accept config by names")
     void acceptByDifferentNames() {
-        final StringBuilder message = new StringBuilder();
+        final var message = new StringBuilder();
         dbMetaConfig.addConsumer(config -> {
             if (FIRST_CONFIG.equals(config.getName())) {
                 message.append(FIRST_CONFIG);
@@ -327,7 +327,7 @@ final class MetaConfigTest extends UnitTest {
     @Test
     @DisplayName("Accept config by names with consumer")
     void acceptByNamesWithConsumer() {
-        final StringBuilder message = new StringBuilder();
+        final var message = new StringBuilder();
         dbMetaConfig.addConsumer(config -> {
             if (FIRST_CONFIG.equals(config.getName())) {
                 message.append(FIRST_CONFIG);
@@ -342,8 +342,8 @@ final class MetaConfigTest extends UnitTest {
     private void assertEqualsConfigs(final Config[] configs) {
         // Check test results
         assertEquals(2, configs.length);
-        final Config firstExpected = getConfigWithSubProperties(FIRST_CONFIG);
-        final Config secondExpected = getConfigWithSubProperties(SECOND_CONFIG);
+        final var firstExpected = getConfigWithSubProperties(FIRST_CONFIG);
+        final var secondExpected = getConfigWithSubProperties(SECOND_CONFIG);
         assertEqualsConfig(firstExpected, configs[0]);
         assertEqualsProperty(firstExpected, configs[0]);
         assertEqualsConfig(secondExpected, configs[1]);

@@ -17,9 +17,7 @@ import com.github.akarazhev.metaconfig.api.PageResponse;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.STRING_TO_JSON_ERROR;
@@ -42,13 +40,13 @@ final class ConfigNamesController extends AbstractController {
      */
     @Override
     void execute(final HttpExchange httpExchange) throws IOException {
-        final String method = httpExchange.getRequestMethod();
+        final var method = httpExchange.getRequestMethod();
         if (GET.equals(method)) {
-            final URI uri = httpExchange.getRequestURI();
-            final Optional<String> param = getRequestParam(uri, REQ_PARAM_PAGE_REQUEST);
+            final var uri = httpExchange.getRequestURI();
+            final var param = getRequestParam(uri, REQ_PARAM_PAGE_REQUEST);
             if (param.isPresent()) {
                 try {
-                    final PageResponse response =
+                    final var response =
                             configService.getNames(new PageRequest.Builder(getValue(param.get())).build());
                     writeResponse(httpExchange, new OperationResponse.Builder<PageResponse>().result(response).build());
                 } catch (final Exception e) {

@@ -15,7 +15,6 @@ import com.github.akarazhev.metaconfig.extension.Validator;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,9 +76,9 @@ abstract class AbstractController {
     <T> void writeResponse(final HttpExchange httpExchange, final OperationResponse<T> response) throws IOException {
         try {
             httpExchange.getResponseHeaders().put("Content-Type", Collections.singletonList(APPLICATION_JSON));
-            final byte[] jsonBytes = response.toJson().getBytes();
+            final var jsonBytes = response.toJson().getBytes();
             httpExchange.sendResponseHeaders(HTTP_OK, jsonBytes.length);
-            OutputStream outputStream = httpExchange.getResponseBody();
+            var outputStream = httpExchange.getResponseBody();
             outputStream.write(jsonBytes);
             outputStream.flush();
         } catch (final Exception e) {
@@ -93,7 +92,7 @@ abstract class AbstractController {
             LOGGER.log(Level.WARNING, throwable.getMessage());
             throwable.printStackTrace();
 
-            final OutputStream responseBody = httpExchange.getResponseBody();
+            final var responseBody = httpExchange.getResponseBody();
             responseBody.write(getErrorResponse(throwable, httpExchange).toJson().getBytes());
             responseBody.close();
         } catch (final Exception e) {
@@ -104,15 +103,15 @@ abstract class AbstractController {
 
     private <T> OperationResponse<T> getErrorResponse(final Throwable throwable, final HttpExchange httpExchange)
             throws IOException {
-        final OperationResponse<T> response = new OperationResponse.Builder<T>().error(throwable.getMessage()).build();
+        final var response = new OperationResponse.Builder<T>().error(throwable.getMessage()).build();
         if (throwable instanceof InvalidRequestException) {
-            final InvalidRequestException exception = (InvalidRequestException) throwable;
+            final var exception = (InvalidRequestException) throwable;
             httpExchange.sendResponseHeaders(exception.getCode(), 0);
         } else if (throwable instanceof ResourceNotFoundException) {
-            final ResourceNotFoundException exception = (ResourceNotFoundException) throwable;
+            final var exception = (ResourceNotFoundException) throwable;
             httpExchange.sendResponseHeaders(exception.getCode(), 0);
         } else if (throwable instanceof MethodNotAllowedException) {
-            final MethodNotAllowedException exception = (MethodNotAllowedException) throwable;
+            final var exception = (MethodNotAllowedException) throwable;
             httpExchange.sendResponseHeaders(exception.getCode(), 0);
         } else {
             if (throwable instanceof InternalServerErrorException) {

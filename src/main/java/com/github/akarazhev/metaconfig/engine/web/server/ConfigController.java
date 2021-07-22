@@ -22,11 +22,9 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.JSON_TO_CONFIG_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.REQUEST_PARAM_NOT_PRESENT;
@@ -53,8 +51,8 @@ final class ConfigController extends AbstractController {
      */
     @Override
     void execute(final HttpExchange httpExchange) throws IOException {
-        final URI uri = httpExchange.getRequestURI();
-        final String method = httpExchange.getRequestMethod();
+        final var uri = httpExchange.getRequestURI();
+        final var method = httpExchange.getRequestMethod();
         if (GET.equals(method)) {
             final var response = getRequestParam(uri, REQ_PARAM_NAMES).
                     map(param -> {
@@ -71,11 +69,11 @@ final class ConfigController extends AbstractController {
                     });
             writeResponse(httpExchange, response);
         } else if (PUT.equals(method)) {
-            try (final BufferedReader bufferedReader =
+            try (final var bufferedReader =
                          new BufferedReader(new InputStreamReader(httpExchange.getRequestBody(), StandardCharsets.UTF_8))) {
-                final JsonArray jsonConfigs = (JsonArray) Jsoner.deserialize(bufferedReader);
-                final Stream<Config> stream = jsonConfigs.stream().
-                        map(config -> new Config.Builder((JsonObject) config).build());
+                final var jsonConfigs = (JsonArray) Jsoner.deserialize(bufferedReader);
+                final var stream =
+                        jsonConfigs.stream().map(config -> new Config.Builder((JsonObject) config).build());
                 final var updatedConfigs = configService.update(stream).
                         collect(Collectors.toList());
                 writeResponse(httpExchange, new OperationResponse.Builder<>().result(updatedConfigs).build());
@@ -83,10 +81,10 @@ final class ConfigController extends AbstractController {
                 throw new InvalidRequestException(HTTP_BAD_REQUEST, JSON_TO_CONFIG_ERROR);
             }
         } else if (DELETE.equals(method)) {
-            final OperationResponse<Integer> response = getRequestParam(uri, REQ_PARAM_NAMES).
+            final var response = getRequestParam(uri, REQ_PARAM_NAMES).
                     map(param -> {
                         try {
-                            final int result = configService.remove(getValues(param));
+                            final var result = configService.remove(getValues(param));
                             return new OperationResponse.Builder<Integer>().result(result).build();
                         } catch (final Exception e) {
                             return new OperationResponse.Builder<Integer>().error(STRING_TO_JSON_ERROR).build();

@@ -15,7 +15,6 @@ import com.github.akarazhev.metaconfig.extension.Validator;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
@@ -405,7 +404,7 @@ final class DbConfigRepository implements ConfigRepository {
                         insert(connection, configId, properties[i])[0];
             }
             // Insert sub-properties
-            final Property[] subProps = insert(connection, configId, properties[i].getId(),
+            final var subProps = insert(connection, configId, properties[i].getId(),
                     properties[i].properties().toArray(new Property[0]));
             properties[i] = new Property.Builder(properties[i]).properties(Arrays.asList(subProps)).build();
         }
@@ -485,7 +484,7 @@ final class DbConfigRepository implements ConfigRepository {
         Config[] updated = new Config[0];
         if (configs.length > 0) {
             updated = new Config[configs.length];
-            final String sql = String.format(SQL.UPDATE.CONFIGS, mapping.get(CONFIGS_TABLE));
+            final var sql = String.format(SQL.UPDATE.CONFIGS, mapping.get(CONFIGS_TABLE));
             final var entries = getVerUpdEntries(connection, configs);
             try (final var statement = connection.prepareStatement(sql)) {
                 final var exceptions = new LinkedList<Throwable>();
@@ -725,12 +724,12 @@ final class DbConfigRepository implements ConfigRepository {
             entries.put(configs[i].getId(), new SimpleEntry<>(configs[i].getVersion(), configs[i].getUpdated()));
         }
 
-        try (final PreparedStatement statement = connection.prepareStatement(sql.toString())) {
+        try (final var statement = connection.prepareStatement(sql.toString())) {
             for (var i = 0; i < configs.length; i++) {
                 statement.setLong(i + 1, configs[i].getId());
             }
 
-            try (final ResultSet resultSet = statement.executeQuery()) {
+            try (final var resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     entries.put(resultSet.getLong(1),
                             new SimpleEntry<>(resultSet.getInt(2), resultSet.getLong(3)));

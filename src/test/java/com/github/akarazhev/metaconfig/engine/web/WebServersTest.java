@@ -15,7 +15,6 @@ import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.Property;
 import com.github.akarazhev.metaconfig.extension.WebUtils;
 import com.github.cliftonlabs.json_simple.JsonException;
-import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -87,8 +86,8 @@ final class WebServersTest extends UnitTest {
                         StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, POST).build());
 
-        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
-        final WebClient client = new WebClient.Builder(config).build();
+        final var config = new Config.Builder(CONFIG_NAME, properties).build();
+        final var client = new WebClient.Builder(config).build();
         // Test status code
         assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
@@ -104,12 +103,12 @@ final class WebServersTest extends UnitTest {
                 WebUtils.encode("[\"name_1\", \"name_2\", \"name_3\"]", StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, POST).build());
 
-        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
-        final WebClient client = new WebClient.Builder(config).build();
+        final var config = new Config.Builder(CONFIG_NAME, properties).build();
+        final var client = new WebClient.Builder(config).build();
         // Test status code
         assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
-        final JsonObject jsonContent = client.getJsonContent();
+        final var jsonContent = client.getJsonContent();
         assertEquals(false, jsonContent.get(SUCCESS));
         assertEquals(STRING_TO_JSON_ERROR, jsonContent.get(ERROR));
     }
@@ -123,12 +122,12 @@ final class WebServersTest extends UnitTest {
                 WebUtils.encode("[name_1, name_2, name_3]", StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, POST).build());
 
-        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
-        final WebClient client = new WebClient.Builder(config).build();
+        final var config = new Config.Builder(CONFIG_NAME, properties).build();
+        final var client = new WebClient.Builder(config).build();
         // Test status code
         assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
-        final JsonObject jsonContent = client.getJsonContent();
+        final var jsonContent = client.getJsonContent();
         assertEquals(false, jsonContent.get(SUCCESS));
         assertEquals(STRING_TO_JSON_ERROR, jsonContent.get(ERROR));
     }
@@ -143,12 +142,12 @@ final class WebServersTest extends UnitTest {
                         StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
-        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
-        final WebClient client = new WebClient.Builder(config).build();
+        final var config = new Config.Builder(CONFIG_NAME, properties).build();
+        final var client = new WebClient.Builder(config).build();
         // Test status code
         assertEquals(HTTP_BAD_METHOD, client.getStatusCode());
         // Get the response
-        final JsonObject jsonContent = client.getJsonContent();
+        final var jsonContent = client.getJsonContent();
         assertEquals(false, jsonContent.get(SUCCESS));
         assertEquals(METHOD_NOT_ALLOWED, jsonContent.get(ERROR));
     }
@@ -161,8 +160,8 @@ final class WebServersTest extends UnitTest {
         properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_NAMES_VALUE).build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
-        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
-        final WebClient client = new WebClient.Builder(config).build();
+        final var config = new Config.Builder(CONFIG_NAME, properties).build();
+        final var client = new WebClient.Builder(config).build();
         // Test status code
         assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
@@ -177,12 +176,12 @@ final class WebServersTest extends UnitTest {
         properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_NAMES_VALUE).build());
         properties.add(new Property.Builder(METHOD, POST).build());
 
-        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
-        final WebClient client = new WebClient.Builder(config).build();
+        final var config = new Config.Builder(CONFIG_NAME, properties).build();
+        final var client = new WebClient.Builder(config).build();
         // Test status code
         assertEquals(HTTP_BAD_METHOD, client.getStatusCode());
         // Get the response
-        final JsonObject jsonContent = client.getJsonContent();
+        final var jsonContent = client.getJsonContent();
         assertEquals(false, jsonContent.get(SUCCESS));
         assertEquals(METHOD_NOT_ALLOWED, jsonContent.get(ERROR));
     }
@@ -195,8 +194,8 @@ final class WebServersTest extends UnitTest {
         properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE).build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
-        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
-        final WebClient client = new WebClient.Builder(config).build();
+        final var config = new Config.Builder(CONFIG_NAME, properties).build();
+        final var client = new WebClient.Builder(config).build();
         // Test status code
         assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
@@ -213,8 +212,8 @@ final class WebServersTest extends UnitTest {
                         StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
-        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
-        final WebClient client = new WebClient.Builder(config).build();
+        final var config = new Config.Builder(CONFIG_NAME, properties).build();
+        final var client = new WebClient.Builder(config).build();
         // Test status code
         assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
@@ -230,12 +229,12 @@ final class WebServersTest extends UnitTest {
                 WebUtils.encode("[\"name_1\", \"name_2\", \"name_3\"]", StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
-        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
-        final WebClient client = new WebClient.Builder(config).build();
+        final var config = new Config.Builder(CONFIG_NAME, properties).build();
+        final var client = new WebClient.Builder(config).build();
         // Test status code
         assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
-        final JsonObject jsonContent = client.getJsonContent();
+        final var jsonContent = client.getJsonContent();
         assertEquals(false, jsonContent.get(SUCCESS));
         assertEquals(STRING_TO_JSON_ERROR, jsonContent.get(ERROR));
     }
@@ -249,12 +248,12 @@ final class WebServersTest extends UnitTest {
                 WebUtils.encode("[name_1, name_2, name_3]", StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, GET).build());
 
-        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
-        final WebClient client = new WebClient.Builder(config).build();
+        final var config = new Config.Builder(CONFIG_NAME, properties).build();
+        final var client = new WebClient.Builder(config).build();
         // Test status code
         assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
-        final JsonObject jsonContent = client.getJsonContent();
+        final var jsonContent = client.getJsonContent();
         assertEquals(false, jsonContent.get(SUCCESS));
         assertEquals(STRING_TO_JSON_ERROR, jsonContent.get(ERROR));
     }
@@ -267,12 +266,12 @@ final class WebServersTest extends UnitTest {
         properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE).build());
         properties.add(new Property.Builder(METHOD, POST).build());
 
-        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
-        final WebClient client = new WebClient.Builder(config).build();
+        final var config = new Config.Builder(CONFIG_NAME, properties).build();
+        final var client = new WebClient.Builder(config).build();
         // Test status code
         assertEquals(HTTP_BAD_METHOD, client.getStatusCode());
         // Get the response
-        final JsonObject jsonContent = client.getJsonContent();
+        final var jsonContent = client.getJsonContent();
         assertEquals(false, jsonContent.get(SUCCESS));
         assertEquals(METHOD_NOT_ALLOWED, jsonContent.get(ERROR));
     }
@@ -295,11 +294,11 @@ final class WebServersTest extends UnitTest {
         props.add(new Property.Builder(CONTENT, Jsoner.serialize(new Config[]{config})).build());
 
         config = new Config.Builder(CONFIG_NAME, props).build();
-        final WebClient client = new WebClient.Builder(config).build();
+        final var client = new WebClient.Builder(config).build();
         // Test status code
         assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
-        final JsonObject jsonObject = client.getJsonContent();
+        final var jsonObject = client.getJsonContent();
         assertEquals(true, jsonObject.get(SUCCESS));
     }
 
@@ -321,11 +320,11 @@ final class WebServersTest extends UnitTest {
         props.add(new Property.Builder(CONTENT, config.toString()).build());
 
         config = new Config.Builder(CONFIG_NAME, props).build();
-        final WebClient client = new WebClient.Builder(config).build();
+        final var client = new WebClient.Builder(config).build();
         // Test status code
         assertEquals(HTTP_BAD_REQUEST, client.getStatusCode());
         // Get the response
-        final JsonObject jsonObject = client.getJsonContent();
+        final var jsonObject = client.getJsonContent();
         assertEquals(false, jsonObject.get(SUCCESS));
         assertEquals(JSON_TO_CONFIG_ERROR, jsonObject.get(ERROR));
     }
@@ -339,12 +338,12 @@ final class WebServersTest extends UnitTest {
                 new String(Base64.getEncoder().encode("[\"name\"]".getBytes()), StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, DELETE).build());
 
-        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
-        final WebClient client = new WebClient.Builder(config).build();
+        final var config = new Config.Builder(CONFIG_NAME, properties).build();
+        final var client = new WebClient.Builder(config).build();
         // Test status code
         assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
-        final JsonObject jsonObject = client.getJsonContent();
+        final var jsonObject = client.getJsonContent();
         assertEquals(true, jsonObject.get(SUCCESS));
         assertEquals(0, ((BigDecimal) jsonObject.get(RESULT)).intValue());
     }
@@ -357,12 +356,12 @@ final class WebServersTest extends UnitTest {
         properties.add(new Property.Builder(URL, API_URL + "/" + CONFIG_VALUE).build());
         properties.add(new Property.Builder(METHOD, DELETE).build());
 
-        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
-        final WebClient client = new WebClient.Builder(config).build();
+        final var config = new Config.Builder(CONFIG_NAME, properties).build();
+        final var client = new WebClient.Builder(config).build();
         // Test status code
         assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
-        final JsonObject jsonContent = client.getJsonContent();
+        final var jsonContent = client.getJsonContent();
         assertEquals(false, jsonContent.get(SUCCESS));
         assertEquals(REQUEST_PARAM_NOT_PRESENT, jsonContent.get(ERROR));
     }
@@ -376,12 +375,12 @@ final class WebServersTest extends UnitTest {
                 new String(Base64.getEncoder().encode("[name]".getBytes()), StandardCharsets.UTF_8)).build());
         properties.add(new Property.Builder(METHOD, DELETE).build());
 
-        final Config config = new Config.Builder(CONFIG_NAME, properties).build();
-        final WebClient client = new WebClient.Builder(config).build();
+        final var config = new Config.Builder(CONFIG_NAME, properties).build();
+        final var client = new WebClient.Builder(config).build();
         // Test status code
         assertEquals(HTTP_OK, client.getStatusCode());
         // Get the response
-        final JsonObject jsonContent = client.getJsonContent();
+        final var jsonContent = client.getJsonContent();
         assertEquals(false, jsonContent.get(SUCCESS));
         assertEquals(STRING_TO_JSON_ERROR, jsonContent.get(ERROR));
     }

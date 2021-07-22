@@ -22,7 +22,7 @@ final class ValidatorTest {
     @Test
     @DisplayName("Of validator")
     void ofValidator() {
-        final Object object = new Object();
+        final var object = new Object();
         // Check test results
         assertEquals(object, Validator.of(object).get());
     }
@@ -30,7 +30,7 @@ final class ValidatorTest {
     @Test
     @DisplayName("Validate success")
     void validateSuccess() {
-        final Object object = new Object();
+        final var object = new Object();
         // Check test results
         assertEquals(object, Validator.of(object).validate(o -> true, "success").get());
     }
@@ -38,7 +38,7 @@ final class ValidatorTest {
     @Test
     @DisplayName("Validate not success")
     void validateNotSuccess() {
-        final Object object = new Object();
+        final var object = new Object();
         // Check test results
         assertThrows(IllegalStateException.class,
                 () -> Validator.of(object).validate(o -> false, "not success").get());
@@ -47,7 +47,7 @@ final class ValidatorTest {
     @Test
     @DisplayName("Validate projected success")
     void validateProjectedSuccess() {
-        final Object object = new Object();
+        final var object = new Object();
         // Check test results
         assertEquals(object, Validator.of(object).validate(o -> true, o -> true, "success").get());
     }
@@ -55,7 +55,7 @@ final class ValidatorTest {
     @Test
     @DisplayName("Validate Projected not success")
     void validateProjectedNotSuccess() {
-        final Object object = new Object();
+        final var object = new Object();
         // Check test results
         assertThrows(IllegalStateException.class,
                 () -> Validator.of(object).validate(o -> false, o -> false, "not success").get());

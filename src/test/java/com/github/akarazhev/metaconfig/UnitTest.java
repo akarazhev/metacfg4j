@@ -13,7 +13,6 @@ package com.github.akarazhev.metaconfig;
 import com.github.akarazhev.metaconfig.api.Config;
 import com.github.akarazhev.metaconfig.api.Property;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.time.Clock;
@@ -21,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -88,13 +86,13 @@ public class UnitTest {
     }
 
     protected Config getConfigWithSubProperties(final String name) {
-        final Property firstSubProperty = new Property.Builder("Sub-Property-1", "Sub-Value-1").
+        final var firstSubProperty = new Property.Builder("Sub-Property-1", "Sub-Value-1").
                 attribute("key_1", "value_1").build();
-        final Property secondSubProperty = new Property.Builder("Sub-Property-2", "Sub-Value-2").
+        final var secondSubProperty = new Property.Builder("Sub-Property-2", "Sub-Value-2").
                 attribute("key_2", "value_2").build();
-        final Property thirdSubProperty = new Property.Builder("Sub-Property-3", "Sub-Value-3").
+        final var thirdSubProperty = new Property.Builder("Sub-Property-3", "Sub-Value-3").
                 attribute("key_3", "value_3").build();
-        final Property property = new Property.Builder("Property", "Value").
+        final var property = new Property.Builder("Property", "Value").
                 caption("Caption").
                 description("Description").
                 attribute("key", "value").
@@ -112,13 +110,13 @@ public class UnitTest {
     }
 
     protected Config getConfigWithProperties(final String name) {
-        final Property firstProperty = new Property.Builder("Property-1", "Value-1").
+        final var firstProperty = new Property.Builder("Property-1", "Value-1").
                 attribute("key_1", "value_1").build();
-        final Property secondProperty = new Property.Builder("Property-2", "Value-2").
+        final var secondProperty = new Property.Builder("Property-2", "Value-2").
                 attribute("key_2", "value_2").build();
-        final Property thirdProperty = new Property.Builder("Property-3", "Value-3").
+        final var thirdProperty = new Property.Builder("Property-3", "Value-3").
                 attribute("key_3", "value_3").build();
-        final Property property = new Property.Builder("Property", "Value").
+        final var property = new Property.Builder("Property", "Value").
                 caption("Caption").
                 description("Description").
                 attribute("key", "value").
@@ -146,12 +144,12 @@ public class UnitTest {
     }
 
     protected void assertEqualsProperty(final Config expectedConfig, final Config actualConfig) {
-        final Optional<Property> expectedProperty = expectedConfig.getProperty("Property");
+        final var expectedProperty = expectedConfig.getProperty("Property");
         assertTrue(expectedProperty.isPresent());
-        final Property expected = expectedProperty.get();
-        final Optional<Property> actualProperty = actualConfig.getProperty("Property");
+        final var expected = expectedProperty.get();
+        final var actualProperty = actualConfig.getProperty("Property");
         assertTrue(actualProperty.isPresent());
-        final Property actual = actualProperty.get();
+        final var actual = actualProperty.get();
 
         assertEquals(expected.getName(), actual.getName());
         assertEquals(expected.getCaption(), actual.getCaption());
@@ -165,7 +163,7 @@ public class UnitTest {
     }
 
     protected <T> void assertPrivate(Class<T> clazz) throws NoSuchMethodException {
-        final Constructor<T> constructor = clazz.getDeclaredConstructor();
+        final var constructor = clazz.getDeclaredConstructor();
         assertTrue(Modifier.isPrivate(constructor.getModifiers()));
 
         constructor.setAccessible(true);

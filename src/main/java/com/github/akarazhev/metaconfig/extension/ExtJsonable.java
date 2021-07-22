@@ -31,7 +31,7 @@ public interface ExtJsonable extends Jsonable {
      */
     @Override
     default String toJson() {
-        final StringWriter writable = new StringWriter();
+        final var writable = new StringWriter();
         try {
             toJson(writable);
         } catch (final IOException e) {

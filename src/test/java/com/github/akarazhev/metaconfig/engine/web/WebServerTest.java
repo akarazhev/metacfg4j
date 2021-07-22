@@ -33,7 +33,7 @@ final class WebServerTest {
     @Test
     @DisplayName("Start")
     void start() throws Exception {
-        final WebServer webServer = WebServers.newTestServer().start();
+        final var webServer = WebServers.newTestServer().start();
         assertGetConfigNames();
         webServer.stop();
     }
@@ -41,7 +41,7 @@ final class WebServerTest {
     @Test
     @DisplayName("Stop")
     void stop() throws Exception {
-        final WebServer webServer = WebServers.newTestServer().start();
+        final var webServer = WebServers.newTestServer().start();
         assertGetConfigNames();
         webServer.stop();
         assertThrows(RuntimeException.class, this::assertGetConfigNames);

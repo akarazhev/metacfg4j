@@ -85,7 +85,7 @@ public final class OperationResponse<T> implements ExtJsonable {
      */
     @Override
     public void toJson(final Writer writer) throws IOException {
-        final JsonObject json = new JsonObject();
+        final var json = new JsonObject();
         json.put(SUCCESS, success);
         json.put(ERROR, error);
         json.put(RESULT, result instanceof Jsonable ? ((Jsonable) result).toJson() : result);

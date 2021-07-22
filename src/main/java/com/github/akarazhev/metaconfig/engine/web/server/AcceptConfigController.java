@@ -39,12 +39,12 @@ final class AcceptConfigController extends AbstractController {
     @Override
     void execute(final HttpExchange httpExchange) throws IOException {
         if (POST.equals(httpExchange.getRequestMethod())) {
-            final OperationResponse<String> response = getPathParams(httpExchange.getRequestURI(), apiPath).
+            final var response = getPathParams(httpExchange.getRequestURI(), apiPath).
                     findAny().
                     map(param -> {
                         try {
                             configService.accept(getValues(param));
-                            final String result = String.format(CONFIG_ACCEPTED, param);
+                            final var result = String.format(CONFIG_ACCEPTED, param);
                             return new OperationResponse.Builder<String>().result(result).build();
                         } catch (final Exception e) {
                             return new OperationResponse.Builder<String>().error(STRING_TO_JSON_ERROR).build();
