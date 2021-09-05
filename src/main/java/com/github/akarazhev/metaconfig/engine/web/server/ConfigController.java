@@ -25,6 +25,8 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,6 +45,7 @@ import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
  * Provides a handler functionality for the GET, PUT, DELETE config methods.
  */
 final class ConfigController extends AbstractController {
+    private final static Logger LOGGER = Logger.getLogger(ConfigController.class.getSimpleName());
 
     private ConfigController(final Builder builder) {
         super(builder);
@@ -55,6 +58,7 @@ final class ConfigController extends AbstractController {
     void execute(final HttpExchange httpExchange) throws IOException {
         final URI uri = httpExchange.getRequestURI();
         final String method = httpExchange.getRequestMethod();
+        LOGGER.log(Level.INFO, "Executing "+method+" method...");
         if (GET.equals(method)) {
             final OperationResponse<Collection<Config>> response = getRequestParam(uri, REQ_PARAM_NAMES).
                     map(param -> {
