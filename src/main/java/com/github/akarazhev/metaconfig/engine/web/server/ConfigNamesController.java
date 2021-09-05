@@ -56,6 +56,7 @@ final class ConfigNamesController extends AbstractController {
                             configService.getNames(new PageRequest.Builder(getValue(param.get())).build());
                     writeResponse(httpExchange, new OperationResponse.Builder<PageResponse>().result(response).build());
                 } catch (final Exception e) {
+                    LOGGER.log(Level.SEVERE, e.toString());
                     writeResponse(httpExchange,
                             new OperationResponse.Builder<PageResponse>().error(STRING_TO_JSON_ERROR).build());
                 }

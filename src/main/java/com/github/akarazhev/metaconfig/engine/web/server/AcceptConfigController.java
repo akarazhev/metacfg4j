@@ -50,6 +50,7 @@ final class AcceptConfigController extends AbstractController {
                             final String result = String.format(CONFIG_ACCEPTED, param);
                             return new OperationResponse.Builder<String>().result(result).build();
                         } catch (final Exception e) {
+                            LOGGER.log(Level.SEVERE, e.toString());
                             return new OperationResponse.Builder<String>().error(STRING_TO_JSON_ERROR).build();
                         }
                     }).
