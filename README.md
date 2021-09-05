@@ -228,11 +228,11 @@ The REST API is available by the https protocol:
 ]`
 
 **`GET api/metacfg/config_names`** - returns a list of config names. <br/>
-**`GET api/metacfg/config_names?page_request=CONFIG_NAMES_IN_BASE64`** - returns a page response based on a page request that 
+**`GET api/metacfg/config_names?page_request=ARRAY_OF_CONFIG_NAMES_IN_BASE64`** - returns a page response based on a page request that 
 has a list of config names and pagination settings. <br/>
-**`GET api/metacfg/config?names=CONFIG_NAMES_IN_BASE64`** - returns a list of configs. <br/>
+**`GET api/metacfg/config?names=ARRAY_OF_CONFIG_NAMES_IN_BASE64`** - returns a list of configs. <br/>
 **`PUT api/metacfg/config`** - creates or updates a config, request body must have json with array of objects. <br/>
-**`DELETE api/metacfg/config?names=CONFIG_NAMES_IN_BASE64`** - removes a list of configs. <br/>
+**`DELETE api/metacfg/config?names=ARRAY_OF_CONFIG_NAMES_IN_BASE64`** - removes a list of configs. <br/>
 
 CONFIG_NAMES_IN_BASE64 means that every request param should be json (with array of strings inside) encoded to base64 format. For example:
 ["Name1","Name2"] encoded to base64 will be WyJOYW1lMSIsIk5hbWUyIl0=
