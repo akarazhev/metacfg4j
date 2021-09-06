@@ -198,46 +198,110 @@ public interface ConfigService {
 
 ### REST Usage
 
-The REST API is available by the https protocol:
+The REST API is available via the `https` protocol:
 
-**`POST api/metacfg/accept_config/CONFIG_NAMES_IN_BASE64`** - calls the logic for configs, request body must have json with array of objects. Example json body : <br/>
-
-`[
-{
-"name": "New Config",
-"description": "Description",
-"attributes": {
-"key_1": "value-1",
-"key_4": "value_4"
-},
-"properties": [
-{
-"name": "Value",
-"caption": "Caption",
-"description": "Description",
-"attributes": {
-"key_1": "value-1",
-"key_4": "value_4"
-},
-"type": "LONG",
-"value": "1000",
-"properties": []
-}
-]
-}
-]`
-
+**`POST api/metacfg/accept_config/ARRAY_OF_CONFIG_NAMES_IN_BASE64`** - calls the logic for configs. <br/>
 **`GET api/metacfg/config_names`** - returns a list of config names. <br/>
-**`GET api/metacfg/config_names?page_request=ARRAY_OF_CONFIG_NAMES_IN_BASE64`** - returns a page response based on a page request that 
-has a list of config names and pagination settings. <br/>
+**`GET api/metacfg/config_names?page_request=ARRAY_OF_CONFIG_NAMES_IN_BASE64`** - returns a page response based on a
+page request that has a list of config names and pagination settings. <br/>
 **`GET api/metacfg/config?names=ARRAY_OF_CONFIG_NAMES_IN_BASE64`** - returns a list of configs. <br/>
 **`PUT api/metacfg/config`** - creates or updates a config, request body must have json with array of objects. <br/>
 **`DELETE api/metacfg/config?names=ARRAY_OF_CONFIG_NAMES_IN_BASE64`** - removes a list of configs. <br/>
 
-CONFIG_NAMES_IN_BASE64 means that every request param should be json (with array of strings inside) encoded to base64 format. For example:
-["Name1","Name2"] encoded to base64 will be WyJOYW1lMSIsIk5hbWUyIl0=
+`ARRAY_OF_CONFIG_NAMES_IN_BASE64` means that every request param should be in the json format (with array of strings
+inside)
+encoded to `base64` format.
+
+For example:
+
+`["Name1","Name2"]` encoded to the `base64` format will be `WyJOYW1lMSIsIk5hbWUyIl0=`
 
 **`GET api/metacfg/config?names=WyJOYW1lMSIsIk5hbWUyIl0=`** - returns a list of configs with names Name1, Name2.
+
+### JSON examples
+
+An array with a config and property:
+
+```json
+[
+ {
+  "name": "New Config",
+  "description": "Description",
+  "attributes": {
+   "key_1": "value-1",
+   "key_4": "value_4"
+  },
+  "properties": [
+   {
+    "name": "Value",
+    "caption": "Caption",
+    "description": "Description",
+    "attributes": {
+     "key_1": "value-1",
+     "key_4": "value_4"
+    },
+    "type": "LONG",
+    "value": "1000",
+    "properties": []
+   }
+  ]
+ }
+]
+```
+
+Config new a property:
+
+```json
+{
+ "name": "New Config",
+ "attributes": {
+  "key_3": "value_3",
+  "key_2": "value_2",
+  "key_1": "value_1"
+ },
+ "properties": [
+  {
+   "name": "Property",
+   "caption": "Caption",
+   "description": "Description",
+   "attributes": {
+    "key": "value"
+   },
+   "type": "STRING",
+   "value": "Value",
+   "properties": [
+    {
+     "name": "Property-1",
+     "attributes": {
+      "key_1": "value_1"
+     },
+     "type": "STRING",
+     "value": "Value-1",
+     "properties": []
+    },
+    {
+     "name": "Property-2",
+     "attributes": {
+      "key_2": "value_2"
+     },
+     "type": "STRING",
+     "value": "Value-2",
+     "properties": []
+    },
+    {
+     "name": "Property-3",
+     "attributes": {
+      "key_3": "value_3"
+     },
+     "type": "STRING",
+     "value": "Value-3",
+     "properties": []
+    }
+   ]
+  }
+ ]
+}
+```
 
 ## Build Requirements
 
