@@ -53,7 +53,7 @@ public final class PostgreSQL {
     public final static class SELECT {
 
         public static final String CONFIG_NAMES =
-                "SELECT `C`.`NAME` FROM `%s` AS `C` ORDER BY `C`.`NAME`;";
+                "SELECT C.NAME FROM %s AS C ORDER BY C.NAME;";
         public static final String COUNT_CONFIG_NAMES_BY_NAME =
                 "SELECT COUNT(DISTINCT `C`.`NAME`) FROM `%1$s` AS `C` " +
                         "INNER JOIN `%2$s` AS `CA` ON `C`.`ID` = `CA`.`CONFIG_ID` " +

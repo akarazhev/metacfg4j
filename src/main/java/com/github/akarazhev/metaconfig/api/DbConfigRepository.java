@@ -175,7 +175,7 @@ final class DbConfigRepository implements ConfigRepository {
   @Override
   public Stream<String> findNames() {
     try {
-      final String sql = String.format(SQL.SELECT.CONFIG_NAMES, mapping.get(CONFIGS_TABLE));
+      final String sql = this.sqlUtils.getNames();
       try (final Connection connection = dataSource.getConnection();
            final Statement statement = connection.createStatement();
            final ResultSet resultSet = statement.executeQuery(sql)) {
@@ -854,6 +854,17 @@ final class DbConfigRepository implements ConfigRepository {
           sql = " OR `C`.`NAME` = ?";
       }
 
+      return sql;
+    }
+
+    private String getNames() {
+      switch (dialect) {
+        case POSTGRE:
+          sql = String.format(PostgreSQL.SELECT.CONFIG_NAMES, mapping.get(CONFIGS_TABLE));
+          break;
+        default:
+          sql = String.format(SQL.SELECT.CONFIG_NAMES, mapping.get(CONFIGS_TABLE));
+      }
       return sql;
     }
   }
