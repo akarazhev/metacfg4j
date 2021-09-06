@@ -42,6 +42,9 @@ public final class Constants {
     public final static class Settings {
 
         public static final String FETCH_SIZE = "fetch-size";
+        public static final String DB_DIALECT = "db-dialect";
+        public static final String POSTGRE = "postgre";
+        public static final String DEFAULT = "default";
 
         private Settings() {
             throw new AssertionError(CREATE_CONSTANT_CLASS_ERROR);

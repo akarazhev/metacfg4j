@@ -10,6 +10,8 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.api;
 
+import com.github.akarazhev.metaconfig.api.sql.PostgreSQL;
+import com.github.akarazhev.metaconfig.api.sql.SQL;
 import com.github.akarazhev.metaconfig.extension.Validator;
 
 import javax.sql.DataSource;
@@ -46,7 +48,10 @@ import static com.github.akarazhev.metaconfig.Constants.Messages.SAVE_CONFIGS_ER
 import static com.github.akarazhev.metaconfig.Constants.Messages.SAVE_PROPERTIES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_ATTRIBUTES_ERROR;
 import static com.github.akarazhev.metaconfig.Constants.Messages.UPDATE_ATTRIBUTES_ERROR_MSG;
+import static com.github.akarazhev.metaconfig.Constants.Settings.DB_DIALECT;
+import static com.github.akarazhev.metaconfig.Constants.Settings.DEFAULT;
 import static com.github.akarazhev.metaconfig.Constants.Settings.FETCH_SIZE;
+import static com.github.akarazhev.metaconfig.Constants.Settings.POSTGRE;
 import static java.util.AbstractMap.SimpleEntry;
 
 /**
@@ -54,14 +59,16 @@ import static java.util.AbstractMap.SimpleEntry;
  */
 final class DbConfigRepository implements ConfigRepository {
     private final DataSource dataSource;
-    private final Map<String, String> mapping = new HashMap<>();
+    private final SQLUtils sqlUtils;
+    private final Map<String, String> mapping = new HashMap<>(); // TODO: remove
     private final Map<String, Object> settings = new HashMap<>();
 
     private DbConfigRepository(final Builder builder) {
         this.dataSource = builder.dataSource;
-        this.mapping.putAll(JDBCUtils.createMapping(builder.mapping));
+        this.mapping.putAll(JDBCUtils.createMapping(builder.mapping)); // TODO: remove
         this.settings.putAll(JDBCUtils.createSettings(builder.settings));
-        JDBCUtils.createDataBase(this.dataSource, this.mapping);
+        this.sqlUtils = new SQLUtils((String) this.settings.get(DB_DIALECT), this.mapping);
+        JDBCUtils.createDataBase(this.dataSource, sqlUtils);
     }
 
     /**
@@ -75,10 +82,9 @@ final class DbConfigRepository implements ConfigRepository {
                 final String sql = String.format(SQL.SELECT.CONFIGS, mapping.get(CONFIGS_TABLE),
                         mapping.get(CONFIG_ATTRIBUTES_TABLE), mapping.get(PROPERTIES_TABLE),
                         mapping.get(PROPERTY_ATTRIBUTES_TABLE));
-                final String subSql = " OR `C`.`NAME` = ?";
                 try (final Connection connection = dataSource.getConnection();
                      final PreparedStatement statement =
-                             connection.prepareStatement(JDBCUtils.concatSql(sql, subSql, names))) {
+                             connection.prepareStatement(JDBCUtils.concatSql(sql, sqlUtils.getSelectSubSql(), names))) {
                     JDBCUtils.set(statement, (Integer) settings.get(FETCH_SIZE), names);
 
                     try (final ResultSet resultSet = statement.executeQuery()) {
@@ -775,133 +781,75 @@ final class DbConfigRepository implements ConfigRepository {
         CONFIG, PROPERTY
     }
 
-    private final static class SQL {
+    private final static class SQLUtils {
+        private final String dialect;
+        private final Map<String, String> mapping;
+        private String sql;
 
-        private final static class INSERT {
-
-            static final String CONFIGS =
-                    "INSERT INTO `%s` (`NAME`, `DESCRIPTION`, `VERSION`, `UPDATED`) VALUES (?, ?, ?, ?);";
-            static final String CONFIG_ATTRIBUTES =
-                    "INSERT INTO `%s` (`CONFIG_ID`, `KEY`, `VALUE`) VALUES (?, ?, ?);";
-            static final String PROPERTIES =
-                    "INSERT INTO `%s` (`CONFIG_ID`, `NAME`, `CAPTION`, `DESCRIPTION`, `TYPE`, `VALUE`, `UPDATED`) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?);";
-            static final String PROPERTY_ATTRIBUTES =
-                    "INSERT INTO `%s` (`PROPERTY_ID`, `KEY`, `VALUE`) VALUES (?, ?, ?);";
-            static final String SUB_PROPERTIES =
-                    "INSERT INTO `%s` (`PROPERTY_ID`, `CONFIG_ID`, `NAME`, `CAPTION`, `DESCRIPTION`, `TYPE`, `VALUE`, " +
-                            "`UPDATED`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+        public SQLUtils(final String dialect, final Map<String, String> mapping) {
+            this.mapping = mapping;
+            this.dialect = dialect;
         }
 
-        private final static class UPDATE {
+        private String createConfigs() {
+            final String configsTable = mapping.get(CONFIGS_TABLE);
+            switch (dialect) {
+                case POSTGRE:
+                    sql = String.format(PostgreSQL.CREATE_TABLE.CONFIGS, configsTable);
+                    break;
+                default:
+                    sql = String.format(SQL.CREATE_TABLE.CONFIGS, configsTable);
+            }
 
-            static final String CONFIGS =
-                    "UPDATE `%s` SET `NAME` = ?, `DESCRIPTION` = ?, `VERSION` = ?, `UPDATED` = ? " +
-                            "WHERE `ID` = ? AND `VERSION` = ?;";
-            static final String CONFIG_ATTRIBUTE =
-                    "UPDATE `%s` SET `VALUE` = ? WHERE `CONFIG_ID` = ? AND `KEY` = ?;";
-            static final String PROPERTIES =
-                    "UPDATE `%s` SET `NAME` = ?, `CAPTION` = ?, `DESCRIPTION` = ?, `TYPE` = ?, `VALUE` = ?, " +
-                            "`UPDATED` = ? WHERE `ID` = ?;";
-            static final String PROPERTY_ATTRIBUTE =
-                    "UPDATE `%s` SET `VALUE` = ? WHERE `PROPERTY_ID` = ? AND `KEY` = ?;";
+            return sql;
         }
 
-        private final static class DELETE {
+        private String createConfigAttributes() {
+            final String configsTable = mapping.get(CONFIGS_TABLE);
+            final String configAttributeTable = mapping.get(CONFIG_ATTRIBUTES_TABLE);
+            switch (dialect) {
+                case POSTGRE:
+                    sql = String.format(PostgreSQL.CREATE_TABLE.CONFIG_ATTRIBUTES, configsTable, configAttributeTable);
+                    break;
+                default:
+                    sql = String.format(SQL.CREATE_TABLE.CONFIG_ATTRIBUTES, configsTable, configAttributeTable);
+            }
 
-            static final String CONFIGS =
-                    "DELETE FROM `%1$s` WHERE `%1$s`.`NAME` = ?";
-            static final String CONFIG_ATTRIBUTES =
-                    "DELETE FROM `%1$s` WHERE `%1$s`.`CONFIG_ID` = ?;";
-            static final String PROPERTY_ATTRIBUTES =
-                    "DELETE FROM `%1$s` WHERE `%1$s`.`PROPERTY_ID` = ?;";
-            static final String CONFIG_ATTRIBUTE =
-                    "DELETE FROM `%1$s` WHERE `%1$s`.`CONFIG_ID` = ? AND `%1$s`.`KEY` = ? AND `%1$s`.`VALUE` = ?;";
-            static final String PROPERTY_ATTRIBUTE =
-                    "DELETE FROM `%1$s` WHERE `%1$s`.`PROPERTY_ID` = ? AND `%1$s`.`KEY` = ? AND `%1$s`.`VALUE` = ?;";
-            static final String PROPERTIES =
-                    "DELETE FROM `%1$s` WHERE `%1$s`.`CONFIG_ID` = ?;";
-            static final String PROPERTY =
-                    "DELETE FROM `%1$s` WHERE `%1$s`.`ID` = ?;";
+            return sql;
         }
 
-        private final static class SELECT {
-
-            static final String CONFIG_NAMES =
-                    "SELECT `C`.`NAME` FROM `%s` AS `C` ORDER BY `C`.`NAME`;";
-            static final String COUNT_CONFIG_NAMES_BY_NAME =
-                    "SELECT COUNT(DISTINCT `C`.`NAME`) FROM `%1$s` AS `C` " +
-                            "INNER JOIN `%2$s` AS `CA` ON `C`.`ID` = `CA`.`CONFIG_ID` " +
-                            "WHERE (`C`.`NAME` LIKE ?)";
-            static final String CONFIG_NAMES_BY_NAME =
-                    "SELECT DISTINCT `C`.`NAME` FROM `%1$s` AS `C` " +
-                            "INNER JOIN `%2$s` AS `CA` ON `C`.`ID` = `CA`.`CONFIG_ID` " +
-                            "WHERE (`C`.`NAME` LIKE ?)";
-            static final String CONFIG_ATTRIBUTES =
-                    "SELECT `CA`.`KEY`, `CA`.`VALUE` FROM `%s` AS `CA` WHERE `CA`.`CONFIG_ID` = ?;";
-            static final String PROPERTY_ATTRIBUTES =
-                    "SELECT `PA`.`KEY`, `PA`.`VALUE` FROM `%s` AS `PA` WHERE `PA`.`PROPERTY_ID` = ?;";
-            static final String PROPERTY_ID_UPDATED =
-                    "SELECT `P`.`ID`, `P`.`UPDATED` FROM `%s` AS `P` WHERE `P`.`CONFIG_ID` = ?;";
-            static final String CONFIG_VERSION_UPDATED =
-                    "SELECT `C`.`ID`, `C`.`VERSION`, `C`.`UPDATED` FROM `%s` AS `C` WHERE ";
-            static final String CONFIGS =
-                    "SELECT `C`.`ID`, `C`.`NAME`, `C`.`DESCRIPTION`, `C`.`VERSION`, `C`.`UPDATED`, `CA`.`KEY`, " +
-                            "`CA`.`VALUE`, `P`.`ID`, `P`.`PROPERTY_ID`, `P`.`NAME` , `P`.`CAPTION`, " +
-                            "`P`.`DESCRIPTION`, `P`.`TYPE`, `P`.`VALUE`, `P`.`UPDATED`, `PA`.`KEY`, `PA`.`VALUE` " +
-                            "FROM `%1$s` AS `C` " +
-                            "LEFT JOIN `%3$s` AS `P` ON `C`.`ID` = `P`.`CONFIG_ID` " +
-                            "LEFT JOIN `%2$s` AS `CA` ON `C`.`ID` = `CA`.`CONFIG_ID` " +
-                            "LEFT JOIN `%4$s` AS `PA` ON `P`.`ID` = `PA`.`PROPERTY_ID` " +
-                            "WHERE `C`.`NAME` = ?";
+        private String createProperties() {
+            // TODO:
+            return String.format(SQL.CREATE_TABLE.PROPERTIES,
+                    mapping.get(PROPERTIES_TABLE), mapping.get(CONFIGS_TABLE));
         }
 
-        private final static class CREATE_TABLE {
+        private String createPropertiesAttributes() {
+            // TODO:
+            return String.format(SQL.CREATE_TABLE.PROPERTY_ATTRIBUTES,
+                    mapping.get(PROPERTY_ATTRIBUTES_TABLE), mapping.get(PROPERTIES_TABLE));
+        }
 
-            static final String CONFIGS =
-                    "CREATE TABLE IF NOT EXISTS `%s` " +
-                            "(`ID` BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY, " +
-                            "`NAME` VARCHAR(255) NOT NULL, " +
-                            "`DESCRIPTION` VARCHAR(1024), " +
-                            "`VERSION` INT NOT NULL, " +
-                            "`UPDATED` BIGINT NOT NULL);";
-            static final String CONFIG_ATTRIBUTES =
-                    "CREATE TABLE IF NOT EXISTS `%2$s` " +
-                            "(`ID` BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY, " +
-                            "`CONFIG_ID` BIGINT NOT NULL, " +
-                            "`KEY` VARCHAR(255) NOT NULL, " +
-                            "`VALUE` VARCHAR(1024), " +
-                            "FOREIGN KEY(CONFIG_ID) REFERENCES %1$s(ID) ON DELETE CASCADE)";
-            static final String PROPERTIES =
-                    "CREATE TABLE IF NOT EXISTS `%1$s` " +
-                            "(`ID` BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY, " +
-                            "`PROPERTY_ID` BIGINT, " +
-                            "`CONFIG_ID` BIGINT NOT NULL, " +
-                            "`NAME` VARCHAR(255) NOT NULL, " +
-                            "`CAPTION` VARCHAR(255), " +
-                            "`DESCRIPTION` VARCHAR(1024), " +
-                            "`TYPE` ENUM ('BOOL', 'DOUBLE', 'LONG', 'STRING', 'STRING_ARRAY') NOT NULL, " +
-                            "`VALUE` VARCHAR(4096) NOT NULL, " +
-                            "`UPDATED` BIGINT NOT NULL," +
-                            "FOREIGN KEY(CONFIG_ID) REFERENCES %2$s(ID) ON DELETE CASCADE," +
-                            "FOREIGN KEY(PROPERTY_ID) REFERENCES %1$s(ID) ON DELETE CASCADE)";
-            static final String PROPERTY_ATTRIBUTES =
-                    "CREATE TABLE IF NOT EXISTS `%1$s` " +
-                            "(`ID` BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY, " +
-                            "`PROPERTY_ID` BIGINT NOT NULL, " +
-                            "`KEY` VARCHAR(255) NOT NULL, " +
-                            "`VALUE` VARCHAR(1024), " +
-                            "FOREIGN KEY(PROPERTY_ID) REFERENCES %2$s(ID) ON DELETE CASCADE)";
+        private String getSelectSubSql() {
+            switch (dialect) {
+                case POSTGRE:
+                    sql = " OR C.NAME = ?";
+                    break;
+                default:
+                    sql = " OR `C`.`NAME` = ?";
+            }
+
+            return sql;
         }
     }
 
     private static final class JDBCUtils {
 
-        private static void createDataBase(final DataSource dataSource, final Map<String, String> mapping) {
+        private static void createDataBase(final DataSource dataSource, final SQLUtils sqlUtils) {
             Connection connection = null;
             try {
                 connection = JDBCUtils.open(dataSource);
-                createTables(connection, mapping);
+                createTables(connection, sqlUtils);
             } catch (final SQLException e) {
                 JDBCUtils.rollback(connection, e);
             } finally {
@@ -909,17 +857,14 @@ final class DbConfigRepository implements ConfigRepository {
             }
         }
 
-        private static void createTables(final Connection connection, final Map<String, String> mapping)
+        private static void createTables(final Connection connection, final SQLUtils sqlUtils)
                 throws SQLException {
             try {
                 try (final Statement statement = connection.createStatement()) {
-                    statement.executeUpdate(String.format(SQL.CREATE_TABLE.CONFIGS, mapping.get(CONFIGS_TABLE)));
-                    statement.executeUpdate(String.format(SQL.CREATE_TABLE.CONFIG_ATTRIBUTES,
-                            mapping.get(CONFIGS_TABLE), mapping.get(CONFIG_ATTRIBUTES_TABLE)));
-                    statement.executeUpdate(String.format(SQL.CREATE_TABLE.PROPERTIES,
-                            mapping.get(PROPERTIES_TABLE), mapping.get(CONFIGS_TABLE)));
-                    statement.executeUpdate(String.format(SQL.CREATE_TABLE.PROPERTY_ATTRIBUTES,
-                            mapping.get(PROPERTY_ATTRIBUTES_TABLE), mapping.get(PROPERTIES_TABLE)));
+                    statement.executeUpdate(sqlUtils.createConfigs());
+                    statement.executeUpdate(sqlUtils.createConfigAttributes());
+                    statement.executeUpdate(sqlUtils.createProperties());
+                    statement.executeUpdate(sqlUtils.createPropertiesAttributes());
                     connection.commit();
                 }
             } catch (final SQLException e) {
@@ -949,9 +894,11 @@ final class DbConfigRepository implements ConfigRepository {
             if (settings == null) {
                 final Map<String, Object> defaultSettings = new HashMap<>();
                 defaultSettings.put(FETCH_SIZE, 100);
+                defaultSettings.put(DB_DIALECT, DEFAULT);
                 return defaultSettings;
             } else {
                 settings.putIfAbsent(FETCH_SIZE, 100);
+                settings.putIfAbsent(DB_DIALECT, DEFAULT);
             }
 
             return settings;
@@ -1202,6 +1149,11 @@ final class DbConfigRepository implements ConfigRepository {
                         if (settings.containsKey(FETCH_SIZE)) {
                             final Object value = settings.get(FETCH_SIZE);
                             return value instanceof Integer;
+                        }
+
+                        if (settings.containsKey(DB_DIALECT)) {
+                            final Object value = settings.get(DB_DIALECT);
+                            return POSTGRE.equals(value) || DEFAULT.equals(value);
                         }
 
                         return true;
