@@ -46,7 +46,6 @@ final class ConfigNamesController extends AbstractController {
     @Override
     void execute(final HttpExchange httpExchange) throws IOException {
         final String method = httpExchange.getRequestMethod();
-        LOGGER.log(Level.INFO, "Executing "+method+" method...");
         if (GET.equals(method)) {
             final URI uri = httpExchange.getRequestURI();
             final Optional<String> param = getRequestParam(uri, REQ_PARAM_PAGE_REQUEST);

@@ -58,7 +58,6 @@ final class ConfigController extends AbstractController {
     void execute(final HttpExchange httpExchange) throws IOException {
         final URI uri = httpExchange.getRequestURI();
         final String method = httpExchange.getRequestMethod();
-        LOGGER.log(Level.INFO, "Executing "+method+" method...");
         if (GET.equals(method)) {
             final OperationResponse<Collection<Config>> response = getRequestParam(uri, REQ_PARAM_NAMES).
                     map(param -> {

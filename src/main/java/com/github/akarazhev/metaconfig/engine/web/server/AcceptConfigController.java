@@ -10,6 +10,14 @@
  * limitations under the License. */
 package com.github.akarazhev.metaconfig.engine.web.server;
 
+import com.github.akarazhev.metaconfig.Constants;
+import com.github.akarazhev.metaconfig.api.ConfigService;
+import com.sun.net.httpserver.HttpExchange;
+
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import static com.github.akarazhev.metaconfig.Constants.Messages.CONFIG_ACCEPTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.PATH_PARAM_NOT_PRESENT;
 import static com.github.akarazhev.metaconfig.Constants.Messages.STRING_TO_JSON_ERROR;
@@ -18,18 +26,12 @@ import static com.github.akarazhev.metaconfig.extension.WebUtils.getPathParams;
 import static com.github.akarazhev.metaconfig.extension.WebUtils.getValues;
 import static java.net.HttpURLConnection.HTTP_BAD_METHOD;
 
-import com.github.akarazhev.metaconfig.Constants;
-import com.github.akarazhev.metaconfig.api.ConfigService;
-import com.sun.net.httpserver.HttpExchange;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  * Provides a handler functionality for the POST accept method.
  */
 final class AcceptConfigController extends AbstractController {
     private final static Logger LOGGER = Logger.getLogger(AcceptConfigController.class.getSimpleName());
+
     private AcceptConfigController(final Builder builder) {
         super(builder);
     }
@@ -39,8 +41,6 @@ final class AcceptConfigController extends AbstractController {
      */
     @Override
     void execute(final HttpExchange httpExchange) throws IOException {
-      final String method = httpExchange.getRequestMethod();
-      LOGGER.log(Level.INFO, "Executing "+method+" method...");
         if (POST.equals(httpExchange.getRequestMethod())) {
             final OperationResponse<String> response = getPathParams(httpExchange.getRequestURI(), apiPath).
                     findAny().
