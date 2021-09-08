@@ -84,7 +84,7 @@ final class DbConfigRepository implements ConfigRepository {
                                          mapping.get(PROPERTY_ATTRIBUTES_TABLE));
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement statement =
-               connection.prepareStatement(JDBCUtils.concatSql(sql, sqlUtils.getSelectSubSql(), names))) {
+               connection.prepareStatement(JDBCUtils.concatSql(sql, " OR C.NAME = ?", names))) {
           JDBCUtils.set(statement, (Integer) settings.get(FETCH_SIZE), names);
 
           try (final ResultSet resultSet = statement.executeQuery()) {
@@ -175,7 +175,7 @@ final class DbConfigRepository implements ConfigRepository {
   @Override
   public Stream<String> findNames() {
     try {
-      final String sql = this.sqlUtils.getNames();
+      final String sql = String.format(SQL.SELECT.CONFIG_NAMES, mapping.get(CONFIGS_TABLE));
       try (final Connection connection = dataSource.getConnection();
            final Statement statement = connection.createStatement();
            final ResultSet resultSet = statement.executeQuery(sql)) {
@@ -199,9 +199,8 @@ final class DbConfigRepository implements ConfigRepository {
     try {
       final String configs = mapping.get(CONFIGS_TABLE);
       final String attributes = mapping.get(CONFIG_ATTRIBUTES_TABLE);
-      final String sql = String.format(SQL.SELECT.CONFIG_NAMES_BY_NAME, configs, attributes) +
-        JDBCUtils.getSubSql(request) + " ORDER BY `C`.`NAME` " + (request.isAscending() ? "ASC" : "DESC") +
-        " LIMIT " + request.getSize() + " OFFSET " + request.getPage() * request.getSize() + ";";
+      final String sql = String.format(SQL.SELECT.CONFIG_NAMES_BY_NAME, configs, attributes)+JDBCUtils.getSubSql(request) + " ORDER BY C.NAME " + (request.isAscending() ? "ASC" : "DESC") +
+        " LIMIT " + request.getSize() + " OFFSET " + request.getPage() * request.getSize() + ";";;
       try (final Connection connection = dataSource.getConnection()) {
         final int total = getCount(connection, configs, attributes, request);
         if (total > 0) {
@@ -332,7 +331,7 @@ final class DbConfigRepository implements ConfigRepository {
     Config[] inserted = new Config[0];
     if (configs.length > 0) {
       inserted = new Config[configs.length];
-      final String configsSql = String.format(SQL.INSERT.CONFIGS, mapping.get(CONFIGS_TABLE));
+      final String configsSql = String.format(String.format(SQL.INSERT.CONFIGS, mapping.get(CONFIGS_TABLE)));
       try (final PreparedStatement statement =
              connection.prepareStatement(configsSql, Statement.RETURN_GENERATED_KEYS)) {
         for (final Config config : configs) {
@@ -344,7 +343,7 @@ final class DbConfigRepository implements ConfigRepository {
           try (final ResultSet resultSet = statement.getGeneratedKeys()) {
             final Collection<Throwable> exceptions = new LinkedList<>();
             for (int i = 0; i < configs.length; i++) {
-              resultSet.absolute(i + 1);
+              resultSet.next();
               final long configId = resultSet.getInt(1);
               final Property[] properties = configs[i].getProperties().toArray(Property[]::new);
               // Create config attributes
@@ -383,7 +382,6 @@ final class DbConfigRepository implements ConfigRepository {
     if (attributes.size() > 0) {
       try (final PreparedStatement statement = connection.prepareStatement(sql)) {
         JDBCUtils.setBatch(statement, id, attributes);
-
         if (statement.executeBatch().length != attributes.size()) {
           throw new SQLException(error);
         }
@@ -459,7 +457,7 @@ final class DbConfigRepository implements ConfigRepository {
       try (final ResultSet resultSet = statement.getGeneratedKeys()) {
         final Collection<Throwable> exceptions = new LinkedList<>();
         for (int i = 0; i < properties.length; i++) {
-          resultSet.absolute(i + 1);
+          resultSet.next();
           final long propertyId = resultSet.getLong(1);
           // Create property attributes
           properties[i].getAttributes().ifPresent(a -> {
@@ -725,7 +723,7 @@ final class DbConfigRepository implements ConfigRepository {
         sql.append(" OR ");
       }
 
-      sql.append("`C`.`ID` = ?");
+      sql.append("C.ID = ?");
       if (i == configs.length - 1) {
         sql.append(";");
       }
@@ -754,7 +752,7 @@ final class DbConfigRepository implements ConfigRepository {
       try {
         final String configs = mapping.get(CONFIGS_TABLE);
         final String sql = String.format(SQL.DELETE.CONFIGS, configs);
-        final String subSql = String.format(" OR `%s`.`NAME` = ?", configs);
+        final String subSql = String.format(" OR %s.NAME = ?", configs);
         try (final PreparedStatement statement =
                connection.prepareStatement(JDBCUtils.concatSql(sql, subSql, names))) {
           JDBCUtils.set(statement, (Integer) settings.get(FETCH_SIZE), names);
@@ -844,29 +842,6 @@ final class DbConfigRepository implements ConfigRepository {
       }
       return sql;
     }
-
-    private String getSelectSubSql() {
-      switch (dialect) {
-        case POSTGRE:
-          sql = " OR C.NAME = ?";
-          break;
-        default:
-          sql = " OR `C`.`NAME` = ?";
-      }
-
-      return sql;
-    }
-
-    private String getNames() {
-      switch (dialect) {
-        case POSTGRE:
-          sql = String.format(PostgreSQL.SELECT.CONFIG_NAMES, mapping.get(CONFIGS_TABLE));
-          break;
-        default:
-          sql = String.format(SQL.SELECT.CONFIG_NAMES, mapping.get(CONFIGS_TABLE));
-      }
-      return sql;
-    }
   }
 
   private static final class JDBCUtils {
@@ -945,7 +920,7 @@ final class DbConfigRepository implements ConfigRepository {
       final int size = request.getAttributes().size();
       for (int i = 0; i < size; i++) {
         string.append(i == 0 ? " AND" : " OR");
-        string.append(" (`CA`.`KEY` LIKE ? AND `CA`.`VALUE` LIKE ?)");
+        string.append(" (CA.KEY LIKE ? AND CA.VALUE LIKE ?)");
       }
 
       return string.toString();
