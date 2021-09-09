@@ -339,7 +339,9 @@ public final class Property implements Configurable {
             this.description = (String) prototype.get("description");
             this.type = Type.valueOf(Validator.of((String) prototype.get("type")).get());
             this.value = Validator.of((String) prototype.get("value")).get();
-            this.updated = getLong(prototype, "updated");
+            if (prototype.get("updated")!=null) {
+                this.updated = getLong(prototype, "updated");
+            }
             ConfigBuilder.getAttributes(prototype).ifPresent(this.attributes::putAll);
             this.properties.addAll(ConfigBuilder.getProperties(prototype).collect(Collectors.toList()));
         }
