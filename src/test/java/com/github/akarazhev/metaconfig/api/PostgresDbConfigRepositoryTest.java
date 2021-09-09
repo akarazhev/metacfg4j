@@ -12,8 +12,6 @@
 package com.github.akarazhev.metaconfig.api;
 
 import com.github.akarazhev.metaconfig.UnitTest;
-import com.github.akarazhev.metaconfig.engine.db.DbServer;
-import com.github.akarazhev.metaconfig.engine.db.DbServers;
 import com.github.akarazhev.metaconfig.engine.db.pool.ConnectionPool;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.junit.jupiter.api.AfterAll;
@@ -55,15 +53,10 @@ final class PostgresDbConfigRepositoryTest extends UnitTest {
             .withDatabaseName("mydb")
             .withUsername("myuser")
             .withPassword("mypass");
-    private static DbServer dbServer;
     private static ConfigRepository configRepository;
 
     @BeforeAll
-    static void beforeAll() throws Exception {
-        if (dbServer == null) {
-            dbServer = DbServers.newServer().start();
-        }
-
+    static void beforeAll() {
         if (configRepository == null) {
             createRepository();
         }
@@ -72,10 +65,6 @@ final class PostgresDbConfigRepositoryTest extends UnitTest {
     @AfterAll
     static void afterAll() {
         configRepository = null;
-        if (dbServer != null) {
-            dbServer.stop();
-            dbServer = null;
-        }
     }
 
     private static void createRepository() {
