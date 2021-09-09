@@ -15,6 +15,8 @@ import com.github.akarazhev.metaconfig.api.ConfigService;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.CONFIG_ACCEPTED;
 import static com.github.akarazhev.metaconfig.Constants.Messages.PATH_PARAM_NOT_PRESENT;
@@ -28,6 +30,7 @@ import static java.net.HttpURLConnection.HTTP_BAD_METHOD;
  * Provides a handler functionality for the POST accept method.
  */
 final class AcceptConfigController extends AbstractController {
+    private final static Logger LOGGER = Logger.getLogger(AcceptConfigController.class.getSimpleName());
 
     private AcceptConfigController(final Builder builder) {
         super(builder);
@@ -47,6 +50,7 @@ final class AcceptConfigController extends AbstractController {
                             final String result = String.format(CONFIG_ACCEPTED, param);
                             return new OperationResponse.Builder<String>().result(result).build();
                         } catch (final Exception e) {
+                            LOGGER.log(Level.SEVERE, e.toString());
                             return new OperationResponse.Builder<String>().error(STRING_TO_JSON_ERROR).build();
                         }
                     }).

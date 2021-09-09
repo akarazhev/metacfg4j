@@ -25,6 +25,8 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,6 +45,7 @@ import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
  * Provides a handler functionality for the GET, PUT, DELETE config methods.
  */
 final class ConfigController extends AbstractController {
+    private final static Logger LOGGER = Logger.getLogger(ConfigController.class.getSimpleName());
 
     private ConfigController(final Builder builder) {
         super(builder);
@@ -63,6 +66,7 @@ final class ConfigController extends AbstractController {
                                     configService.get(getValues(param)).collect(Collectors.toList());
                             return new OperationResponse.Builder<Collection<Config>>().result(configs).build();
                         } catch (final Exception e) {
+                            LOGGER.log(Level.SEVERE, e.toString());
                             return new OperationResponse.Builder<Collection<Config>>().error(STRING_TO_JSON_ERROR).build();
                         }
                     }).
@@ -81,6 +85,7 @@ final class ConfigController extends AbstractController {
                         collect(Collectors.toList());
                 writeResponse(httpExchange, new OperationResponse.Builder<>().result(updatedConfigs).build());
             } catch (final JsonException e) {
+                LOGGER.log(Level.SEVERE, e.toString());
                 throw new InvalidRequestException(HTTP_BAD_REQUEST, JSON_TO_CONFIG_ERROR);
             }
         } else if (DELETE.equals(method)) {
@@ -90,6 +95,7 @@ final class ConfigController extends AbstractController {
                             final int result = configService.remove(getValues(param));
                             return new OperationResponse.Builder<Integer>().result(result).build();
                         } catch (final Exception e) {
+                            LOGGER.log(Level.SEVERE, e.toString());
                             return new OperationResponse.Builder<Integer>().error(STRING_TO_JSON_ERROR).build();
                         }
                     }).

@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.github.akarazhev.metaconfig.Constants.Messages.STRING_TO_JSON_ERROR;
@@ -32,6 +34,7 @@ import static java.net.HttpURLConnection.HTTP_BAD_METHOD;
  * Provides a handler functionality for the GET config names method.
  */
 final class ConfigNamesController extends AbstractController {
+    private final static Logger LOGGER = Logger.getLogger(ConfigNamesController.class.getSimpleName());
 
     private ConfigNamesController(final Builder builder) {
         super(builder);
@@ -52,6 +55,7 @@ final class ConfigNamesController extends AbstractController {
                             configService.getNames(new PageRequest.Builder(getValue(param.get())).build());
                     writeResponse(httpExchange, new OperationResponse.Builder<PageResponse>().result(response).build());
                 } catch (final Exception e) {
+                    LOGGER.log(Level.SEVERE, e.toString());
                     writeResponse(httpExchange,
                             new OperationResponse.Builder<PageResponse>().error(STRING_TO_JSON_ERROR).build());
                 }
