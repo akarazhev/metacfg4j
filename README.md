@@ -57,8 +57,9 @@ final Map<String, String> dataMapping=new HashMap<>();
         dataMapping.put(Constants.Mapping.PROPERTIES_TABLE,"PROPERTIES");
         dataMapping.put(Constants.Mapping.PROPERTY_ATTRIBUTES_TABLE,"PROPERTY_ATTRIBUTES");
 // Set a fetch size
-final Map<String, String> settings=new HashMap<>();
+final Map<String, Object> settings=new HashMap<>();
         settings.put(FETCH_SIZE,100);
+        settings.put(DB_DIALECT,POSTGRE);
 // Create the web server config
 final Config webServer=new Config.Builder(Server.Settings.CONFIG_NAME,
         Arrays.asList(
@@ -69,13 +70,13 @@ final Config webServer=new Config.Builder(Server.Settings.CONFIG_NAME,
         new Property.Builder(Constants.Endpoints.CONFIG,"config").build(),
         new Property.Builder(Server.Settings.PORT,8000).build(),
         new Property.Builder(Server.Settings.BACKLOG,0).build(),
-                new Property.Builder(Server.Settings.KEY_STORE_FILE, "./data/metacfg4j.keystore").build(),
-                new Property.Builder(Server.Settings.ALIAS, "alias").build(),
-                new Property.Builder(Server.Settings.STORE_PASSWORD, "password").build(),
-                new Property.Builder(Server.Settings.KEY_PASSWORD, "password").build()))
+        new Property.Builder(Server.Settings.KEY_STORE_FILE,"./data/metacfg4j.keystore").build(),
+        new Property.Builder(Server.Settings.ALIAS,"alias").build(),
+        new Property.Builder(Server.Settings.STORE_PASSWORD,"password").build(),
+        new Property.Builder(Server.Settings.KEY_PASSWORD,"password").build()))
         .build();
-    // Create the meta configuration
-    return new MetaConfig.Builder().
+        // Create the meta configuration
+        return new MetaConfig.Builder().
         webServer(webServer).
         dataSource(getDataSource()).
         dataMapping(dataMapping).
