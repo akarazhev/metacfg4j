@@ -28,7 +28,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import javax.sql.DataSource;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -58,16 +57,11 @@ final class PostgresDbConfigRepositoryTest extends UnitTest {
             .withPassword("mypass");
     private static DbServer dbServer;
     private static ConfigRepository configRepository;
-    private static ConnectionPool connectionPool;
 
     @BeforeAll
     static void beforeAll() throws Exception {
         if (dbServer == null) {
             dbServer = DbServers.newServer().start();
-        }
-
-        if (connectionPool == null) {
-            createConnectionPool();
         }
 
         if (configRepository == null) {
@@ -76,14 +70,8 @@ final class PostgresDbConfigRepositoryTest extends UnitTest {
     }
 
     @AfterAll
-    static void afterAll() throws IOException {
+    static void afterAll() {
         configRepository = null;
-
-        if (connectionPool != null) {
-            connectionPool.close();
-            connectionPool = null;
-        }
-
         if (dbServer != null) {
             dbServer.stop();
             dbServer = null;
@@ -102,11 +90,11 @@ final class PostgresDbConfigRepositoryTest extends UnitTest {
         settings.put(DB_DIALECT, POSTGRE);
 
         configRepository =
-                new DbConfigRepository.Builder(connectionPool.getDataSource()).mapping(mapping).settings(settings).build();
+                new DbConfigRepository.Builder(getConnectionPool().getDataSource()).mapping(mapping).settings(settings).build();
     }
 
-    private static void createConnectionPool() {
-        connectionPool = new ConnectionPool() {
+    private static ConnectionPool getConnectionPool() {
+        return new ConnectionPool() {
             private final JdbcConnectionPool connectionPool = JdbcConnectionPool.create(setUpConnectionPool());
 
             @Override
@@ -131,21 +119,21 @@ final class PostgresDbConfigRepositoryTest extends UnitTest {
     }
 
     private static void dropConfigAttributesTables() throws SQLException {
-        try (final Connection connection = connectionPool.getDataSource().getConnection();
+        try (final Connection connection = getConnectionPool().getDataSource().getConnection();
              final Statement statement = connection.createStatement()) {
             execute(statement, "CONFIG_ATTRIBUTES");
         }
     }
 
     private static void dropPropertyAttributesTables() throws SQLException {
-        try (final Connection connection = connectionPool.getDataSource().getConnection();
+        try (final Connection connection = getConnectionPool().getDataSource().getConnection();
              final Statement statement = connection.createStatement()) {
             execute(statement, "PROPERTY_ATTRIBUTES");
         }
     }
 
     private static void dropTables() throws SQLException {
-        try (final Connection connection = connectionPool.getDataSource().getConnection();
+        try (final Connection connection = getConnectionPool().getDataSource().getConnection();
              final Statement statement = connection.createStatement()) {
             execute(statement, "PROPERTY_ATTRIBUTES");
             execute(statement, "PROPERTIES");
@@ -226,16 +214,6 @@ final class PostgresDbConfigRepositoryTest extends UnitTest {
     }
 
     @Test
-    @DisplayName("Find configs by names with the closed connection pool")
-    void findByNamesWithClosedDataSource() throws IOException, SQLException {
-        connectionPool.close();
-        // Check test results
-        assertThrows(RuntimeException.class, () -> configRepository.findByNames(Stream.of(FIRST_CONFIG, SECOND_CONFIG)));
-        createConnectionPool();
-        createRepository();
-    }
-
-    @Test
     @DisplayName("Find config names")
     void findNames() {
         final String[] names = configRepository.findNames().toArray(String[]::new);
@@ -251,16 +229,6 @@ final class PostgresDbConfigRepositoryTest extends UnitTest {
         dropTables();
         // Check test results
         assertThrows(RuntimeException.class, () -> configRepository.findNames());
-        createRepository();
-    }
-
-    @Test
-    @DisplayName("Find config names with the closed connection pool")
-    void findNamesWithClosedDataSource() throws IOException {
-        connectionPool.close();
-        // Check test results
-        assertThrows(RuntimeException.class, () -> configRepository.findNames());
-        createConnectionPool();
         createRepository();
     }
 
@@ -328,17 +296,6 @@ final class PostgresDbConfigRepositoryTest extends UnitTest {
         // Check test results
         assertThrows(RuntimeException.class, () ->
                 configRepository.findByPageRequest(new PageRequest.Builder(FIRST_CONFIG).build()));
-        createRepository();
-    }
-
-    @Test
-    @DisplayName("Find config names by name with the closed connection pool")
-    void findByNameWithClosedDataSource() throws IOException {
-        connectionPool.close();
-        // Check test results
-        assertThrows(RuntimeException.class, () ->
-                configRepository.findByPageRequest(new PageRequest.Builder(FIRST_CONFIG).build()));
-        createConnectionPool();
         createRepository();
     }
 
