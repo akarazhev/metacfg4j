@@ -236,7 +236,7 @@ public final class Config implements Configurable {
             if (version > 0) {
                 this.version = (int) version;
             }
-            if (prototype.get("updated")!=null) {
+            if (prototype.get("updated") != null) {
                 this.updated = getLong(prototype, "updated");
             }
             ConfigBuilder.getAttributes(prototype).ifPresent(this.attributes::putAll);
