@@ -38,6 +38,7 @@
         <h2db.version>1.4.200</h2db.version>
         <testcontainers.version>1.16.0</testcontainers.version>
         <json.simple.version>4.0.0</json.simple.version>
+        <postgresql.version>42.3.6</postgresql.version>
     </properties>
 
     <licenses>
@@ -107,12 +108,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.2.14</version>
-        </dependency>
-        <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <version>3.4.5</version>
+            <version>${postgresql.version}</version>
         </dependency>
     </dependencies>
 
