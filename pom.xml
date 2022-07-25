@@ -34,10 +34,10 @@
         <maven.javadoc.plugin>3.2.0</maven.javadoc.plugin>
         <maven.source.plugin>3.2.1</maven.source.plugin>
         <jacoco.maven.plugin>0.8.6</jacoco.maven.plugin>
-        <junit.version>5.7.2</junit.version>
+        <junit.version>5.8.2</junit.version>
         <h2db.version>1.4.200</h2db.version>
-        <testcontainers.version>1.16.0</testcontainers.version>
-        <json.simple.version>4.0.0</json.simple.version>
+        <testcontainers.version>1.17.2</testcontainers.version>
+        <json.simple.version>4.0.1</json.simple.version>
         <postgresql.version>42.3.6</postgresql.version>
     </properties>
 
