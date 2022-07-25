@@ -24,21 +24,21 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.plugin>3.8.1</maven.compiler.plugin>
+        <maven.compiler.plugin>3.10.1</maven.compiler.plugin>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.surefire.plugin>3.0.0-M5</maven.surefire.plugin>
-        <maven.assembly.plugin>3.3.0</maven.assembly.plugin>
-        <maven.deploy.plugin>3.0.0-M1</maven.deploy.plugin>
+        <maven.surefire.plugin>3.0.0-M7</maven.surefire.plugin>
+        <maven.assembly.plugin>3.4.2</maven.assembly.plugin>
+        <maven.deploy.plugin>3.0.0</maven.deploy.plugin>
         <maven.gpg.plugin>1.6</maven.gpg.plugin>
-        <maven.javadoc.plugin>3.2.0</maven.javadoc.plugin>
+        <maven.javadoc.plugin>3.4.0</maven.javadoc.plugin>
         <maven.source.plugin>3.2.1</maven.source.plugin>
-        <jacoco.maven.plugin>0.8.6</jacoco.maven.plugin>
+        <jacoco.maven.plugin>0.8.8</jacoco.maven.plugin>
         <junit.version>5.8.2</junit.version>
-        <h2db.version>1.4.200</h2db.version>
-        <testcontainers.version>1.17.2</testcontainers.version>
+        <h2db.version>2.1.214</h2db.version>
+        <testcontainers.version>1.17.3</testcontainers.version>
         <json.simple.version>4.0.1</json.simple.version>
-        <postgresql.version>42.3.6</postgresql.version>
+        <postgresql.version>42.4.0</postgresql.version>
     </properties>
 
     <licenses>
@@ -99,16 +99,17 @@
             <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
+            <scope>test</scope>
+        </dependency>
         <!-- Json dependency -->
         <dependency>
             <groupId>com.github.cliftonlabs</groupId>
             <artifactId>json-simple</artifactId>
             <version>${json.simple.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>${postgresql.version}</version>
         </dependency>
     </dependencies>
 
