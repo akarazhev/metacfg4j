@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
@@ -88,8 +88,9 @@ final class DbConfigRepository implements ConfigRepository {
                         long prevConfigId = -1;
                         final Map<Long, Config> configs = new HashMap<>();
                         final Map<Long, Property> properties = new HashMap<>();
-                        final Collection<SimpleEntry<Long, Long>> links = new HashSet<>();
+                        final Collection<SimpleEntry<Long, Long>> links = new LinkedHashSet<>();
                         while (resultSet.next()) {
+                            final long configId = resultSet.getInt(1);
                             // Create properties
                             final long propertyId = resultSet.getLong(8);
                             if (propertyId > 0) {
@@ -117,12 +118,11 @@ final class DbConfigRepository implements ConfigRepository {
                                 if (id > 0) {
                                     links.add(new SimpleEntry<>(propertyId, id));
                                 } else {
-                                    links.add(new SimpleEntry<>(propertyId, resultSet.getLong(1)));
+                                    links.add(new SimpleEntry<>(propertyId, configId));
                                 }
                             }
                             // Create configs
                             final Config.Builder builder;
-                            final long configId = resultSet.getInt(1);
                             final Config config = configs.get(configId);
                             final Optional<SimpleEntry<String, String>> optional =
                                     getAttributes(resultSet.getString(6), resultSet.getString(7));
@@ -278,12 +278,14 @@ final class DbConfigRepository implements ConfigRepository {
                     final Property childProp = linkedProps.get(link.getKey());
                     final Property parentProp = linkedProps.get(link.getValue());
                     if (childProp != null && parentProp != null) {
-                        linkedProps.put(link.getValue(),
-                                new Property.Builder(parentProp).property(new String[0], childProp).build());
-                        linkedProps.remove(link.getKey());
+                        if (!childProp.equals(parentProp)) {
+                            linkedProps.put(link.getValue(),
+                                    new Property.Builder(parentProp).property(new String[0], childProp).build());
+                            linkedProps.remove(link.getKey());
+                        }
                     } else {
                         final Property prop = parentProp == null ? childProp : parentProp;
-                        if (!links.contains(new SimpleEntry<>(prop.getId(), configId))) {
+                        if (prop != null && !links.contains(new SimpleEntry<>(prop.getId(), configId))) {
                             linkedProps.remove(prop.getId());
                         }
                     }
