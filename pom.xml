@@ -39,6 +39,7 @@
         <testcontainers.version>1.17.3</testcontainers.version>
         <json.simple.version>4.0.1</json.simple.version>
         <postgresql.version>42.4.0</postgresql.version>
+        <slf4j.version>1.7.36</slf4j.version>
     </properties>
 
     <licenses>
@@ -103,6 +104,18 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>${postgresql.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
         <!-- Json dependency -->
