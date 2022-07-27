@@ -76,9 +76,7 @@ final class DbConfigRepository implements ConfigRepository {
         final String[] names = stream.toArray(String[]::new);
         if (names.length > 0) {
             try {
-                final String sql = String.format(SQL.SELECT.CONFIGS, sqlUtils.mapping.get(CONFIGS_TABLE),
-                        sqlUtils.mapping.get(CONFIG_ATTRIBUTES_TABLE), sqlUtils.mapping.get(PROPERTIES_TABLE),
-                        sqlUtils.mapping.get(PROPERTY_ATTRIBUTES_TABLE));
+                final String sql = sqlUtils.select.configs();
                 try (final Connection connection = dataSource.getConnection();
                      final PreparedStatement statement =
                              connection.prepareStatement(JDBCUtils.concatSql(sql, " OR C.NAME = ?", names))) {
@@ -172,7 +170,7 @@ final class DbConfigRepository implements ConfigRepository {
     @Override
     public Stream<String> findNames() {
         try {
-            final String sql = String.format(SQL.SELECT.CONFIG_NAMES, sqlUtils.mapping.get(CONFIGS_TABLE));
+            final String sql = sqlUtils.select.configNames();
             try (final Connection connection = dataSource.getConnection();
                  final Statement statement = connection.createStatement();
                  final ResultSet resultSet = statement.executeQuery(sql)) {
@@ -196,10 +194,7 @@ final class DbConfigRepository implements ConfigRepository {
         try {
             final String configs = sqlUtils.mapping.get(CONFIGS_TABLE);
             final String attributes = sqlUtils.mapping.get(CONFIG_ATTRIBUTES_TABLE);
-            final String sql = String.format(SQL.SELECT.CONFIG_NAMES_BY_NAME, configs, attributes) +
-                    JDBCUtils.getSubSql(request) + " ORDER BY C.NAME " + (request.isAscending() ? "ASC" : "DESC") +
-                    " LIMIT " + request.getSize() + " OFFSET " + request.getPage() * request.getSize() + ";";
-            ;
+            final String sql = sqlUtils.select.configNamesByName(request);
             try (final Connection connection = dataSource.getConnection()) {
                 final int total = getCount(connection, configs, attributes, request);
                 if (total > 0) {
@@ -332,7 +327,7 @@ final class DbConfigRepository implements ConfigRepository {
         Config[] inserted = new Config[0];
         if (configs.length > 0) {
             inserted = new Config[configs.length];
-            final String configsSql = String.format(String.format(SQL.INSERT.CONFIGS, sqlUtils.mapping.get(CONFIGS_TABLE)));
+            final String configsSql = sqlUtils.insert.configs();
             try (final PreparedStatement statement =
                          connection.prepareStatement(configsSql, Statement.RETURN_GENERATED_KEYS)) {
                 for (final Config config : configs) {
@@ -350,8 +345,8 @@ final class DbConfigRepository implements ConfigRepository {
                             // Create config attributes
                             configs[i].getAttributes().ifPresent(a -> {
                                 try {
-                                    final String attributesSql = String.format(SQL.INSERT.CONFIG_ATTRIBUTES,
-                                            sqlUtils.mapping.get(CONFIG_ATTRIBUTES_TABLE));
+                                    final String attributesSql =
+                                            sqlUtils.insert.configAttributes(sqlUtils.mapping.get(CONFIG_ATTRIBUTES_TABLE));
                                     execute(connection, attributesSql, configId, a, INSERT_ATTRIBUTES_ERROR_MSG);
                                 } catch (final SQLException e) {
                                     exceptions.add(e);
@@ -423,7 +418,7 @@ final class DbConfigRepository implements ConfigRepository {
     private Property[] insert(final Connection connection, final long id, final Property... properties)
             throws SQLException {
         if (properties.length > 0) {
-            final String sql = String.format(SQL.INSERT.PROPERTIES, sqlUtils.mapping.get(PROPERTIES_TABLE));
+            final String sql = sqlUtils.insert.properties();
             try (final PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                 for (final Property property : properties) {
                     JDBCUtils.setBatch(statement, id, property);
@@ -439,7 +434,7 @@ final class DbConfigRepository implements ConfigRepository {
     private Property[] insert(final Connection connection, final SimpleEntry<Long, Long> confPropIds,
                               final Property... properties) throws SQLException {
         if (properties.length > 0) {
-            final String sql = String.format(SQL.INSERT.SUB_PROPERTIES, sqlUtils.mapping.get(PROPERTIES_TABLE));
+            final String sql = sqlUtils.insert.subProperties();
             try (final PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                 for (final Property property : properties) {
                     JDBCUtils.setBatch(statement, confPropIds, property);
@@ -463,8 +458,7 @@ final class DbConfigRepository implements ConfigRepository {
                     // Create property attributes
                     properties[i].getAttributes().ifPresent(a -> {
                         try {
-                            final String sql = String.format(SQL.INSERT.PROPERTY_ATTRIBUTES,
-                                    sqlUtils.mapping.get(PROPERTY_ATTRIBUTES_TABLE));
+                            final String sql = sqlUtils.insert.propertyAttributes(sqlUtils.mapping.get(PROPERTY_ATTRIBUTES_TABLE));
                             execute(connection, sql, propertyId, a, INSERT_ATTRIBUTES_ERROR_MSG);
                         } catch (final SQLException e) {
                             exceptions.add(e);
@@ -492,7 +486,7 @@ final class DbConfigRepository implements ConfigRepository {
         Config[] updated = new Config[0];
         if (configs.length > 0) {
             updated = new Config[configs.length];
-            final String sql = String.format(SQL.UPDATE.CONFIGS, sqlUtils.mapping.get(CONFIGS_TABLE));
+            final String sql = sqlUtils.update.configs();
             final Map<Long, SimpleEntry<Integer, Long>> entries = getVerUpdEntries(connection, configs);
             try (final PreparedStatement statement = connection.prepareStatement(sql)) {
                 final Collection<Throwable> exceptions = new LinkedList<>();
@@ -538,25 +532,25 @@ final class DbConfigRepository implements ConfigRepository {
             final Map<String, String> toDelete = new HashMap<>();
             final Map<String, String> existed = new HashMap<>();
             if (TableId.CONFIG.equals(tableId)) {
-                existed.putAll(getAttributes(connection, String.format(SQL.SELECT.CONFIG_ATTRIBUTES, table), id));
+                existed.putAll(getAttributes(connection, sqlUtils.select.configAttributes(table), id));
             } else if (TableId.PROPERTY.equals(tableId)) {
-                existed.putAll(getAttributes(connection, String.format(SQL.SELECT.PROPERTY_ATTRIBUTES, table), id));
+                existed.putAll(getAttributes(connection, sqlUtils.select.propertyAttributes(table), id));
             }
 
             update(existed, attributes, toDelete, toUpdate);
             update(attributes, existed, toInsert, toUpdate);
 
             if (TableId.CONFIG.equals(tableId)) {
-                execute(connection, String.format(SQL.INSERT.CONFIG_ATTRIBUTES, table), id, toInsert,
+                execute(connection, sqlUtils.insert.configAttributes(table), id, toInsert,
                         UPDATE_ATTRIBUTES_ERROR_MSG);
-                execute(connection, String.format(SQL.UPDATE.CONFIG_ATTRIBUTE, table), id, toUpdate);
-                execute(connection, String.format(SQL.DELETE.CONFIG_ATTRIBUTE, table), id, toDelete,
+                execute(connection, sqlUtils.update.configAttributes(table), id, toUpdate);
+                execute(connection, sqlUtils.delete.configAttribute(table), id, toDelete,
                         UPDATE_ATTRIBUTES_ERROR_MSG);
             } else if (TableId.PROPERTY.equals(tableId)) {
-                execute(connection, String.format(SQL.INSERT.PROPERTY_ATTRIBUTES, table), id, toInsert,
+                execute(connection, sqlUtils.insert.propertyAttributes(table), id, toInsert,
                         UPDATE_ATTRIBUTES_ERROR_MSG);
-                execute(connection, String.format(SQL.UPDATE.PROPERTY_ATTRIBUTE, table), id, toUpdate);
-                execute(connection, String.format(SQL.DELETE.PROPERTY_ATTRIBUTE, table), id, toDelete,
+                execute(connection, sqlUtils.update.propertyAttributes(table), id, toUpdate);
+                execute(connection, sqlUtils.delete.propertyAttribute(table), id, toDelete,
                         UPDATE_ATTRIBUTES_ERROR_MSG);
             }
         } else {
@@ -586,11 +580,11 @@ final class DbConfigRepository implements ConfigRepository {
                               final Property[] properties) throws SQLException {
         if (properties.length > 0) {
             final Map<Long, Long> idUpdated =
-                    getIdUpdated(connection, String.format(SQL.SELECT.PROPERTY_ID_UPDATED, table), id);
+                    getIdUpdated(connection, sqlUtils.select.propertyIdUpdated(table), id);
             final Collection<Property> toUpdate = getToUpdate(connection, id, 0, idUpdated, properties);
             // Delete old properties
             for (final long propertyId : idUpdated.keySet()) {
-                delete(connection, String.format(SQL.DELETE.PROPERTY, table), propertyId);
+                delete(connection, sqlUtils.delete.property(table), propertyId);
             }
             // Update properties
             if (toUpdate.size() > 0) {
@@ -599,7 +593,7 @@ final class DbConfigRepository implements ConfigRepository {
             // Insert properties
             return insert(connection, id, 0, properties);
         } else {
-            delete(connection, String.format(SQL.DELETE.PROPERTIES, table), id);
+            delete(connection, sqlUtils.delete.properties(table), id);
         }
 
         return properties;
@@ -643,7 +637,7 @@ final class DbConfigRepository implements ConfigRepository {
     private void update(final Connection connection, final String table, final Property[] properties)
             throws SQLException {
         if (properties.length > 0) {
-            final String sql = String.format(SQL.UPDATE.PROPERTIES, table);
+            final String sql = sqlUtils.update.properties(table);
             try (final PreparedStatement statement = connection.prepareStatement(sql)) {
                 final Collection<Throwable> exceptions = new LinkedList<>();
                 for (final Property property : properties) {
@@ -699,8 +693,8 @@ final class DbConfigRepository implements ConfigRepository {
     private int getCount(final Connection connection, final String configs, final String attributes,
                          final PageRequest request) throws SQLException {
         int count = 0;
-        final String sql = String.format(SQL.SELECT.COUNT_CONFIG_NAMES_BY_NAME, configs, attributes) +
-                JDBCUtils.getSubSql(request) + ";";
+        final String sql = sqlUtils.select.countConfigNamesByName(configs, attributes) +
+                SQLUtils.getSubSql(request, sqlUtils.select.dialect) + ";";
         try (final PreparedStatement statement = connection.prepareStatement(sql)) {
             JDBCUtils.set(statement, (Integer) sqlUtils.settings.get(FETCH_SIZE), request);
 
@@ -718,7 +712,7 @@ final class DbConfigRepository implements ConfigRepository {
             throws SQLException {
         final Map<Long, SimpleEntry<Integer, Long>> entries = new HashMap<>();
         final StringBuilder sql = new StringBuilder();
-        sql.append(String.format(SQL.SELECT.CONFIG_VERSION_UPDATED, sqlUtils.mapping.get(CONFIGS_TABLE)));
+        sql.append(sqlUtils.select.configVersionUpdated());
         for (int i = 0; i < configs.length; i++) {
             if (i > 0) {
                 sql.append(" OR ");
@@ -752,7 +746,7 @@ final class DbConfigRepository implements ConfigRepository {
         if (names.length > 0) {
             try {
                 final String configs = sqlUtils.mapping.get(CONFIGS_TABLE);
-                final String sql = String.format(SQL.DELETE.CONFIGS, configs);
+                final String sql = sqlUtils.delete.configs(configs);
                 final String subSql = String.format(" OR %s.NAME = ?", configs);
                 try (final PreparedStatement statement =
                              connection.prepareStatement(JDBCUtils.concatSql(sql, subSql, names))) {
@@ -781,69 +775,389 @@ final class DbConfigRepository implements ConfigRepository {
     }
 
     private final static class SQLUtils {
-        private final String dialect;
         private final Map<String, String> mapping;
         private final Map<String, Object> settings;
-        private String sql;
+        private final Create create;
+        private final Select select;
+        private final Insert insert;
+        private final Update update;
+        private final Delete delete;
 
         public SQLUtils(final Map<String, String> mapping, final Map<String, Object> settings) {
             this.mapping = mapping;
             this.settings = settings;
-            this.dialect = (String) settings.get(DB_DIALECT);
+
+            this.create = new Create(mapping, settings);
+            this.select = new Select(mapping, settings);
+            this.insert = new Insert(mapping, settings);
+            this.update = new Update(mapping, settings);
+            this.delete = new Delete(settings);
         }
 
-        private String createConfigs() {
-            final String configsTable = mapping.get(CONFIGS_TABLE);
-            switch (dialect) {
-                case POSTGRE:
+        private static String getSubSql(final PageRequest request, final String dialect) {
+            final StringBuilder string = new StringBuilder();
+            final int size = request.getAttributes().size();
+            for (int i = 0; i < size; i++) {
+                string.append(i == 0 ? " AND" : " OR");
+                if (POSTGRE.equals(dialect)) {
+                    string.append(" (CA.KEY LIKE ? AND CA.VALUE LIKE ?)");
+                } else {
+                    string.append(" (CA.`KEY` LIKE ? AND CA.`VALUE` LIKE ?)");
+                }
+            }
+
+            return string.toString();
+        }
+
+        private static final class Create {
+            private final String dialect;
+            private final Map<String, String> mapping;
+
+            public Create(final Map<String, String> mapping, final Map<String, Object> settings) {
+                this.dialect = (String) settings.get(DB_DIALECT);
+                this.mapping = mapping;
+            }
+
+            private String configs() {
+                String sql;
+                final String configsTable = mapping.get(CONFIGS_TABLE);
+                if (POSTGRE.equals(dialect)) {
                     sql = String.format(PostgreSQL.CREATE_TABLE.CONFIGS, configsTable);
-                    break;
-                default:
+                } else {
                     sql = String.format(SQL.CREATE_TABLE.CONFIGS, configsTable);
+                }
+
+                return sql;
             }
 
-            return sql;
-        }
-
-        private String createConfigAttributes() {
-            final String configsTable = mapping.get(CONFIGS_TABLE);
-            final String configAttributeTable = mapping.get(CONFIG_ATTRIBUTES_TABLE);
-            switch (dialect) {
-                case POSTGRE:
+            private String configAttributes() {
+                String sql;
+                final String configsTable = mapping.get(CONFIGS_TABLE);
+                final String configAttributeTable = mapping.get(CONFIG_ATTRIBUTES_TABLE);
+                if (POSTGRE.equals(dialect)) {
                     sql = String.format(PostgreSQL.CREATE_TABLE.CONFIG_ATTRIBUTES, configsTable, configAttributeTable);
-                    break;
-                default:
+                } else {
                     sql = String.format(SQL.CREATE_TABLE.CONFIG_ATTRIBUTES, configsTable, configAttributeTable);
+                }
+
+                return sql;
             }
 
-            return sql;
-        }
-
-        private String createProperties() {
-            switch (dialect) {
-                case POSTGRE:
+            private String properties() {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
                     sql = String.format(PostgreSQL.CREATE_TABLE.PROPERTIES,
                             mapping.get(PROPERTIES_TABLE), mapping.get(CONFIGS_TABLE));
-                    break;
-                default:
+                } else {
                     sql = String.format(SQL.CREATE_TABLE.PROPERTIES,
                             mapping.get(PROPERTIES_TABLE), mapping.get(CONFIGS_TABLE));
+                }
+
+                return sql;
             }
 
-            return sql;
-        }
-
-        private String createPropertiesAttributes() {
-            switch (dialect) {
-                case POSTGRE:
+            private String propertiesAttributes() {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
                     sql = String.format(PostgreSQL.CREATE_TABLE.PROPERTY_ATTRIBUTES,
                             mapping.get(PROPERTY_ATTRIBUTES_TABLE), mapping.get(PROPERTIES_TABLE));
-                    break;
-                default:
+                } else {
                     sql = String.format(SQL.CREATE_TABLE.PROPERTY_ATTRIBUTES,
                             mapping.get(PROPERTY_ATTRIBUTES_TABLE), mapping.get(PROPERTIES_TABLE));
+                }
+
+                return sql;
             }
-            return sql;
+        }
+
+        private static final class Select {
+            private final String dialect;
+            private final Map<String, String> mapping;
+
+            public Select(final Map<String, String> mapping, final Map<String, Object> settings) {
+                this.dialect = (String) settings.get(DB_DIALECT);
+                this.mapping = mapping;
+            }
+
+            private String configs() {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.SELECT.CONFIGS, mapping.get(CONFIGS_TABLE),
+                            mapping.get(CONFIG_ATTRIBUTES_TABLE), mapping.get(PROPERTIES_TABLE),
+                            mapping.get(PROPERTY_ATTRIBUTES_TABLE));
+                } else {
+                    sql = String.format(SQL.SELECT.CONFIGS, mapping.get(CONFIGS_TABLE),
+                            mapping.get(CONFIG_ATTRIBUTES_TABLE), mapping.get(PROPERTIES_TABLE),
+                            mapping.get(PROPERTY_ATTRIBUTES_TABLE));
+                }
+
+                return sql;
+            }
+
+            private String configNames() {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.SELECT.CONFIG_NAMES, mapping.get(CONFIGS_TABLE));
+                } else {
+                    sql = String.format(SQL.SELECT.CONFIG_NAMES, mapping.get(CONFIGS_TABLE));
+                }
+
+                return sql;
+            }
+
+            private String configNamesByName(final PageRequest request) {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.SELECT.CONFIG_NAMES_BY_NAME, mapping.get(CONFIGS_TABLE),
+                            mapping.get(CONFIG_ATTRIBUTES_TABLE)) +
+                            getSubSql(request, dialect) + " ORDER BY C.NAME " + (request.isAscending() ? "ASC" : "DESC") +
+                            " LIMIT " + request.getSize() + " OFFSET " + request.getPage() * request.getSize() + ";";
+                } else {
+                    sql = String.format(SQL.SELECT.CONFIG_NAMES_BY_NAME, mapping.get(CONFIGS_TABLE),
+                            mapping.get(CONFIG_ATTRIBUTES_TABLE)) +
+                            getSubSql(request, dialect) + " ORDER BY C.NAME " + (request.isAscending() ? "ASC" : "DESC") +
+                            " LIMIT " + request.getSize() + " OFFSET " + request.getPage() * request.getSize() + ";";
+                }
+
+                return sql;
+            }
+
+            private String configAttributes(final String table) {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.SELECT.CONFIG_ATTRIBUTES, table);
+                } else {
+                    sql = String.format(SQL.SELECT.CONFIG_ATTRIBUTES, table);
+                }
+
+                return sql;
+            }
+
+            private String propertyAttributes(final String table) {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.SELECT.PROPERTY_ATTRIBUTES, table);
+                } else {
+                    sql = String.format(SQL.SELECT.PROPERTY_ATTRIBUTES, table);
+                }
+
+                return sql;
+            }
+
+            private String propertyIdUpdated(final String table) {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.SELECT.PROPERTY_ID_UPDATED, table);
+                } else {
+                    sql = String.format(SQL.SELECT.PROPERTY_ID_UPDATED, table);
+                }
+
+                return sql;
+            }
+
+            private String countConfigNamesByName(final String configs, final String attributes) {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.SELECT.COUNT_CONFIG_NAMES_BY_NAME, configs, attributes);
+                } else {
+                    sql = String.format(SQL.SELECT.COUNT_CONFIG_NAMES_BY_NAME, configs, attributes);
+                }
+
+                return sql;
+            }
+
+            private String configVersionUpdated() {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.SELECT.CONFIG_VERSION_UPDATED, mapping.get(CONFIGS_TABLE));
+                } else {
+                    sql = String.format(SQL.SELECT.CONFIG_VERSION_UPDATED, mapping.get(CONFIGS_TABLE));
+                }
+
+                return sql;
+            }
+        }
+
+        private static final class Insert {
+            private final String dialect;
+            private final Map<String, String> mapping;
+
+            public Insert(final Map<String, String> mapping, final Map<String, Object> settings) {
+                this.dialect = (String) settings.get(DB_DIALECT);
+                this.mapping = mapping;
+            }
+
+            private String configs() {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(String.format(PostgreSQL.INSERT.CONFIGS, mapping.get(CONFIGS_TABLE)));
+                } else {
+                    sql = String.format(String.format(SQL.INSERT.CONFIGS, mapping.get(CONFIGS_TABLE)));
+                }
+
+                return sql;
+            }
+
+            private String properties() {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.INSERT.PROPERTIES, mapping.get(PROPERTIES_TABLE));
+                } else {
+                    sql = String.format(SQL.INSERT.PROPERTIES, mapping.get(PROPERTIES_TABLE));
+                }
+
+                return sql;
+            }
+
+            private String subProperties() {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.INSERT.SUB_PROPERTIES, mapping.get(PROPERTIES_TABLE));
+                } else {
+                    sql = String.format(SQL.INSERT.SUB_PROPERTIES, mapping.get(PROPERTIES_TABLE));
+                }
+
+                return sql;
+            }
+
+            private String configAttributes(final String table) {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.INSERT.CONFIG_ATTRIBUTES, table);
+                } else {
+                    sql = String.format(SQL.INSERT.CONFIG_ATTRIBUTES, table);
+                }
+
+                return sql;
+            }
+
+            private String propertyAttributes(final String table) {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.INSERT.PROPERTY_ATTRIBUTES, table);
+                } else {
+                    sql = String.format(SQL.INSERT.PROPERTY_ATTRIBUTES, table);
+                }
+
+                return sql;
+            }
+        }
+
+        private static final class Update {
+            private final String dialect;
+            private final Map<String, String> mapping;
+
+            public Update(final Map<String, String> mapping, final Map<String, Object> settings) {
+                this.dialect = (String) settings.get(DB_DIALECT);
+                this.mapping = mapping;
+            }
+
+            private String configs() {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.UPDATE.CONFIGS, mapping.get(CONFIGS_TABLE));
+                } else {
+                    sql = String.format(SQL.UPDATE.CONFIGS, mapping.get(CONFIGS_TABLE));
+                }
+
+                return sql;
+            }
+
+            private String properties(final String table) {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.UPDATE.PROPERTIES, table);
+                } else {
+                    sql = String.format(SQL.UPDATE.PROPERTIES, table);
+                }
+
+                return sql;
+            }
+
+            private String configAttributes(final String table) {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.UPDATE.CONFIG_ATTRIBUTE, table);
+                } else {
+                    sql = String.format(SQL.UPDATE.CONFIG_ATTRIBUTE, table);
+                }
+
+                return sql;
+            }
+
+            private String propertyAttributes(final String table) {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.UPDATE.PROPERTY_ATTRIBUTE, table);
+                } else {
+                    sql = String.format(SQL.UPDATE.PROPERTY_ATTRIBUTE, table);
+                }
+
+                return sql;
+            }
+        }
+
+        private static final class Delete {
+            private final String dialect;
+
+            public Delete(final Map<String, Object> settings) {
+                this.dialect = (String) settings.get(DB_DIALECT);
+            }
+
+            private String configs(final String configs) {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.DELETE.CONFIGS, configs);
+                } else {
+                    sql = String.format(SQL.DELETE.CONFIGS, configs);
+                }
+
+                return sql;
+            }
+
+            private String configAttribute(final String table) {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.DELETE.CONFIG_ATTRIBUTE, table);
+                } else {
+                    sql = String.format(SQL.DELETE.CONFIG_ATTRIBUTE, table);
+                }
+
+                return sql;
+            }
+
+            private String propertyAttribute(final String table) {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.DELETE.PROPERTY_ATTRIBUTE, table);
+                } else {
+                    sql = String.format(SQL.DELETE.PROPERTY_ATTRIBUTE, table);
+                }
+
+                return sql;
+            }
+
+            private String property(final String table) {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.DELETE.PROPERTY, table);
+                } else {
+                    sql = String.format(SQL.DELETE.PROPERTY, table);
+                }
+
+                return sql;
+            }
+
+            private String properties(final String table) {
+                String sql;
+                if (POSTGRE.equals(dialect)) {
+                    sql = String.format(PostgreSQL.DELETE.PROPERTIES, table);
+                } else {
+                    sql = String.format(SQL.DELETE.PROPERTIES, table);
+                }
+
+                return sql;
+            }
         }
     }
 
@@ -865,10 +1179,10 @@ final class DbConfigRepository implements ConfigRepository {
                 throws SQLException {
             try {
                 try (final Statement statement = connection.createStatement()) {
-                    statement.executeUpdate(sqlUtils.createConfigs());
-                    statement.executeUpdate(sqlUtils.createConfigAttributes());
-                    statement.executeUpdate(sqlUtils.createProperties());
-                    statement.executeUpdate(sqlUtils.createPropertiesAttributes());
+                    statement.executeUpdate(sqlUtils.create.configs());
+                    statement.executeUpdate(sqlUtils.create.configAttributes());
+                    statement.executeUpdate(sqlUtils.create.properties());
+                    statement.executeUpdate(sqlUtils.create.propertiesAttributes());
                     connection.commit();
                 }
             } catch (final SQLException e) {
@@ -915,17 +1229,6 @@ final class DbConfigRepository implements ConfigRepository {
             }
 
             string.append(";");
-            return string.toString();
-        }
-
-        private static String getSubSql(final PageRequest request) {
-            final StringBuilder string = new StringBuilder();
-            final int size = request.getAttributes().size();
-            for (int i = 0; i < size; i++) {
-                string.append(i == 0 ? " AND" : " OR");
-                string.append(" (CA.KEY LIKE ? AND CA.VALUE LIKE ?)");
-            }
-
             return string.toString();
         }
 
