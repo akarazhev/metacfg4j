@@ -13,10 +13,11 @@ This is a high-level abstraction based on the low-level API. It has been written
 
  &#8658; JSON simple (https://cliftonlabs.github.io/json-simple/)<br/>
 
-This library has the implementation of a simple web-client/server, repositories, services, controllers. The web-server provides implementation of REST methods.
+This library has the implementation of a simple web-client/server, repositories, services, controllers. The web-server
+provides implementation of REST methods.
 Data is persisted into a DB, by using any configured datasource.
 
-The size of the library is ~120 Kb.
+The size of the library is ~200 Kb.
   
 ## Configuration and Usage
 
