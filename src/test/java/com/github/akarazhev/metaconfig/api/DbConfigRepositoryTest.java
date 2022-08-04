@@ -2,7 +2,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -289,7 +289,7 @@ final class DbConfigRepositoryTest extends UnitTest {
         // Save a large config
         System.out.println("Start saveAndFlush");
         long time = System.currentTimeMillis();
-        Optional<Config> config = configRepository.saveAndFlush(Stream.of(getLargeConfig(100))).findFirst();
+        Optional<Config> config = configRepository.saveAndFlush(Stream.of(getLargeConfig())).findFirst();
         System.out.println("End saveAndFlush in " + (System.currentTimeMillis() - time) + " ms.");
         assertTrue(config.isPresent());
         // Read a large config
@@ -306,9 +306,9 @@ final class DbConfigRepositoryTest extends UnitTest {
         // Save a large config
         System.out.println("Start saveAndFlush");
         long time = System.currentTimeMillis();
-        final Optional<Config> largeConfig = configRepository.saveAndFlush(Stream.of(getLargeConfig(100))).findFirst();
+        final Optional<Config> largeConfig = configRepository.saveAndFlush(Stream.of(getLargeConfig())).findFirst();
         System.out.println("End saveAndFlush in " + (System.currentTimeMillis() - time) + " ms.");
-        sleep(1);
+        sleep();
         // Check test results
         assertTrue(largeConfig.isPresent());
         // Update a large config
@@ -342,7 +342,7 @@ final class DbConfigRepositoryTest extends UnitTest {
                 attribute("key_2", "value_2").
                 attribute("key_3", "value_3").build();
         final Optional<Config> newConfig = configRepository.saveAndFlush(Stream.of(config)).findFirst();
-        sleep(1);
+        sleep();
         // Check test results
         assertTrue(newConfig.isPresent());
         assertTrue(newConfig.get().getId() > 0);
@@ -375,7 +375,7 @@ final class DbConfigRepositoryTest extends UnitTest {
                 attribute("key_2", "value_2").
                 attribute("key_3", "value_3").build();
         final Optional<Config> newConfig = configRepository.saveAndFlush(Stream.of(config)).findFirst();
-        sleep(1);
+        sleep();
         // Check test results
         assertTrue(newConfig.isPresent());
         assertTrue(newConfig.get().getId() > 0);
@@ -498,7 +498,7 @@ final class DbConfigRepositoryTest extends UnitTest {
         final Optional<Config> newConfig = configRepository.saveAndFlush(
                 Stream.of(new Config.Builder(NEW_CONFIG, Collections.singletonList(firstProperty)).build())
         ).findFirst();
-        sleep(1);
+        sleep();
         //  Check test results
         assertTrue(newConfig.isPresent());
         assertTrue(newConfig.get().getId() > 0);
@@ -525,7 +525,7 @@ final class DbConfigRepositoryTest extends UnitTest {
         final Optional<Config> newConfig = configRepository.saveAndFlush(
                 Stream.of(new Config.Builder(NEW_CONFIG, Collections.singletonList(firstProperty)).build())
         ).findFirst();
-        sleep(1);
+        sleep();
         //  Check test results
         assertTrue(newConfig.isPresent());
         assertTrue(newConfig.get().getId() > 0);
@@ -551,7 +551,7 @@ final class DbConfigRepositoryTest extends UnitTest {
         final Optional<Config> newConfig = configRepository.saveAndFlush(
                 Stream.of(new Config.Builder(NEW_CONFIG, Collections.singletonList(firstProperty)).build())
         ).findFirst();
-        sleep(1);
+        sleep();
         //  Check test results
         assertTrue(newConfig.isPresent());
         assertTrue(newConfig.get().getId() > 0);
