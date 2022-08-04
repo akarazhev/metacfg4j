@@ -11,7 +11,7 @@ may extend an existed implementation to provide such software solutions as: vari
 
 This is a high-level abstraction based on the low-level API. It has been written without frameworks and delivered with one dependency:
 
- &#8658; JSON simple (https://cliftonlabs.github.io/json-simple/)<br/>
+&#8658; JSON simple (https://cliftonlabs.github.io/json-simple/)<br/>
 
 This library has the implementation of a simple web-client/server, repositories, services, controllers. The web-server
 provides implementation of REST methods.
@@ -307,8 +307,8 @@ Config new a property:
 
 ## Build Requirements
 
- &#8658; Java 8+ <br/>
- &#8658; Maven 3.6+ <br/>
+&#8658; Java 8+ <br/>
+&#8658; Maven 3.6+ <br/>
  
 ## Contribution
  
