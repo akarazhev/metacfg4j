@@ -27,8 +27,8 @@ Add a maven dependency into your project:
 ```xml
 <dependency>
     <groupId>com.github.akarazhev</groupId>
- <artifactId>metacfg4j</artifactId>
- <version>2.2</version>
+    <artifactId>metacfg4j</artifactId>
+    <version>2.3</version>
 </dependency>
 ```
 Instantiate the meta configuration class in your project with the default configuration:
