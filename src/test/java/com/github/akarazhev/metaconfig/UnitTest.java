@@ -2,7 +2,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -78,11 +78,11 @@ public class UnitTest {
         return properties;
     }
 
-    protected Config getLargeConfig(final int size) {
-        final Config.Builder builder = new Config.Builder(NEW_CONFIG, getProperties(0, size)).
+    protected Config getLargeConfig() {
+        final Config.Builder builder = new Config.Builder(NEW_CONFIG, getProperties(0, 100)).
                 description("Description").attribute("key_1", "value_1");
-        for (int i = 0; i < size; i++) {
-            builder.properties(new String[]{"Property-" + i}, getProperties(i, size));
+        for (int i = 0; i < 100; i++) {
+            builder.properties(new String[]{"Property-" + i}, getProperties(i, 100));
         }
 
         return builder.build();
@@ -174,9 +174,9 @@ public class UnitTest {
         constructor.setAccessible(false);
     }
 
-    protected void sleep(final long millis) {
+    protected void sleep() {
         try {
-            Thread.sleep(millis);
+            Thread.sleep(1);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

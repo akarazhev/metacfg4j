@@ -1,7 +1,7 @@
 # metacfg4j
 
 [![Build Status](https://travis-ci.com/akarazhev/metacfg4j.svg?branch=master)](https://travis-ci.com/akarazhev/metacfg4j)
-[![codecov.io](http://codecov.io/github/akarazhev/metacfg4j/coverage.svg?branch=master)](http://codecov.io/github/akarazhev/metacfg4j?branch=master)
+[![codecov.io](https://codecov.io/github/akarazhev/metacfg4j/coverage.svg?branch=master)](https://codecov.io/github/akarazhev/metacfg4j?branch=master)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.akarazhev/metacfg4j/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.akarazhev/metacfg4j)
 
 The `metacfg4j` project (that stands for the `meta configuration for java`) is a library that can be used as the solution by creating a business abstraction or 
@@ -9,8 +9,7 @@ may extend an existed implementation to provide such software solutions as: vari
 
 ## Architecture
 
-This is a high-level abstraction based on the low-level API. It has been written without frameworks and delivered with
-one dependency:
+This is a high-level abstraction based on the low-level API. It has been written without frameworks and delivered with one dependency:
 
 &#8658; JSON simple (https://cliftonlabs.github.io/json-simple/)<br/>
 
@@ -18,20 +17,18 @@ This library has the implementation of a simple web-client/server, repositories,
 provides implementation of REST methods.
 Data is persisted into a DB, by using any configured datasource.
 
-The size of the library is ~120 Kb.
+The size of the library is ~200 Kb.
   
 ## Configuration and Usage
 
 ### Basic Configuration
 
 Add a maven dependency into your project:
-
 ```xml
-
 <dependency>
- <groupId>com.github.akarazhev</groupId>
- <artifactId>metacfg4j</artifactId>
- <version>2.2</version>
+    <groupId>com.github.akarazhev</groupId>
+    <artifactId>metacfg4j</artifactId>
+    <version>2.3</version>
 </dependency>
 ```
 Instantiate the meta configuration class in your project with the default configuration:
@@ -77,8 +74,8 @@ final Config webServer=new Config.Builder(Server.Settings.CONFIG_NAME,
         new Property.Builder(Server.Settings.KEY_STORE_FILE,"./data/metacfg4j.keystore").build(),
         new Property.Builder(Server.Settings.ALIAS,"alias").build(),
         new Property.Builder(Server.Settings.STORE_PASSWORD,"password").build(),
-        new Property.Builder(Server.Settings.KEY_PASSWORD,"password").build())
-        ).build();
+        new Property.Builder(Server.Settings.KEY_PASSWORD,"password").build()))
+        .build();
         // Create the meta configuration
         return new MetaConfig.Builder().
         webServer(webServer).
@@ -86,25 +83,24 @@ final Config webServer=new Config.Builder(Server.Settings.CONFIG_NAME,
         dataMapping(dataMapping).
         dbSettings(settings).
         build();
-        }
+}
 ```
 
 It's possible to configure the meta configuration as a client:
-
 ```java
-public MetaConfig metaConfig(){
-// Create the web client config
-final Config webClient=new Config.Builder(WebClient.Settings.CONFIG_NAME,
+public MetaConfig metaConfig() {
+    // Create the web client config
+    final Config webClient = new Config.Builder(WebClient.Settings.CONFIG_NAME,
         Arrays.asList(
-        new Property.Builder(WebClient.Settings.URL,"https://localhost:8000/api/metacfg").build(),
-        new Property.Builder(Constants.Endpoints.ACCEPT_CONFIG_ENDPOINT,"accept_config").build(),
-        new Property.Builder(Constants.Endpoints.CONFIG_NAMES_ENDPOINT,"config_names").build(),
-        new Property.Builder(Constants.Endpoints.CONFIG_ENDPOINT,"config").build(),
-        new Property.Builder(WebClient.Settings.ACCEPT_ALL_HOSTS,true).build()))
+                new Property.Builder(WebClient.Settings.URL, "https://localhost:8000/api/metacfg").build(),
+                new Property.Builder(Constants.Endpoints.ACCEPT_CONFIG_ENDPOINT, "accept_config").build(),
+                new Property.Builder(Constants.Endpoints.CONFIG_NAMES_ENDPOINT, "config_names").build(),
+                new Property.Builder(Constants.Endpoints.CONFIG_ENDPOINT, "config").build(),
+                new Property.Builder(WebClient.Settings.ACCEPT_ALL_HOSTS, true).build()))
         .build();
-        // Create the meta configuration
-        return new MetaConfig.Builder().webClient(webClient).build();
-        }
+    // Create the meta configuration
+    return new MetaConfig.Builder().webClient(webClient).build();
+}
 ```
 NOTE: you need to call the close method at the end of processing.
 
