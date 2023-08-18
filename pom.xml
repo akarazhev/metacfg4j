@@ -25,6 +25,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Plugins -->
         <maven.compiler.plugin>3.8.1</maven.compiler.plugin>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -35,12 +36,13 @@
         <maven.javadoc.plugin>3.4.0</maven.javadoc.plugin>
         <maven.source.plugin>3.2.1</maven.source.plugin>
         <jacoco.maven.plugin>0.8.8</jacoco.maven.plugin>
+        <!-- Dependencies -->
         <junit.version>5.10.0</junit.version>
         <h2db.version>2.2.220</h2db.version>
-        <testcontainers.version>1.17.6</testcontainers.version>
+        <testcontainers.version>1.18.3</testcontainers.version>
         <json.simple.version>4.0.1</json.simple.version>
         <postgresql.version>42.6.0</postgresql.version>
-        <slf4j.version>1.7.36</slf4j.version>
+        <slf4j.version>2.0.7</slf4j.version>
     </properties>
 
     <licenses>
