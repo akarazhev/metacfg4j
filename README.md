@@ -51,7 +51,7 @@ You can instantiate the meta configuration with the custom configuration:
 
 ```java
 public MetaConfig metaConfig(){
-    // Create the custom data mapping
+// Create the custom data mapping
     final Map<String, String> dataMapping = new HashMap<>();
     dataMapping.put(Constants.Mapping.CONFIGS_TABLE, "CONFIGS");
     dataMapping.put(Constants.Mapping.CONFIG_ATTRIBUTES_TABLE, "CONFIG_ATTRIBUTES");
@@ -81,6 +81,7 @@ public MetaConfig metaConfig(){
 ```
 
 It's possible to configure the meta configuration as a client:
+
 ```java
 public MetaConfig metaConfig(){
 // Create the web client config
