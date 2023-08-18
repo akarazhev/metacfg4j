@@ -52,7 +52,7 @@ You can instantiate the meta configuration with the custom configuration:
 ```java
 public MetaConfig metaConfig(){
 // Create the custom data mapping
-    final Map<String, String> dataMapping = new HashMap<>();
+final Map<String, String> dataMapping=new HashMap<>();
     dataMapping.put(Constants.Mapping.CONFIGS_TABLE, "CONFIGS");
     dataMapping.put(Constants.Mapping.CONFIG_ATTRIBUTES_TABLE, "CONFIG_ATTRIBUTES");
     dataMapping.put(Constants.Mapping.PROPERTIES_TABLE, "PROPERTIES");
