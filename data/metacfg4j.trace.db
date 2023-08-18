@@ -1,0 +1,36 @@
+2023-08-18 16:01:13 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "CONFIGS" not found (this database is empty); SQL statement:
+SELECT C.NAME FROM CONFIGS AS C ORDER BY C.NAME; [42104-220]
+2023-08-18 16:01:13 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "CONFIG_ATTRIBUTES" not found; SQL statement:
+SELECT CA.`KEY`, CA.`VALUE` FROM CONFIG_ATTRIBUTES AS CA WHERE CA.CONFIG_ID = ?; [42102-220]
+2023-08-18 16:01:14 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "CONFIG_ATTRIBUTES" not found; SQL statement:
+SELECT CA.`KEY`, CA.`VALUE` FROM CONFIG_ATTRIBUTES AS CA WHERE CA.CONFIG_ID = ?; [42102-220]
+2023-08-18 16:01:14 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PROPERTY_ATTRIBUTES" not found; SQL statement:
+INSERT INTO PROPERTY_ATTRIBUTES (PROPERTY_ID, `KEY`, `VALUE`) VALUES (?, ?, ?); [42102-220]
+2023-08-18 16:01:14 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PROPERTY_ATTRIBUTES" not found; SQL statement:
+INSERT INTO PROPERTY_ATTRIBUTES (PROPERTY_ID, `KEY`, `VALUE`) VALUES (?, ?, ?); [42102-220]
+2023-08-18 16:01:14 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PROPERTY_ATTRIBUTES" not found; SQL statement:
+INSERT INTO PROPERTY_ATTRIBUTES (PROPERTY_ID, `KEY`, `VALUE`) VALUES (?, ?, ?); [42102-220]
+2023-08-18 16:01:14 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PROPERTY_ATTRIBUTES" not found; SQL statement:
+INSERT INTO PROPERTY_ATTRIBUTES (PROPERTY_ID, `KEY`, `VALUE`) VALUES (?, ?, ?); [42102-220]
+2023-08-18 16:01:14 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "CONFIGS" not found (this database is empty); SQL statement:
+INSERT INTO CONFIGS (NAME, DESCRIPTION, VERSION, UPDATED) VALUES (?, ?, ?, ?); [42104-220]
+2023-08-18 16:01:14 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "CONFIGS" not found (this database is empty); SQL statement:
+SELECT C.ID, C.NAME, C.DESCRIPTION, C.VERSION, C.UPDATED, CA.`KEY`, CA.`VALUE`, P.ID, P.PROPERTY_ID, P.NAME , P.CAPTION, P.DESCRIPTION, P.TYPE, P.`VALUE`, P.UPDATED, PA.`KEY`, PA.`VALUE` FROM CONFIGS AS C LEFT JOIN PROPERTIES AS P ON C.ID = P.CONFIG_ID LEFT JOIN CONFIG_ATTRIBUTES AS CA ON C.ID = CA.CONFIG_ID LEFT JOIN PROPERTY_ATTRIBUTES AS PA ON P.ID = PA.PROPERTY_ID WHERE C.NAME = ? OR C.NAME = ?; [42104-220]
+2023-08-18 16:01:14 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "CONFIGS" not found (this database is empty); SQL statement:
+SELECT COUNT(DISTINCT C.NAME) FROM CONFIGS AS C INNER JOIN CONFIG_ATTRIBUTES AS CA ON C.ID = CA.CONFIG_ID WHERE (C.NAME LIKE ?); [42104-220]
+2023-08-18 16:01:17 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "CONFIG_ATTRIBUTES" not found; SQL statement:
+INSERT INTO CONFIG_ATTRIBUTES (CONFIG_ID, `KEY`, `VALUE`) VALUES (?, ?, ?); [42102-220]
+2023-08-18 16:01:17 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "CONFIGS" not found (this database is empty); SQL statement:
+DELETE FROM CONFIGS WHERE CONFIGS.NAME = ?; [42104-220]
