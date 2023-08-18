@@ -50,7 +50,7 @@ NOTE: The web-server will not be started, since it requires the related configur
 You can instantiate the meta configuration with the custom configuration:
 
 ```java
-public MetaConfig metaConfig(){
+public MetaConfig metaConfig() {
     // Create the custom data mapping
     final Map<String, String> dataMapping = new HashMap<>();
     dataMapping.put(Constants.Mapping.CONFIGS_TABLE, "CONFIGS");
@@ -83,18 +83,18 @@ public MetaConfig metaConfig(){
 It's possible to configure the meta configuration as a client:
 
 ```java
-public MetaConfig metaConfig(){
-// Create the web client config
-final Config webClient=new Config.Builder(WebClient.Settings.CONFIG_NAME,
+public MetaConfig metaConfig() {
+    // Create the web client config
+    final Config webClient=new Config.Builder(WebClient.Settings.CONFIG_NAME,
         Arrays.asList(
-        new Property.Builder(WebClient.Settings.URL,"https://localhost:8000/api/metacfg").build(),
-        new Property.Builder(Constants.Endpoints.ACCEPT_CONFIG_ENDPOINT,"accept_config").build(),
-        new Property.Builder(Constants.Endpoints.CONFIG_NAMES_ENDPOINT,"config_names").build(),
-        new Property.Builder(Constants.Endpoints.CONFIG_ENDPOINT,"config").build(),
-        new Property.Builder(WebClient.Settings.ACCEPT_ALL_HOSTS,true).build())).build();
-        // Create the meta configuration
-        return new MetaConfig.Builder().webClient(webClient).build();
-        }
+            new Property.Builder(WebClient.Settings.URL, "https://localhost:8000/api/metacfg").build(),
+            new Property.Builder(Constants.Endpoints.ACCEPT_CONFIG_ENDPOINT, "accept_config").build(),
+            new Property.Builder(Constants.Endpoints.CONFIG_NAMES_ENDPOINT, "config_names").build(),
+            new Property.Builder(Constants.Endpoints.CONFIG_ENDPOINT, "config").build(),
+            new Property.Builder(WebClient.Settings.ACCEPT_ALL_HOSTS, true).build())).build();
+    // Create the meta configuration
+    return new MetaConfig.Builder().webClient(webClient).build();
+}
 ```
 NOTE: you need to call the close method at the end of processing.
 
