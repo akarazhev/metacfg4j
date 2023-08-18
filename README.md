@@ -81,6 +81,7 @@ public MetaConfig metaConfig(){
 ```
 
 It's possible to configure the meta configuration as a client:
+
 ```java
 public MetaConfig metaConfig(){
 // Create the web client config
