@@ -41,7 +41,7 @@
         <h2db.version>2.2.220</h2db.version>
         <testcontainers.version>1.18.3</testcontainers.version>
         <json.simple.version>4.0.1</json.simple.version>
-        <postgresql.version>42.6.0</postgresql.version>
+        <postgresql.version>42.7.2</postgresql.version>
         <slf4j.version>2.0.7</slf4j.version>
     </properties>
 
