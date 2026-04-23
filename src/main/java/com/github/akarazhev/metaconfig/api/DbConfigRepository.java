@@ -606,7 +606,7 @@ final class DbConfigRepository implements ConfigRepository {
         for (int i = 0; i < properties.length; i++) {
             if (properties[i].getId() > 0) {
                 final Long updated = idUpdated.get(properties[i].getId());
-                if (updated != null && properties[i].getUpdated() > updated) {
+                if (updated != null && properties[i].getUpdated() >= updated) {
                     toUpdate.add(properties[i]);
                 }
             } else {
