@@ -480,7 +480,7 @@ final class DbConfigRepositoryTest extends UnitTest {
         // Check test results
         assertTrue(firstConfig.isPresent());
         Config updatedConfig = new Config.Builder(firstConfig.get()).
-                updated(Clock.systemDefaultZone().millis()).
+                updated(firstConfig.get().getUpdated()).
                 properties(Collections.emptyList()).
                 build();
         configRepository.saveAndFlush(Stream.of(updatedConfig));

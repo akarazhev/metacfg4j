@@ -493,7 +493,7 @@ final class DbConfigRepository implements ConfigRepository {
                 for (int i = 0; i < configs.length; i++) {
                     final Config config = configs[i];
                     final SimpleEntry<Integer, Long> entry = entries.get(config.getId());
-                    if (config.getUpdated() > entry.getValue()) {
+                    if (config.getUpdated() >= entry.getValue()) {
                         final int version = entry.getKey() + 1;
                         statement.setLong(5, config.getId());
                         statement.setInt(6, config.getVersion());
