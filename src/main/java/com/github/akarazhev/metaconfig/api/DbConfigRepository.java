@@ -493,28 +493,26 @@ final class DbConfigRepository implements ConfigRepository {
                 for (int i = 0; i < configs.length; i++) {
                     final Config config = configs[i];
                     final SimpleEntry<Integer, Long> entry = entries.get(config.getId());
-                    if (config.getUpdated() > entry.getValue()) {
-                        final int version = entry.getKey() + 1;
-                        statement.setLong(5, config.getId());
-                        statement.setInt(6, config.getVersion());
-                        JDBCUtils.set(statement, config, version);
-                        statement.addBatch();
-                        // Update config attributes
-                        config.getAttributes().ifPresent(a -> {
-                            try {
-                                update(connection, TableId.CONFIG, sqlUtils.mapping.get(CONFIG_ATTRIBUTES_TABLE),
-                                        config.getId(), a);
-                            } catch (final SQLException e) {
-                                exceptions.add(e);
-                            }
-                        });
-                        // Update a config
-                        updated[i] = new Config.Builder(configs[i]).
-                                properties(Arrays.asList(update(connection, sqlUtils.mapping.get(PROPERTIES_TABLE),
-                                        config.getId(), config.getProperties().toArray(Property[]::new)))).
-                                version(version).
-                                build();
-                    }
+                    final int version = entry.getKey() + 1;
+                    statement.setLong(5, config.getId());
+                    statement.setInt(6, config.getVersion());
+                    JDBCUtils.set(statement, config, version);
+                    statement.addBatch();
+                    // Update config attributes
+                    config.getAttributes().ifPresent(a -> {
+                        try {
+                            update(connection, TableId.CONFIG, sqlUtils.mapping.get(CONFIG_ATTRIBUTES_TABLE),
+                                    config.getId(), a);
+                        } catch (final SQLException e) {
+                            exceptions.add(e);
+                        }
+                    });
+                    // Update a config
+                    updated[i] = new Config.Builder(configs[i]).
+                            properties(Arrays.asList(update(connection, sqlUtils.mapping.get(PROPERTIES_TABLE),
+                                    config.getId(), config.getProperties().toArray(Property[]::new)))).
+                            version(version).
+                            build();
                 }
 
                 JDBCUtils.execute(statement, configs.length, exceptions, SAVE_CONFIGS_ERROR);
@@ -1384,13 +1382,16 @@ final class DbConfigRepository implements ConfigRepository {
 
         private static void execute(final PreparedStatement statement, int count, final Collection<Throwable> exceptions,
                                     final String error) throws SQLException {
-            if (statement.executeBatch().length == count) {
+            final int[] results = statement.executeBatch();
+            if (results.length == count) {
                 if (exceptions.size() > 0) {
                     throw new SQLException(String.format(UPDATE_ATTRIBUTES_ERROR_MSG, JDBCUtils.getMessage(exceptions)));
                 }
 
-                if (statement.getUpdateCount() == 0) {
-                    throw new SQLException(error);
+                for (final int result : results) {
+                    if (result == Statement.EXECUTE_FAILED || result == 0) {
+                        throw new SQLException(error);
+                    }
                 }
             } else {
                 throw new SQLException(error);

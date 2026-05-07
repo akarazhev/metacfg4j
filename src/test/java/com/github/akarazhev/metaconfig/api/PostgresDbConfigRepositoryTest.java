@@ -516,7 +516,7 @@ final class PostgresDbConfigRepositoryTest extends UnitTest {
         // Check test results
         assertTrue(firstConfig.isPresent());
         Config updatedConfig = new Config.Builder(firstConfig.get()).
-                updated(Clock.systemDefaultZone().millis()).
+                updated(firstConfig.get().getUpdated() + 1).
                 properties(Collections.emptyList()).
                 build();
         configRepository.saveAndFlush(Stream.of(updatedConfig));
@@ -525,6 +525,47 @@ final class PostgresDbConfigRepositoryTest extends UnitTest {
         updatedConfig = firstConfig.get();
         assertTrue(updatedConfig.getId() > 0);
         assertEquals(0, updatedConfig.getProperties().count());
+    }
+
+    @Test
+    @DisplayName("Save and flush a config without properties and with the same timestamp")
+    void saveAndFlushConfigWithoutPropertiesWithSameTimestamp() {
+        Optional<Config> firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
+        // Check test results
+        assertTrue(firstConfig.isPresent());
+        Config updatedConfig = new Config.Builder(firstConfig.get()).
+                updated(firstConfig.get().getUpdated()).
+                properties(Collections.emptyList()).
+                build();
+        configRepository.saveAndFlush(Stream.of(updatedConfig));
+        firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
+        assertTrue(firstConfig.isPresent());
+        updatedConfig = firstConfig.get();
+        assertTrue(updatedConfig.getId() > 0);
+        assertEquals(0, updatedConfig.getProperties().count());
+    }
+
+    @Test
+    @DisplayName("Reject save and flush with a stale config version")
+    void saveAndFlushRejectsStaleConfigVersion() {
+        Optional<Config> firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
+        // Check test results
+        assertTrue(firstConfig.isPresent());
+        final Config currentConfig = new Config.Builder(firstConfig.get()).
+                updated(firstConfig.get().getUpdated() + 1).
+                build();
+        final Optional<Config> savedConfig = configRepository.saveAndFlush(Stream.of(currentConfig)).findFirst();
+        assertTrue(savedConfig.isPresent());
+
+        final Config staleConfig = new Config.Builder(firstConfig.get()).
+                updated(savedConfig.get().getUpdated() + 1).
+                properties(Collections.emptyList()).
+                build();
+        assertThrows(RuntimeException.class, () -> configRepository.saveAndFlush(Stream.of(staleConfig)));
+        firstConfig = configRepository.findByNames(Stream.of(FIRST_CONFIG)).findFirst();
+        assertTrue(firstConfig.isPresent());
+        assertEquals(savedConfig.get().getVersion(), firstConfig.get().getVersion());
+        assertTrue(firstConfig.get().getProperties().count() > 0);
     }
 
     @Test
